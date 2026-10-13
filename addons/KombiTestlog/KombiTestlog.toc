@@ -2,7 +2,7 @@
 ## Title: Kombi Testlog
 ## Notes: Notizen und Testprotokoll für WoW Forever. Hilfe: /tl hilfe
 ## Author: ludes88
-## Version: 1
+## Version: 2
 ## SavedVariables: KombiTestlogDB
 ## OptionalDeps: RXPGuides
 

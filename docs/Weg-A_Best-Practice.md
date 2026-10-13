@@ -8,12 +8,13 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 ## 0. Schnellzugriff
 
 - **Was Weg A ist:** RXPs Gratis-Route für Stufe 1–22 (Mulgore, Brachland) als Kopie, darin unsere Berufsschritte an Ankerstellen. Ein Guide, ein Fenster. Ab 22 wechselt der Nutzer zu seinem gekauften Guide.
-- **Wie er geladen wird:** als eigenes kleines Addon (`RXPGuides_Kombi`), das `RXPGuides.RegisterGuide([[ … ]])` aufruft. Das Import-Fenster von RXP nimmt nur verschlüsselte, kontogebundene Texte.
+- **Wie er geladen wird:** als eigenes kleines Addon (`RXPGuides_KombiGuide`, gebaut von `tools/build_kombi.py`), das `RXPGuides.RegisterGuide([[ … ]])` aufruft. Das Import-Fenster von RXP nimmt nur verschlüsselte, kontogebundene Texte. Im Spiel bestätigt am 13.10. (Testlauf 1 und 2, `docs/tests/`).
 - **Pflicht im Kopf jedes Guides:** `#forever`, `#name`, `#group`, `<< Horde`. Ohne `#forever` lädt RXP den Guide in Forever nicht.
 - **Eigene Gruppe:** `#group Kombiguide (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
 - **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Dateien in Projekt und Chat → der Nutzer testet.
 - **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`.
-- **Werkzeuge im Projekt:** `werkzeuge/merge_poc.py` (Mischen), `werkzeuge/validate.py` (Prüfen), `werkzeuge/testlog_harness.py` (Testlog-Probe). Pfade darin zeigen auf die Arbeitsumgebung von Claude und müssen angepasst werden.
+- **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/fetch_rxp.sh` (RXP in einer Version holen).
+- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen nicht zur Forever-Karte (Abschnitt 7, Risiko 17).
 
 ---
 
@@ -131,7 +132,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 ## 5. Aufbau von Weg A
 
 **Dateien beim Spieler**
-- `Interface\AddOns\RXPGuides_Kombi\` mit `.toc` (`## Interface: 16001`, `## Dependencies: RXPGuides`) und der Kombi-Datei.
+- `Interface\AddOns\RXPGuides_KombiGuide\` mit `.toc` (`## Interface: 16001`, `## Dependencies: RXPGuides`) und `Kombi_Guide.lua`, gebaut von `tools/build_kombi.py`.
+- `Interface\AddOns\RXPGuides_Kombi\` nur für den WC-Test (Testlauf 1).
 - `Interface\AddOns\KombiTestlog\` für Notizen und Protokoll.
 - Ordner der Beta: `World of Warcraft\_classic_beta_\` (kami-labs, 10.10.; beim Start am 04.11. **ungeprüft**).
 
@@ -212,6 +214,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog-Einträge `TASCHE` mit Ort und Zeit auswerten |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
+| 17 | RXPs Kommentar-Koordinaten (`--c:Mulgore,x,y`) passen nicht zur Forever-Karte; Mulgore ist in Forever rund 1,19-mal grösser (Schätzung aus 2 Testlog-Punkten, Testlauf 2) | Eigene Pfeile liegen bis 35 Yards daneben | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1) |
 
 ---
 
@@ -355,6 +358,14 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T7 | Testlog prüfen | `TASCHE`-Einträge beim Kürschnern; `BERUF` bei jedem Punkt; `RXP` bei jedem Schritt |
 | T8 | Quellen-Widersprüche vor Ort prüfen | Koordinaten Yonn Deepcut, Rang-Grenzen Kürschnerei/Kräuterkunde, Bruiseweed, Dokimi |
 
+Stand 13.10.2026 (Testlauf 1 und 2, `docs/tests/`):
+- **T0** bestanden.
+- **T1** bestanden: Gruppe sichtbar, Wechsel 1-6 → 6-12 innerhalb «Kombiguide (H)».
+- **T2** teilweise: Schritte am richtigen Ort, Pfeil zu Nawka rund 28 Yards daneben. In v0.1.1 korrigiert, im Spiel offen.
+- **T4** indirekt: Ein schon gelernter Beruf wird übersprungen.
+- **T7** teilweise: BERUF, RXP, QUEST und TOD laufen; TASCHE noch ohne Kürschner-Daten.
+- **T3, T5, T6, T8** offen.
+
 ---
 
 ## 11. Quellen
@@ -385,3 +396,4 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 ## 13. Änderungen an diesem Dokument
 
 - 13.10.2026: erstellt (Recherche RXP-Code, Forever-UI-Code, Berufsdaten, Machbarkeitsprobe, Testlog v1).
+- 13.10.2026: Testläufe 1 und 2 eingetragen, Koordinaten-Befund (Risiko 17), Generator mit Plan-Tabelle, Testlog 2.
