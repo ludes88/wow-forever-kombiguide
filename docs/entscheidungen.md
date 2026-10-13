@@ -16,16 +16,18 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 - 13.10.2026: Ziel ist möglichst wenig Arbeit für den Nutzer. Claude arbeitet direkt im Repo (Branch, Pull Request) und führt nach den automatischen Prüfungen selbst zusammen.
 - 13.10.2026: Die Claude-Sitzung wird mit dem PC des Nutzers verbunden. Claude installiert Addon-Versionen selbst und liest die Testlog-Datei selbst. (Die App bot die Verbindung nicht an; der Nutzer hat stattdessen die AddOns mit dem Repo verknüpft, siehe `vorgehen.md`.)
 - 13.10.2026: Die Mengen für Lederverarbeitung und Verzauberkunst werden auf eigene Forever-Messungen gestützt, nicht auf die Classic-Werte («wir machen es richtig und messen»). Dafür Testlog 3.
-- 13.10.2026: «Beim Kräutergarten zählt immer das gewinnbringendste Kraut.»
+- 13.10.2026: «Beim Kräuterfarmen zählt immer das gewinnbringendste Kraut.» (Zuerst als «Kräutergarten» notiert; der Nutzer hat korrigiert.)
 - 13.10.2026: Beim Fischen zählt der Fisch, der im AH gekocht (oder roh) am meisten bringt.
 - 13.10.2026: Ziel: während des Speedruns die Berufe so effizient wie möglich mitskillen und genug Gold dafür haben, «inkl. der Skills usw.».
+- 13.10.2026: Update-Rhythmus: «Ich aktualisiere so oft ich kann.» Claude baut neu, sobald es etwas Neues gibt (neue RXP-Version beim Nutzer oder eigene Änderung).
+- 13.10.2026: LW-Route 1–150: Claude wählt «nach bestem Wissen und Gewissen».
+- 13.10.2026: Der Nutzer hat seine Addons über CurseForge aktualisiert. Welche RestedXP-Version jetzt läuft, zeigt das nächste Testlog; danach baut Claude den Kombi-Guide dafür neu.
 - 13.10.2026: Der Nutzer überlässt Claude die Umsetzung. Claude setzt dafür die Datenkette aus Plan-Tabelle und Generator ein (Vorschlag von Claude, siehe `vorgehen.md`). Der Kombi-Guide wird für die RXP-Version gebaut, die beim Nutzer installiert ist (zurzeit v4.11.13).
 
 ## Offen
 
-1. Update-Rhythmus für den Kombi-Guide: bei Bedarf, wöchentlich oder einmal zum Start.
-2. LW-Route 1–150: wow-professions oder kami-labs.
-3. Welche Quellen-Widersprüche zuerst im Spiel geprüft werden.
-4. Lizenz für die eigenen Teile.
-5. RestedXP auf v4.11.23 aktualisieren. Unterschied in den zwei Horde-Dateien: +463/−181 Zeilen aus 8 Commits, u. a. die Schlafsack-Quest 79007 (nur in v4.11.23). Kürschnerei bei Mooranta und die Leder-Quest 768 sind schon in v4.11.13 (korrigiert am 13.10.).
-6. Format der Plan-Tabelle: CSV mit Semikolon ist gesetzt (Vorgabe von Claude, für Excel), änderbar.
+1. Welche Quellen-Widersprüche zuerst im Spiel geprüft werden.
+2. Lizenz für die eigenen Teile.
+3. Format der Plan-Tabelle: CSV mit Semikolon ist gesetzt (Vorgabe von Claude, für Excel), änderbar.
+4. Welcher AH-Markt für die Preise zählt: zum Start ein EU-Realm, Normal oder PvP. Bis dahin rechnet Claude mit den US-Beta-Preisen von AHledger (PvP Horde).
+5. Zählt beim «gewinnbringendsten Kraut» die Zusatzbeute mit (Swiftthistle, Frilled Lichen, Samen)? Claude rechnet vorerst mit Zusatzbeute, also mit dem Wert pro Kräuterknoten.

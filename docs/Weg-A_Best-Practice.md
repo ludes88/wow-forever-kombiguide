@@ -216,7 +216,6 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 12 | Lizenz CC BY-NC-SA 4.0 | Nur nicht-kommerziell, mit Herkunft, gleiche Lizenz | Hinweis in jeder Datei; nie verkaufen oder kommerziell verteilen |
 | 13 | «Secret values» im modernen Client (Forever nutzt die Mainline-Vorlagen) | Chat-Text kann für Addons gesperrt sein (`CHAT_MSG_LOOT` ist nicht «NeverSecret») | Testlog zählt über Taschenbestand statt Chat; Abfrage `issecretvalue`. Zauber-Ereignisse wie `UNIT_SPELLCAST_SUCCEEDED` sind laut Forever-API nur für fremde Einheiten «secret», nicht für den Spieler und seinen Begleiter; einzelne Zauber können abweichen (`SecretPredicatesDocumentation.lua`, `SecretWhenUnitSpellCastRestricted`) |
 | 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog 3: `SAMMELN` (Quelle mit Kreatur- oder Objekt-ID und Beute), `BEUTE`, `ANGELN` mit Ort und Zeit auswerten |
-| 18 | Gewächshaus («Kräutergarten») ist ein Lager-Gegenstand der Kräuterkunde (Warcraft Tavern); der Plan sieht vor, Kräuterkunde um Stufe 15 abzulegen | Gewächshaus womöglich nicht nutzbar. **Ungeprüft:** ob Pflanzen und Ernten Kräuterkunde brauchen | Vor dem Verlernen klären; Bauplan kommt erst aus einem Wetlands-Dungeon (Abschnitt 8) |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
 | 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore ist in Forever 6154 × 4102 Yards gross; 442 RXP-Punkte weichen im Median 3,5 % ab, höchstens 11,3 %. Thunder Bluff (26 Punkte) und Brachland (18 Punkte) passen genau (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile lagen bis 35 Yards daneben (v0.1) | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1412 Mulgore, 1413 Brachland, 1456 Thunder Bluff |
@@ -237,13 +236,13 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | Fish Bowl | Fischen 20 | 1 Raw Brilliant Smallfish, 1 Empty Vial | +8 % alle Werte, nicht mit Blessing of Kings |
 
   Regeln: 1 Minute am Feuer sitzen gibt 1 Stunde Camp Benefits. Pro Spieler ein Gegenstand. Alle teilen sich 1 Stunde Abklingzeit.
-- **Gewächshaus (Greenhouse), vermutlich der «Kräutergarten» des Nutzers:**
-  - Kräuterkunde stellt im Lager-System Incense Candles, Greenhouses und Seed Hybridizers her (Warcraft Tavern, Herbalism Overview).
-  - Bauplan: Boss Shadetooth im Dungeon «Excavation Site: Wetlands» (Icy Veins, 08.10.). Stufe des Dungeons: **ungeprüft**.
-  - Wird beim Lagerplatz aufgestellt und erzeugt einen Pflanzkasten. Ein Samen pro Gewächshaus: Das Kraut ist nach 8 Minuten erntbar, das Gewächshaus hält 15 Minuten (Icy Veins).
-  - Samen: Commonplace (Peacebloom, Earthroot), Uncommon (Silverleaf, Kingsblood), Scarce (Ghost Shroom); Kräuterkundige finden Samen beim Sammeln. Seed Hybridizer ab Kräuterkunde 300 (Icy Veins).
+- **Gewächshaus (Greenhouse), Lager-Gegenstand der Kräuterkunde** (Details und Quellen: `docs/recherche/2026-10-13_kraeuter-fische-kochen.md`, Abschnitt 2):
+  - Bauplan: Boss Shadetooth im Dungeon «Excavation Site: Wetlands», laut Icy Veins für Stufe 26–33 (03.10.); bei wowtbc haben die Quests Stufe 24.
+  - Platzieren braucht Kräuterkunde 140 (Icy Veins, 11.10.). Material: 2 Simple Wood, 1 Arthas' Tears, 1 Purple Lotus (Mobalytics, AHledger); beide Kräuter sammelt man erst ab Kräuterkunde 210 bzw. 220.
+  - Ein Samen pro Gewächshaus: Das Kraut ist nach 8 Minuten erntbar, das Gewächshaus hält 15 Minuten (Icy Veins, 08.10.).
+  - Samen: Commonplace (Peacebloom, Earthroot), Uncommon (Silverleaf, Kingsblood), Scarce (Ghost Shroom); Kräuterkundige finden Samen beim Sammeln.
+  - Für den Plan (Kräuterkunde bis etwa Stufe 15) fallen nur die Samen an; ihr AH-Wert steht in der Recherche.
   - **Ungeprüft:** ob Pflanzen und Ernten Kräuterkunde brauchen, wie viele Kräuter eine Ernte gibt.
-  - Quellen: https://www.icy-veins.com/wow-forever/news/greenhouse-blueprint-found-how-herbalism-seeds-work-in-wow-forever/ · https://www.warcrafttavern.com/forever/guides/herbalism/
 - **Tauren-Rasse «Cultivation»:** dupliziert ein Kraut, das man ohne Kräuterkunde ernten kann. Abklingzeit 1 Stunde; nötige Stufe = Kraut-Stufe / 5 (Warcraft Tavern, SeeMeta 10.10.). Damit gibt es Kräuter auch nach dem Verlernen.
 - **Merchant's Favor:**
   - Die erste Shipping-Label-Quest gibt 50.
@@ -313,8 +312,8 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 - Messung 13.10. (15 Zugänge, Art der Teile unbekannt): 8× Staub, 6× Essenz, 1× Splitter; Mengen wie in der Zeile «11–15». 9 Greater Magic Essence ergaben 27 Lesser Magic Essence (1 : 3). Details: `docs/tests/messdaten-2026-10-13.md`.
 
 **Fischen und Kochen** [Forever]
-- In Startgebieten entkommen ab Fertigkeit 25 keine Fische mehr, in Hauptstädten ab 75 (wow-professions).
-- Stellen: Stonebull Lake für 1–75, Teich in Thunder Bluff für 75–130. An der Lushwater Oasis gibt es auch Deviate Fish (AHledger).
+- In Startgebieten entkommen ab Fertigkeit 25 keine Fische mehr (wow-professions; am 13.10. dort nicht wiedergefunden), in Hauptstädten ab 75 (wow-professions, bestätigt 13.10.).
+- Stellen: Stonebull Lake für 1–75, Teich in Thunder Bluff für 75–130. Lushwater Oasis (Brachland, in der RXP-Route): Longjaw 39 %, **Deviate Fish 35 %**, Catfish 12 %, Smallfish 8 % von 153 Beutefenstern (AHledger, 12.–13.10.).
 - Köder: Shiny Bauble +25, Nightcrawlers +50 (ab 50), Bright Baubles +75 (ab 100).
 - Rezepte (SeeMeta, Stufen orange/gelb/grün/grau):
   - Brilliant Smallfish 1/45/65/85
@@ -327,6 +326,17 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
   - Harn Longcast (Bloodhoof): Brilliant Smallfish 40c, Longjaw Mud Snapper 4s
   - Naal Mistrunner (Thunder Bluff): Catfish 12s
   - Tari'qa (Crossroads): Strider Stew, Crispy Lizard Tail, Preise nicht sauber lesbar
+
+**Wertvergleich Kräuter und Fische** [Forever-Beta, AHledger PvP Horde US, 13.10.; Details, 30-Tage-Werte und Quellen: `docs/recherche/2026-10-13_kraeuter-fische-kochen.md`]
+
+| Stufen | Kraut vom Knoten, höchster Wert | Zusatzbeute | Fisch roh, höchster | Fisch gekocht, höchster |
+|---|---|---|---|---|
+| 1–12 | Earthroot 2s 70c (Kräuterkunde 15), Silverleaf 1s, Peacebloom 80c | Commonplace Herb Seeds 18c | Raw Brilliant Smallfish 1s 18c | Brilliant Smallfish 1s 25c |
+| 12–17 | Kingsblood 13s 75c (125), Briarthorn 3s 75c (70), Earthroot 2s 70c, Bruiseweed 2s 30c (100) | Frilled Lichen 2g 72s (aus Briarthorn im südlichen Brachland 16 % von 51), Swiftthistle 11s 11c (aus Briarthorn 33 % von 51) | Deviate Fish 10s (Lushwater 35 %) | Savory Deviate Delight 19s 98c (Kochen 85, Rezept fällt im Brachland; Quelle offen) |
+| 17–22 | Wild Steelbloom 16s (115), Kingsblood 13s 75c, Stranglekelp 8s 50c (85, unter Wasser) | wie oben; Uncommon Herb Seeds 5s 55c | Deviate Fish 10s; Küste: Oily Blackmouth 5s 87c | Savory Deviate Delight 19s 98c |
+
+- Beta-Preise schwanken stark: Frilled Lichen 2g 72s heute, 67s 80c im 30-Tage-Median; Normal Horde US weicht ab (z. B. Kingsblood 8s 86c, Frilled Lichen 80s 80c). Zum Start zählen EU-Preise (offene Entscheidung 4 in `entscheidungen.md`).
+- Kosten (Lehrer, Flüge) sind öffentlich kaum beziffert; Händlerpreise und Lücken: `docs/recherche/2026-10-13_kosten.md`. Testlog 3 misst Lehrer- und Flugkosten.
 
 **Händler für Berufsmaterial** [Forever, AHledger]
 - Nata Dawnstrider (Thunder Bluff): Copper Rod 1s 24c, Mote of Magic 10c, Simple Wood 38c. **Widerspruch:** MetaForge führt dort keine Motes.
@@ -406,9 +416,7 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 
 ## 12. Offene Entscheidungen (beim Nutzer)
 
-1. Update-Rhythmus: (a) bei Bedarf, (b) wöchentlich, (c) einfrieren und zum Start neu mischen.
-2. LW-Route: wow-professions oder kami-labs.
-3. Welche Widersprüche zuerst im Spiel geprüft werden.
+Stand und Liste: `docs/entscheidungen.md`. Am 13.10. entschieden: Update-Rhythmus «so oft ich kann», LW-Route wählt Claude «nach bestem Wissen und Gewissen». Offen u. a.: welche Widersprüche zuerst im Spiel geprüft werden, welcher AH-Markt zählt, ob beim Kraut die Zusatzbeute mitzählt.
 
 ## 13. Änderungen an diesem Dokument
 
@@ -417,4 +425,5 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - 13.10.2026: Messdaten (Kartenecken Thunder Bluff, Herstellen, Entzaubern), `karte_aus_testlog.py`, Risiko 17 genauer, Ankerstellen nach RXP-Version, Update-Ablauf mit verknüpften AddOns.
 - 13.10.2026: Kartenecken Mulgore und Brachland exakt, Risiko 17 mit exakten Werten, Kombi-Guide v0.1.2.
 - 13.10.2026: Wie RXP die Stelle nach einem Update wiederfindet (Abschnitt 6); Zauber-Ereignisse des Spielers sind laut Forever-API nicht «secret» (Risiko 13).
-- 13.10.2026: Testlog 3 (Herstellen, Entzaubern, Sammeln, Angeln, Beute, Händler, Post, Auktionshaus, Geld, Gelerntes); Gewächshaus (Abschnitt 8, Risiko 18).
+- 13.10.2026: Testlog 3 (Herstellen, Entzaubern, Sammeln, Angeln, Beute, Händler, Post, Auktionshaus, Geld, Gelerntes); Gewächshaus (Abschnitt 8).
+- 13.10.2026: Recherche Kräuter, Fische, Kochen und Kosten (`docs/recherche/`), Wertvergleich in Abschnitt 9; Risiko 18 entfernt (beruhte auf einem Missverständnis: «Kräuterfarmen», nicht «Kräutergarten»); offene Entscheidungen nach `entscheidungen.md` verwiesen.

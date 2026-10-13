@@ -31,6 +31,8 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
    - Ausbeute nach Gegnerstufe aus MetaForge und AHledger, dann aus dem Testlog 3 (SAMMELN und BEUTE mit Kreatur-ID, Ort und Zeit).
    - Kosten und Einnahmen aus dem Testlog 3 (HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT), Punkte pro Rezept aus HERSTELLEN, Ausbeute pro Teil aus ENTZAUBERN.
    - Wo die Route nicht reicht: Farm-Stopp vorschlagen oder Lücke offen zeigen.
+   - Wert (Entscheide vom 13.10.): beim Kräuterfarmen das gewinnbringendste Kraut, gerechnet pro Knoten mit Zusatzbeute; beim Fischen der Fisch mit dem höchsten AH-Wert, roh oder gekocht. Preise in der Beta von AHledger, zum Start aus dem Startdokument des Nutzers (EU). Grundlagen: `docs/recherche/2026-10-13_kraeuter-fische-kochen.md`.
+   - Goldbilanz entlang der Route: Kosten (Lehrer für Zauber und Berufe, Rezepte, Händlermaterial, Flüge) gegen Einnahmen; Kostenquellen in `docs/recherche/2026-10-13_kosten.md`, gemessene Werte aus Testlog 3.
 4. **Generator** `tools/build_kombi.py`: liest Plan- und Kartentabelle, baut die RXP-Gratis-Route in genau der RXP-Version des Nutzers neu und fügt die Schritte ein.
 5. **Prüfung** (automatisch im Generator):
    - Lua-Syntax, Kopf, bekannte Befehle
