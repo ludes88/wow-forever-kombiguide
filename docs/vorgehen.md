@@ -28,7 +28,8 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 3. **Mengen-Rechnung** (geplant, `tools/plan_mengen.py`): verteilt den Gesamtbedarf auf die Gebiete der Route.
    - Gesamtbedarf aus `data/rechnung/`, z. B. 416 Leichtes Leder für LW 125.
    - Kürschnerbare Gegner pro Gebiet aus den RXP-Schritten.
-   - Ausbeute nach Gegnerstufe aus MetaForge und AHledger, später aus dem Testlog (TASCHE pro Gebiet und Zeit).
+   - Ausbeute nach Gegnerstufe aus MetaForge und AHledger, dann aus dem Testlog 3 (SAMMELN und BEUTE mit Kreatur-ID, Ort und Zeit).
+   - Kosten und Einnahmen aus dem Testlog 3 (HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT), Punkte pro Rezept aus HERSTELLEN, Ausbeute pro Teil aus ENTZAUBERN.
    - Wo die Route nicht reicht: Farm-Stopp vorschlagen oder Lücke offen zeigen.
 4. **Generator** `tools/build_kombi.py`: liest Plan- und Kartentabelle, baut die RXP-Gratis-Route in genau der RXP-Version des Nutzers neu und fügt die Schritte ein.
 5. **Prüfung** (automatisch im Generator):

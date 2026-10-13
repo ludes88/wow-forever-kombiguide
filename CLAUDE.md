@@ -21,7 +21,7 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | Ordner | Inhalt |
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
-| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 2: schreibt auch Kartengrenzen `KARTE`) |
+| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld; Liste im Dateikopf) |
 | `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, Quelle, Status); `VERSION` |

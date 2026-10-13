@@ -12,7 +12,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Pflicht im Kopf jedes Guides:** `#forever`, `#name`, `#group`, `<< Horde`. Ohne `#forever` lädt RXP den Guide in Forever nicht.
 - **Eigene Gruppe:** `#group Kombiguide (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
 - **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Pull Request und Merge → beim Nutzer `aktualisieren.bat` und `/reload` (AddOns sind mit dem Repo verknüpft, `docs/vorgehen.md`) → der Nutzer testet.
-- **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`.
+- **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`).
 - **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen und RXP dagegen prüfen), `tools/fetch_rxp.sh` (RXP in einer Version holen).
 - **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff.
 
@@ -215,7 +215,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 11 | Deutscher Client | Eigene Texte gemischt mit englischen Ortsnamen | Eigene Texte ohne ungeprüfte Eigennamen; Quest- und NPC-Namen kommen von RXP/Client |
 | 12 | Lizenz CC BY-NC-SA 4.0 | Nur nicht-kommerziell, mit Herkunft, gleiche Lizenz | Hinweis in jeder Datei; nie verkaufen oder kommerziell verteilen |
 | 13 | «Secret values» im modernen Client (Forever nutzt die Mainline-Vorlagen) | Chat-Text kann für Addons gesperrt sein (`CHAT_MSG_LOOT` ist nicht «NeverSecret») | Testlog zählt über Taschenbestand statt Chat; Abfrage `issecretvalue`. Zauber-Ereignisse wie `UNIT_SPELLCAST_SUCCEEDED` sind laut Forever-API nur für fremde Einheiten «secret», nicht für den Spieler und seinen Begleiter; einzelne Zauber können abweichen (`SecretPredicatesDocumentation.lua`, `SecretWhenUnitSpellCastRestricted`) |
-| 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog-Einträge `TASCHE` mit Ort und Zeit auswerten |
+| 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog 3: `SAMMELN` (Quelle mit Kreatur- oder Objekt-ID und Beute), `BEUTE`, `ANGELN` mit Ort und Zeit auswerten |
+| 18 | Gewächshaus («Kräutergarten») ist ein Lager-Gegenstand der Kräuterkunde (Warcraft Tavern); der Plan sieht vor, Kräuterkunde um Stufe 15 abzulegen | Gewächshaus womöglich nicht nutzbar. **Ungeprüft:** ob Pflanzen und Ernten Kräuterkunde brauchen | Vor dem Verlernen klären; Bauplan kommt erst aus einem Wetlands-Dungeon (Abschnitt 8) |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
 | 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore ist in Forever 6154 × 4102 Yards gross; 442 RXP-Punkte weichen im Median 3,5 % ab, höchstens 11,3 %. Thunder Bluff (26 Punkte) und Brachland (18 Punkte) passen genau (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile lagen bis 35 Yards daneben (v0.1) | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1412 Mulgore, 1413 Brachland, 1456 Thunder Bluff |
@@ -236,6 +237,13 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | Fish Bowl | Fischen 20 | 1 Raw Brilliant Smallfish, 1 Empty Vial | +8 % alle Werte, nicht mit Blessing of Kings |
 
   Regeln: 1 Minute am Feuer sitzen gibt 1 Stunde Camp Benefits. Pro Spieler ein Gegenstand. Alle teilen sich 1 Stunde Abklingzeit.
+- **Gewächshaus (Greenhouse), vermutlich der «Kräutergarten» des Nutzers:**
+  - Kräuterkunde stellt im Lager-System Incense Candles, Greenhouses und Seed Hybridizers her (Warcraft Tavern, Herbalism Overview).
+  - Bauplan: Boss Shadetooth im Dungeon «Excavation Site: Wetlands» (Icy Veins, 08.10.). Stufe des Dungeons: **ungeprüft**.
+  - Wird beim Lagerplatz aufgestellt und erzeugt einen Pflanzkasten. Ein Samen pro Gewächshaus: Das Kraut ist nach 8 Minuten erntbar, das Gewächshaus hält 15 Minuten (Icy Veins).
+  - Samen: Commonplace (Peacebloom, Earthroot), Uncommon (Silverleaf, Kingsblood), Scarce (Ghost Shroom); Kräuterkundige finden Samen beim Sammeln. Seed Hybridizer ab Kräuterkunde 300 (Icy Veins).
+  - **Ungeprüft:** ob Pflanzen und Ernten Kräuterkunde brauchen, wie viele Kräuter eine Ernte gibt.
+  - Quellen: https://www.icy-veins.com/wow-forever/news/greenhouse-blueprint-found-how-herbalism-seeds-work-in-wow-forever/ · https://www.warcrafttavern.com/forever/guides/herbalism/
 - **Tauren-Rasse «Cultivation»:** dupliziert ein Kraut, das man ohne Kräuterkunde ernten kann. Abklingzeit 1 Stunde; nötige Stufe = Kraut-Stufe / 5 (Warcraft Tavern, SeeMeta 10.10.). Damit gibt es Kräuter auch nach dem Verlernen.
 - **Merchant's Favor:**
   - Die erste Shipping-Label-Quest gibt 50.
@@ -364,7 +372,7 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T4 | Ohne Kürschnerei weiterspielen (Probe) | Berufsschritte mit `.skill …,<1,1` verschwinden |
 | T5 | Ende 17-22 | Sprung in den gekauften Guide «22-24 Hillsbrad» oder klare Meldung |
 | T6 | Update-Übung: neue Kombi-Datei einspielen | Fortschritt bleibt erhalten |
-| T7 | Testlog prüfen | `TASCHE`-Einträge beim Kürschnern; `BERUF` bei jedem Punkt; `RXP` bei jedem Schritt |
+| T7 | Testlog prüfen | `SAMMELN` beim Kürschnern und Kräutersammeln, `HERSTELLEN`/`ENTZAUBERN` beim Beruf, `HÄNDLER`/`GELD` beim Einkaufen und beim Lehrer; `BERUF` bei jedem Punkt; `RXP` bei jedem Schritt |
 | T8 | Quellen-Widersprüche vor Ort prüfen | Koordinaten Yonn Deepcut, Rang-Grenzen Kürschnerei/Kräuterkunde, Bruiseweed, Dokimi |
 
 Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
@@ -409,3 +417,4 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - 13.10.2026: Messdaten (Kartenecken Thunder Bluff, Herstellen, Entzaubern), `karte_aus_testlog.py`, Risiko 17 genauer, Ankerstellen nach RXP-Version, Update-Ablauf mit verknüpften AddOns.
 - 13.10.2026: Kartenecken Mulgore und Brachland exakt, Risiko 17 mit exakten Werten, Kombi-Guide v0.1.2.
 - 13.10.2026: Wie RXP die Stelle nach einem Update wiederfindet (Abschnitt 6); Zauber-Ereignisse des Spielers sind laut Forever-API nicht «secret» (Risiko 13).
+- 13.10.2026: Testlog 3 (Herstellen, Entzaubern, Sammeln, Angeln, Beute, Händler, Post, Auktionshaus, Geld, Gelerntes); Gewächshaus (Abschnitt 8, Risiko 18).
