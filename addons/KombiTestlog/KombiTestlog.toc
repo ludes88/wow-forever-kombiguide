@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Kombi Testlog
+## Notes: Notizen und Testprotokoll für WoW Forever. Hilfe: /tl hilfe
+## Author: ludes88
+## Version: 1
+## SavedVariables: KombiTestlogDB
+## OptionalDeps: RXPGuides
+
+KombiTestlog.lua

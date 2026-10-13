@@ -1,0 +1,53 @@
+Preise in Silber (1 Gold = 100 Silber, 1 Silber = 100 Kupfer). Marktpreise: AHledger, Forever-Beta, Horde US. Gelbe Spalte K: eigener Preis überschreibt alles.
+Material;Beruf;Händlerpreis (s);NH Median (s);PH Median (s);NH 30 Tage (s);PH 30 Tage (s);NH gelistet (Stück);PH gelistet (Stück);Stand Seite;Eigener Preis (s);Rechenpreis (s);Hinweis;Quelle;Bemerkung
+Ruined Leather Scraps;LW;;0.25;0.28;0.28;0.4;2553;4407;12.10.;;0.25;;https://ahledger.com/items/2934-ruined-leather-scraps
+Light Leather;LW;;0.5;0.68;0.79;1.09;2729;5335;12.10.;;0.5;;https://ahledger.com/items/2318-light-leather
+Medium Leather;LW;;1.91;2.1;2.56;2.29;3562;2894;12.10.;;1.91;;https://ahledger.com/items/2319-medium-leather
+Heavy Leather;LW;;11.98;11;12.7;12.23;2372;1784;08.10.;;11.98;;https://ahledger.com/items/4234-heavy-leather;Marktseite 12.10.: NH 9.40 s, PH 9.13 s
+Thick Leather;LW;;35.79;62;40.2;48.48;348;264;12.10.;;35.79;;https://ahledger.com/items/4304-thick-leather
+Rugged Leather;LW;;19.02;5;9.8;7.78;214;135;05.10.;;19.02;;https://ahledger.com/items/8170-rugged-leather;Beta bis Stufe 30: kaum Angebot
+Light Hide;LW;;0.69;0.56;0.78;0.64;189;793;09.10.;;0.69;;https://ahledger.com/items/783-light-hide
+Medium Hide;LW;;8.88;7.32;9.12;7.78;221;667;30.09.;;8.88;;https://ahledger.com/items/4232-medium-hide
+Heavy Hide;LW;;35.4;30.69;96.75;72.99;231;279;08.10.;;35.4;;https://ahledger.com/items/4235-heavy-hide
+Salt;LW;0.5;1;0.7;0.82;0.82;64;493;05.10.;;0.5;Händler;https://ahledger.com/items/4289-salt;Händlerpreis laut AHledger
+Coarse Thread;LW;0.1;0.17;0.22;0.34;0.34;1596;1796;12.10.;;0.1;Händler;https://ahledger.com/items/2320-coarse-thread;Händlerpreis laut warcraft.wiki.gg (Version nicht angegeben)
+Fine Thread;LW;1;1.87;1.48;1.55;1.44;163;1126;03.10.;;1;Händler;https://ahledger.com/items/2321-fine-thread;Händlerpreis laut AHledger und warcraft.wiki.gg
+Silken Thread;LW;5;10;8.5;10;8.52;22;48;27.09.;;5;Händler;https://ahledger.com/items/4291-silken-thread;Händlerpreis laut warcraft.wiki.gg (Version nicht angegeben, für Forever ungeprüft)
+Rune Thread;LW;50;;99.99;19;63;0;1;05.10.;;50;Händler;https://ahledger.com/items/14341-rune-thread;Händlerpreis laut AHledger
+Gray Dye;LW;3.5;4.69;2.99;6.16;5.54;28;20;05.10.;;3.5;Händler;https://ahledger.com/items/4340-gray-dye;Händlerpreis laut AHledger
+Black Dye;LW;10;20;24;5.7;8;20;21;05.10.;;10;Händler;https://ahledger.com/items/2325-black-dye;Händlerpreis laut AHledger
+Strange Dust;VZ;;0.84;0.65;2.42;2.53;7166;3403;12.10.;;0.84;;https://ahledger.com/items/10940-strange-dust
+Soul Dust;VZ;;7.21;5.8;8.53;9.04;1555;2780;12.10.;;7.21;;https://ahledger.com/items/11083-soul-dust
+Vision Dust;VZ;;19.71;24.49;37.3;45.98;637;738;12.10.;;19.71;;https://ahledger.com/items/11137-vision-dust
+Dream Dust;VZ;;58;48.55;46.43;65.44;47;592;12.10.;;58;dünn;https://ahledger.com/items/11176-dream-dust
+Illusion Dust;VZ;;1000;;1000;481;2;0;12.10.;;1000;dünn;https://ahledger.com/items/16204-illusion-dust;NH: 2 Stück, Ausnahmewert
+Lesser Magic Essence;VZ;;0.69;3.9;7.35;7.3;2563;18247;03.10.;;0.69;;https://ahledger.com/items/10938-lesser-magic-essence
+Greater Magic Essence;VZ;;1.96;1.89;21.58;21.36;898;424;09.10.;;1.96;;https://ahledger.com/items/10939-greater-magic-essence
+Lesser Astral Essence;VZ;;6.04;5.79;9.42;8.11;681;404;30.09.;;6.04;;https://ahledger.com/items/10998-lesser-astral-essence
+Greater Astral Essence;VZ;;28.54;29.99;36.7;30.33;137;102;27.09.;;28.54;;https://ahledger.com/items/11082-greater-astral-essence
+Lesser Mystic Essence;VZ;;15.96;10.99;62.09;33.56;122;713;12.10.;;15.96;;https://ahledger.com/items/11134-lesser-mystic-essence
+Greater Mystic Essence;VZ;;44;27.97;191.72;109.75;99;110;12.10.;;44;;https://ahledger.com/items/11135-greater-mystic-essence
+Lesser Nether Essence;VZ;;268.98;345.93;132.42;139.36;46;67;12.10.;;268.98;dünn;https://ahledger.com/items/11174-lesser-nether-essence
+Greater Nether Essence;VZ;;800;1099;439.94;412.27;17;17;12.10.;;800;dünn;https://ahledger.com/items/11175-greater-nether-essence
+Lesser Eternal Essence;VZ;;200;65;500;228.06;42;16;12.10.;;200;dünn;https://ahledger.com/items/16202-lesser-eternal-essence
+Greater Eternal Essence;VZ;;;454;;1001;0;12;12.10.;;;kein Preis;https://ahledger.com/items/16203-greater-eternal-essence;NH: keine Zeile
+Small Glimmering Shard;VZ;;3.66;2.18;3.51;2.87;637;1060;30.09.;;3.66;;https://ahledger.com/items/10978-small-glimmering-shard
+Large Glimmering Shard;VZ;;78.99;62;111.64;85.88;121;291;30.09.;;78.99;;https://ahledger.com/items/11084-large-glimmering-shard
+Small Glowing Shard;VZ;;75.99;73;184.38;198.99;10;7;30.09.;;75.99;dünn;https://ahledger.com/items/11138-small-glowing-shard
+Large Glowing Shard;VZ;;700;580.99;938.92;853.02;6;33;30.09.;;700;dünn;https://ahledger.com/items/11139-large-glowing-shard
+Small Radiant Shard;VZ;;799.98;498;592.74;918.75;33;81;12.10.;;799.98;dünn;https://ahledger.com/items/11177-small-radiant-shard
+Large Radiant Shard;VZ;;1149;1099;1025;1449;16;77;12.10.;;1149;dünn;https://ahledger.com/items/11178-large-radiant-shard
+Small Brilliant Shard;VZ;;488;375;700;465.05;4;4;12.10.;;488;dünn;https://ahledger.com/items/14343-small-brilliant-shard
+Large Brilliant Shard;VZ;;;5001;;5001;0;1;10.10.;;;kein Preis;https://ahledger.com/items/14344-large-brilliant-shard;PH: 1 Stück
+Copper Rod;VZ;;;;;;0;0;–;;;kein Preis;https://www.wow-professions.com/forever/enchanting-leveling-guide;Händlerware, Preis nicht belegt
+Silver Rod;VZ;;19;20;2;2;121;6;02.10.;;19;;https://ahledger.com/items/6338-silver-rod;Schmiedekunst
+Golden Rod;VZ;;8;10;11.08;8.86;32;124;12.10.;;8;dünn;https://ahledger.com/items/11128-golden-rod;Schmiedekunst
+Truesilver Rod;VZ;;85;105;130.97;190.04;26;71;12.10.;;85;dünn;https://ahledger.com/items/11144-truesilver-rod;Schmiedekunst
+Arcanite Rod;VZ;;;;;;0;0;keine Scans;;;kein Preis;https://ahledger.com/items/16206-arcanite-rod;Schmiedekunst, in der Beta kein Preis
+Iridescent Pearl;VZ;;304.5;280.89;397.07;318.49;23;42;30.09.;;304.5;dünn;https://ahledger.com/items/5500-iridescent-pearl
+Black Pearl;VZ;;1000;848.99;744.98;747.95;12;33;12.10.;;1000;dünn;https://ahledger.com/items/7971-black-pearl
+Golden Pearl;VZ;;500;276;379.52;324.84;31;3;10.10.;;500;dünn;https://ahledger.com/items/13926-golden-pearl
+Shadowgem;VZ;;3.14;2.92;3.86;3.88;345;446;12.10.;;3.14;;https://ahledger.com/items/1210-shadowgem
+Simple Wood;VZ;;0.7;;0.75;0.74;349;0;09.10.;;0.7;;https://ahledger.com/items/4470-simple-wood
+Purple Lotus;VZ;;2005;50.79;108.19;33.9;25;60;11.10.;;2005;dünn;https://ahledger.com/items/8831-purple-lotus;NH-Median weit über 30-Tage-Median
+Crystal Vial;VZ;;5;9.75;4.67;3.99;26;335;12.10.;;5;dünn;https://ahledger.com/items/8925-crystal-vial

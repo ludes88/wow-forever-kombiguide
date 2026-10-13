@@ -1,0 +1,70 @@
+WoW Forever · Lederverarbeitung und Verzauberkunst 1-300 · Rechnung
+Stand 12.10.2026 · Mengen: Wowhead-Guides (Classic Era) · Preise: AHledger, Scans aus der Forever-Beta (Horde US, Stufenlimit 30)
+
+Markt;NH;NH = Normal Horde US, PH = PvP Horde US
+Preisbasis;jetzt;jetzt = aktueller Median, 30d = Median der letzten 30 Tage
+Schwelle dünner Markt;50;Preise mit weniger gelisteten Stück gelten als «dünn» (meine Wahl, frei änderbar)
+
+Band (Fertigkeit);LW Kosten (Gold);LW in g/s/c;LW Posten ohne Preis;LW Posten dünner Markt;VZ Kosten (Gold);VZ in g/s/c;VZ Posten ohne Preis;VZ Posten dünner Markt;LW + VZ (Gold)
+1-100;1.424;1g 42s 40c;0;0;1.1745;1g 17s 45c;1;0;2.5985
+100-150;5.1228;5g 12s 28c;0;0;4.964;4g 96s 40c;0;0;10.0868
+150-200;36.3315;36g 33s 15c;0;0;12.5645;12g 56s 45c;0;2;48.896
+200-250;161.7865;161g 78s 65c;0;0;68.9352;68g 93s 52c;0;3;230.7217
+250-300;108.1272;108g 12s 72c;0;0;1536.32;1536g 32s 0c;3;8;1644.4472
+Summe 1-300;312.792;312g 79s 20c;0;0;1623.9582;1623g 95s 82c;4;13;1936.7502
+davon 1-200;42.8783;42g 87s 83c;;;18.703;18g 70s 30c;;;61.5813
+VZ-Material aus eigener Entzauberung der LW-Teile (Wert, Gold);;;;;201.5846;201g 58s 46c
+VZ netto zu kaufen (Gold);;;;;1422.3736;1422g 37s 36c
+LW + VZ netto (Gold);;;;;;;;;1735.1656
+
+So liest du das Blatt
+"Gelb = hier änderst du: Markt (B4), Preisbasis (B5), Schwelle (B6); im Blatt Preise die Spalte «Eigener Preis»; im Blatt Kreislauf die Chancen."
+Beispiel: Am 04.11. kostet Medium Leather 3s 50c → im Blatt Preise bei Medium Leather in Spalte K «3.5» eintragen. Alles rechnet neu.
+Blau = Werte aus Quellen (Wowhead, AHledger, Blizzard Dev Notes). Grün = Bezug auf ein anderes Blatt. Schwarz = Formel.
+Die Mengen sind Wowheads Classic-Era-Routen. Forever weicht ab (LW-Rezepte rund 25 Punkte tiefer, einige VZ-Rezepte der Route fehlen in Forever). Siehe Bemerkungen im Blatt Bedarf.
+Posten ohne Preis zählen als 0: Die Summe ist dann zu tief. «Dünner Markt» = wenige gelistete Stück, der Preis ist ein Zufallswert.
+
+"Materialliste (Summe der Routenschritte; zum Vergleich Wowheads eigene Einkaufsliste)"
+Material;Beruf;Menge Route;Menge Wowhead-Liste;Rechenpreis (s);Kosten (Gold);Hinweis
+Ruined Leather Scraps;LW;90;90;0.25;0.225
+Light Leather;LW;198;198;0.5;0.99
+Light Hide;LW;10;10;0.69;0.069
+Salt;LW;85;40 (135);0.5;0.425;Händler
+Coarse Thread;LW;90;90;0.1;0.09;Händler
+Medium Hide;LW;15;15;8.88;1.332
+Medium Leather;LW;113;113;1.91;2.1583
+Fine Thread;LW;116;116;1;1.16;Händler
+Gray Dye;LW;37;37;3.5;1.295;Händler
+Heavy Hide;LW;20;5 (40);35.4;7.08
+Heavy Leather;LW;230;230;11.98;27.554
+Silken Thread;LW;132;122;5;6.6;Händler
+Thick Leather;LW;435;435;35.79;155.6865
+Rugged Leather;LW;436;436;19.02;82.9272
+Black Dye;LW;42;42;10;4.2;Händler
+Rune Thread;LW;42;42;50;21;Händler
+Copper Rod;VZ;1;1;;;kein Preis
+Strange Dust;VZ;145;145;0.84;1.218
+Lesser Magic Essence;VZ;1;1;0.69;0.0069
+Silver Rod;VZ;1;1;19;0.19
+Greater Magic Essence;VZ;12;12;1.96;0.2352
+Shadowgem;VZ;1;nicht in Liste;3.14;0.0314
+Simple Wood;VZ;9;9;0.7;0.063
+Lesser Astral Essence;VZ;25;25;6.04;1.51
+Soul Dust;VZ;122;130;7.21;8.7962
+Golden Rod;VZ;1;1;8;0.08;dünn
+Iridescent Pearl;VZ;1;1;304.5;3.045;dünn
+Greater Astral Essence;VZ;2;2;28.54;0.5708
+Vision Dust;VZ;237;240;19.71;46.7127
+Truesilver Rod;VZ;1;1;85;0.85;dünn
+Black Pearl;VZ;1;1;1000;10;dünn
+Greater Mystic Essence;VZ;2;2;44;0.88
+Lesser Nether Essence;VZ;5;5;268.98;13.449;dünn
+Dream Dust;VZ;360;360;58;208.8;dünn
+Purple Lotus;VZ;40;40;2005;802;dünn
+Crystal Vial;VZ;20;20;5;1;dünn
+Arcanite Rod;VZ;1;1;;;kein Preis
+Golden Pearl;VZ;1;1;500;5;dünn
+Illusion Dust;VZ;50;82;1000;500;dünn
+Greater Eternal Essence;VZ;4;4 + 4;;;kein Preis
+Small Brilliant Shard;VZ;4;4;488;19.52;dünn
+Large Brilliant Shard;VZ;2;2;;;kein Preis

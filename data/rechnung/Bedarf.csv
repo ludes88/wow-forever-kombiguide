@@ -1,0 +1,85 @@
+Bedarf nach Wowhead-Route (Classic Era), Schritt für Schritt. Kosten = Menge × Rechenpreis aus Blatt Preise.
+Beruf;Band;Fertigkeit;Rezept;Material;Menge;Preis (s);Kosten (s);ohne Preis;dünner Markt;Bemerkung
+LW;1-100;1-30;Light Leather x30;Ruined Leather Scraps;90;0.25;22.5;0;0
+LW;1-100;30-45;Light Armor Kit x18;Light Leather;18;0.5;9;0;0
+LW;1-100;45-55;Cured Light Hide x10;Light Hide;10;0.69;6.9;0;0
+LW;1-100;45-55;↳ Cured Light Hide x10;Salt;10;0.5;5;0;0
+LW;1-100;55-85;Embossed Leather Gloves x30;Light Leather;90;0.5;45;0;0;in Forever grün (entzauberbar)
+LW;1-100;55-85;↳ Embossed Leather Gloves x30;Coarse Thread;60;0.1;6;0;0
+LW;1-100;85-100;Fine Leather Belt x15 (aufheben);Light Leather;90;0.5;45;0;0;werden bei 135-150 verbraucht
+LW;1-100;85-100;↳ Fine Leather Belt x15 (aufheben);Coarse Thread;30;0.1;3;0;0
+LW;100-150;100-115;Cured Medium Hide x15 (aufheben);Medium Hide;15;8.88;133.2;0;0;werden bei 135-150 verbraucht
+LW;100-150;100-115;↳ Cured Medium Hide x15 (aufheben);Salt;15;0.5;7.5;0;0
+LW;100-150;115-125;Dark Leather Boots x10;Medium Leather;40;1.91;76.4;0;0
+LW;100-150;115-125;↳ Dark Leather Boots x10;Fine Thread;20;1;20;0;0
+LW;100-150;115-125;↳ Dark Leather Boots x10;Gray Dye;10;3.5;35;0;0
+LW;100-150;125-135;Dark Leather Boots x12;Medium Leather;48;1.91;91.68;0;0
+LW;100-150;125-135;↳ Dark Leather Boots x12;Fine Thread;24;1;24;0;0
+LW;100-150;125-135;↳ Dark Leather Boots x12;Gray Dye;12;3.5;42;0;0
+LW;100-150;135-150;Dark Leather Belt x15 (+15 Fine Leather Belt, +15 Cured Medium Hide);Fine Thread;30;1;30;0;0
+LW;100-150;135-150;↳ Dark Leather Belt x15 (+15 Fine Leather Belt, +15 Cured Medium Hide);Gray Dye;15;3.5;52.5;0;0
+LW;150-200;150-155;Heavy Leather x5 (aufheben);Medium Leather;25;1.91;47.75;0;0;Wowhead-Liste kauft trotzdem 230 Heavy Leather
+LW;150-200;155-160;Cured Heavy Hide x5 (aufheben);Heavy Hide;5;35.4;177;0;0
+LW;150-200;155-160;↳ Cured Heavy Hide x5 (aufheben);Salt;15;0.5;7.5;0;0
+LW;150-200;160-180;Heavy Armor Kit x22;Heavy Leather;110;11.98;1317.8;0;0
+LW;150-200;160-180;↳ Heavy Armor Kit x22;Fine Thread;22;1;22;0;0
+LW;150-200;180-190;Barbaric Shoulders x10 (+10 Cured Heavy Hide);Heavy Leather;80;11.98;958.4;0;0
+LW;150-200;180-190;↳ Barbaric Shoulders x10 (+10 Cured Heavy Hide);Fine Thread;20;1;20;0;0
+LW;150-200;190-200;Guardian Gloves x10 (+10 Cured Heavy Hide);Heavy Leather;40;11.98;479.2;0;0
+LW;150-200;190-200;↳ Guardian Gloves x10 (+10 Cured Heavy Hide);Silken Thread;10;5;50;0;0
+LW;150-200;Korrektur;Cured Heavy Hide x15 (fehlen in der Route: 20 gebraucht, 5 hergestellt);Heavy Hide;15;35.4;531;0;0;von mir ergänzt, nicht von Wowhead
+LW;150-200;Korrektur;↳ Cured Heavy Hide x15 (fehlen in der Route: 20 gebraucht, 5 hergestellt);Salt;45;0.5;22.5;0;0
+LW;200-250;200-220;Thick Armor Kit x20;Thick Leather;100;35.79;3579;0;0
+LW;200-250;200-220;↳ Thick Armor Kit x20;Silken Thread;20;5;100;0;0
+LW;200-250;220-230;Nightscape Headband x11;Thick Leather;55;35.79;1968.45;0;0;Wowhead: 2 für Tribal aufheben
+LW;200-250;220-230;↳ Nightscape Headband x11;Silken Thread;22;5;110;0;0
+LW;200-250;230-250;Nightscape Pants x20;Thick Leather;280;35.79;10021.2;0;0;Wowhead: 2 für Tribal aufheben
+LW;200-250;230-250;↳ Nightscape Pants x20;Silken Thread;80;5;400;0;0
+LW;250-300;250-260;Rugged Armor Kit x12;Rugged Leather;60;19.02;1141.2;0;0
+LW;250-300;260-290;Wicked Leather Gauntlets x32;Rugged Leather;256;19.02;4869.12;0;0;Muster vom Händler
+LW;250-300;260-290;↳ Wicked Leather Gauntlets x32;Black Dye;32;10;320;0;0
+LW;250-300;260-290;↳ Wicked Leather Gauntlets x32;Rune Thread;32;50;1600;0;0
+LW;250-300;290-300;Wicked Leather Headband x10;Rugged Leather;120;19.02;2282.4;0;0;Muster: Weltdrop (~2 % laut Wowhead)
+LW;250-300;290-300;↳ Wicked Leather Headband x10;Black Dye;10;10;100;0;0
+LW;250-300;290-300;↳ Wicked Leather Headband x10;Rune Thread;10;50;500;0;0
+VZ;1-100;1-2;Runed Copper Rod;Copper Rod;1;;;1;0;Forever-Rezept: Copper Rod + Mote of Magic
+VZ;1-100;1-2;↳ Runed Copper Rod;Strange Dust;1;0.84;0.84;0;0
+VZ;1-100;1-2;↳ Runed Copper Rod;Lesser Magic Essence;1;0.69;0.69;0;0
+VZ;1-100;2-50;Enchant Bracer - Minor Health x48;Strange Dust;48;0.84;40.32;0;0;Rezept nicht in der Forever-Liste von AHledger
+VZ;1-100;50-90;Enchant Bracer - Minor Health x~60;Strange Dust;60;0.84;50.4;0;0;Rezept nicht in der Forever-Liste von AHledger
+VZ;1-100;90-100;Enchant Bracer - Minor Stamina x10;Strange Dust;30;0.84;25.2;0;0
+VZ;100-150;100-101;Runed Silver Rod;Silver Rod;1;19;19;0;0;Shadowgem fehlt in Wowheads Einkaufsliste
+VZ;100-150;100-101;↳ Runed Silver Rod;Strange Dust;6;0.84;5.04;0;0
+VZ;100-150;100-101;↳ Runed Silver Rod;Greater Magic Essence;3;1.96;5.88;0;0
+VZ;100-150;100-101;↳ Runed Silver Rod;Shadowgem;1;3.14;3.14;0;0
+VZ;100-150;101-110;Greater Magic Wand x9;Simple Wood;9;0.7;6.3;0;0
+VZ;100-150;101-110;↳ Greater Magic Wand x9;Greater Magic Essence;9;1.96;17.64;0;0
+VZ;100-150;110-135;Enchant Cloak - Minor Agility x25;Lesser Astral Essence;25;6.04;151;0;0;Formel: Händler Stonetalon (Horde)
+VZ;100-150;135-155;Enchant Bracer - Lesser Stamina x20;Soul Dust;40;7.21;288.4;0;0
+VZ;150-200;155-156;Runed Golden Rod;Golden Rod;1;8;8;0;1
+VZ;150-200;155-156;↳ Runed Golden Rod;Iridescent Pearl;1;304.5;304.5;0;1
+VZ;150-200;155-156;↳ Runed Golden Rod;Greater Astral Essence;2;28.54;57.08;0;0
+VZ;150-200;155-156;↳ Runed Golden Rod;Soul Dust;2;7.21;14.42;0;0
+VZ;150-200;156-185;Enchant Bracer - Lesser Strength x~40;Soul Dust;80;7.21;576.8;0;0;Formel: Händler Stonetalon (Horde)
+VZ;150-200;185-200;Enchant Bracer - Strength x15;Vision Dust;15;19.71;295.65;0;0
+VZ;200-250;200-201;Runed Truesilver Rod;Truesilver Rod;1;85;85;0;1;Artisan-Lehrer ab 200: Annora, Uldaman
+VZ;200-250;200-201;↳ Runed Truesilver Rod;Black Pearl;1;1000;1000;0;1
+VZ;200-250;200-201;↳ Runed Truesilver Rod;Greater Mystic Essence;2;44;88;0;0
+VZ;200-250;200-201;↳ Runed Truesilver Rod;Vision Dust;2;19.71;39.42;0;0
+VZ;200-250;201-220;Enchant Bracer - Strength x~25;Vision Dust;25;19.71;492.75;0;0
+VZ;200-250;220-225;Enchant Cloak - Greater Defense x5;Vision Dust;15;19.71;295.65;0;0
+VZ;200-250;225-230;Enchant Gloves - Agility x5;Lesser Nether Essence;5;268.98;1344.9;0;1
+VZ;200-250;225-230;↳ Enchant Gloves - Agility x5;Vision Dust;5;19.71;98.55;0;0
+VZ;200-250;230-235;Enchant Boots - Stamina x5;Vision Dust;25;19.71;492.75;0;0
+VZ;200-250;235-250;Enchant Chest - Superior Health x~25;Vision Dust;150;19.71;2956.5;0;0;Rezept nicht in der Forever-Liste von AHledger
+VZ;250-300;250-265;Lesser Mana Oil x~20;Dream Dust;60;58;3480;0;1;Formel: Kania, Cenarion Hold (Silithus)
+VZ;250-300;250-265;↳ Lesser Mana Oil x~20;Purple Lotus;40;2005;80200;0;1
+VZ;250-300;250-265;↳ Lesser Mana Oil x~20;Crystal Vial;20;5;100;0;1
+VZ;250-300;265-294;Enchant Shield - Greater Stamina x~30;Dream Dust;300;58;17400;0;1;Formel BoP, Händler Undercity
+VZ;250-300;294-295;Runed Arcanite Rod;Arcanite Rod;1;;;1;0;Formel: Moonglade
+VZ;250-300;294-295;↳ Runed Arcanite Rod;Golden Pearl;1;500;500;0;1
+VZ;250-300;294-295;↳ Runed Arcanite Rod;Illusion Dust;10;1000;10000;0;1
+VZ;250-300;294-295;↳ Runed Arcanite Rod;Greater Eternal Essence;4;;;1;0
+VZ;250-300;294-295;↳ Runed Arcanite Rod;Small Brilliant Shard;4;488;1952;0;1
+VZ;250-300;294-295;↳ Runed Arcanite Rod;Large Brilliant Shard;2;;;1;0
+VZ;250-300;295-300;Enchant Cloak - Superior Defense x5;Illusion Dust;40;1000;40000;0;1

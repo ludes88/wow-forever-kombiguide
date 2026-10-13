@@ -1,0 +1,20 @@
+# RXP-Klon und erzeugte Dateien
+vendor/
+build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Testlog-Dateien aus dem Spiel (enthalten Charakternamen)
+testlogs/*
+!testlogs/README.md
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Private Notizen für Claude Code
+CLAUDE.local.md

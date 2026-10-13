@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: RXP Guides Kombi
+## Notes: Eigene Test-Guides für RestedXP (WoW Forever)
+## Author: ludes88
+## Version: 1
+## Dependencies: RXPGuides
+
+WC_Vorquests.lua
