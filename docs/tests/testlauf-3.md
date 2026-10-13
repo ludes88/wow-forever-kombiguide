@@ -97,8 +97,24 @@ Keine Zusatzbeute (Samen) in diesen 5 Knoten.
 | 11 | SAMMELN «Opening - No Text» an Objekt 2912 (Bernsteinkorn) und 2910 (Quellstein) | Quest-Gegenstände, die man aufhebt. Für die Berufe zählen nur SAMMELN mit Kürschnerei, Kräuterkunde oder Bergbau |
 | 12 | Um 22:42 noch «Kombiguide 0.1.2-v4.11.13», «Testlog 3» | Der Stand von PR #8 war noch nicht geholt; T6 für den Neubau steht noch aus |
 
+## Dritter Abschnitt (13.10., 22:44–23:20): Update und andere Charaktere
+
+| Nr. | Beobachtung | Bedeutung |
+|---|---|---|
+| 13 | 22:50: SITZUNG mit «Kombiguide 0.1.2-v4.11.23» und «Testlog 3.1», RXP-Zeile «06-12 Mulgore #30» | **T6 für den Neubau bestanden**: RXP stand gleich an der erwarteten Stelle (Schritt «Well», Quest 754) |
+| 14 | 23:20: SITZUNG mit «Testlog 3.2», keine Zeile FEHLER | Die neuen Ereignisse (`PLAYER_INTERACTION_MANAGER_FRAME_SHOW`/`_HIDE`) kennt der Client; das Laden lief durch |
+| 15 | Fünf Post-Sitzungen an diesem Abend (drei Charaktere): vier endeten erst beim Ausloggen, eine um 22:45:12 kurz vor der Auktionshaus-Zeile (Bankcharakter, Orgrimmar). Die Auktionshaus-Zeile zeigt «Ausgaben −12s (4)» ohne Gegenstände | Ob die eine Sitzung mit MAIL_CLOSED oder mit dem Öffnen des Auktionshauses endete, zeigt das Log nicht. Ob MAIL_CLOSED in Forever überhaupt kommt, ist offen; Testlog 3.2 nennt künftig den Grund («Ende …») |
+| 16 | Drei Fenster-Zeilen beim Ausloggen mit «Bestand 0c», obwohl Geld da war (z. B. 6s 20c nach dem Auktionshaus) | Beim Ausloggen meldet `GetMoney` 0. Behoben in Testlog 3.3: Der Bestand kommt dann aus dem letzten bekannten Wert |
+| 17 | KARTE 1454 Orgrimmar: (0,0) = 2273.88, −3680.60; (1,1) = 1338.46, −5083.21; 1402.6 × 935.4 Yards | übernommen (`tools/karte_aus_testlog.py`). RXPs Kommentar-Koordinaten in Orgrimmar passen genau (14 Punkte, 0,00 %) |
+
+## Kombi-Guide v0.2 (13.10. abends)
+
+- Neue Berufsschritte in «6-12 Mulgore», alle **nach** dem Schritt «Well». So bleibt die gespeicherte Stelle des Testcharakters gleich (Zeile 339, #30).
+- Inhalt: Leder- und Kräuterziele bis Thunder Bluff und bis Ende Mulgore (Mengenmodell `docs/plan/mengen-leder.md`), Abgabe der Berufs-Quests 97936 (Yonn Deepcut, Bloodhoof) und 97933 (Komin Winterhoof, Thunder Bluff), Geselle in Kürschnerei, Kräuterkunde und Angeln, Auktionshaus in Thunder Bluff, ein Hinweis zu «Gathering Leather», optional Angeln im Teich.
+- Erwartet beim Testcharakter: Nach «Well» erscheint die Erinnerung «Leder-Ziel bis Thunder Bluff» mit «Leichtes Leder: x/19» und «Kräuterkunde 20». Nach dem Kochlehrer kommt die Abgabe von 97936 bei Yonn Deepcut (Kürschnerei ist schon 22).
+
 ## Noch offen in diesem Testlauf
 
 - Stufe 8 und 10: Lehrer (GELD, GELERNT) bei Gennia Runetotem (Bloodhoof, laut RXP-Route)
-- T6 nach dem Neubau auf v4.11.23 im Spiel (Erwartung oben)
-- Testlog 3.2 im Spiel: Endet jede Fenster-Sitzung mit einem Grund? Kommt MAIL_CLOSED, wenn der Briefkasten normal geschlossen wird?
+- Kombi-Guide v0.2 im Spiel: Erscheinen die Schritte an der richtigen Stelle, stimmen Ziele und Orte (Yonn Deepcut ungeprüft)?
+- Testlog 3.2/3.3 im Spiel: Mit welchem Grund enden die Post-Sitzungen?

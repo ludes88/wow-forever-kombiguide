@@ -17,15 +17,18 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
    - Eine Zeile pro Berufsschritt. Hier stehen die Entscheidungen: wo im Guide (Anker), was (Aktion), welche Item- oder Zauber-ID, wie viel, Bedingung, Ort, Quelle, Status.
    - Spalten:
      - `nr`, `guide` (Name des RXP-Guides), `anker` (z. B. `accept 1656`, `turnin 768`, `label Name`), `position` (`vor`/`nach`)
-     - `aktion` (zurzeit `lernen`, `kaufen`), `id`, `menge`
-     - `karte`, `x`, `y` (Spielkoordinaten in Prozent, wie im Testlog), alternativ `welt_a`/`welt_b` (RXP-Weltkoordinaten, wenn RXP den NPC schon kennt)
+     - `aktion` (`lernen`, `kaufen`, `ziel`, `fertigkeit`, `maxfertigkeit`, `abgeben`, `annehmen`, `hingehen`, `hinweis`; Bedeutung im Kopf von `tools/build_kombi.py`), `id`, `menge`
+     - `karte`, `x`, `y` (Spielkoordinaten in Prozent, wie im Testlog), `radius` (optional), alternativ `welt_a`/`welt_b` (RXP-Weltkoordinaten, wenn RXP den NPC schon kennt); ohne Ort kein Pfeil
      - `npc` (englischer Name, RXP übersetzt), `text` (deutscher Text, `{npc}` wird eingesetzt), `kurz` (Text am Element), `bedingung` (eine rohe RXP-Zeile, z. B. `.skill skinning,<1,1`)
+     - `bis` (Label für `#completewith`, z. B. `TBHome` oder `next`: so lange bleibt der Schritt als Erinnerung sichtbar), `extra` (weitere rohe RXP-Zeilen, getrennt mit ` // `)
      - `quelle`, `status`
 2. **Kartentabelle** `data/karten/forever_karten.csv`
    - Pro Karte die RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1).
    - Werte aus dem Testlog-Eintrag `KARTE` sind exakt; Schätzungen sind als solche markiert.
    - `tools/karte_aus_testlog.py <Testlog> <RXP-Tag>` übernimmt die KARTE-Zeilen und prüft RXPs Kommentar-Koordinaten dagegen. Stand 13.10.: 1412 Mulgore, 1413 Brachland und 1456 Thunder Bluff exakt.
-3. **Mengen-Rechnung** (geplant, `tools/plan_mengen.py`): verteilt den Gesamtbedarf auf die Gebiete der Route.
+3. **Mengen-Rechnung** (`tools/plan_mengen.py`, erster Teil seit 13.10.: Leder): verteilt den Gesamtbedarf auf die Gebiete der Route.
+   - Eingabe `data/kombi/modell_leder.csv`: pro Quest mit Tieren die Anzahl aus den RXP-Kommentaren, Kills je Stück, Leder- und Fetzen-Anteil mit Quelle. Ausgabe `docs/plan/mengen-leder.md` mit Zielen pro Abschnitt und der Lücke zum Bedarf.
+   - Die Ziele trägt Claude in `plan.csv` ein (Aktion `ziel`); das Testlog misst, wie weit sie stimmen.
    - Gesamtbedarf aus `data/rechnung/`, z. B. 416 Leichtes Leder für LW 125.
    - Kürschnerbare Gegner pro Gebiet aus den RXP-Schritten.
    - Ausbeute nach Gegnerstufe aus MetaForge und AHledger, dann aus dem Testlog 3 (SAMMELN und BEUTE mit Kreatur-ID, Ort und Zeit).
@@ -47,7 +50,8 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 | 0.1 | Kürschnermesser, Kürschnerei und Kräuterkunde in Camp Narache | im Spiel getestet (Testlauf 2) |
 | 0.1.1 | Koordinaten über Kartentabelle; Testlog 2 (Fehler A–C behoben, Kartengrenzen, Sitzung meldet Kombiguide) | im Spiel geladen (13.10., aus dem Repo); Pfeil zu Nawka im Spiel offen |
 | 0.1.2 | exakte Kartenecken für Mulgore aus dem Testlog | gebaut und geprüft (13.10.); Pfeil zu Nawka rechnerisch auf der gemessenen Stelle; im Spiel geladen (13.10. 22:08). Seit 13.10. abends auf Basis RXP v4.11.23 (gleiche Berufsschritte) |
-| 0.2 | Mulgore 6–12 und Thunder Bluff: Kürschnern und Kräuter mit Zielen aus der Rechnung, Kochen und Fischen, soweit nicht in der RXP-Route; dazu die Berufs-Quests 97933 und 97936 bei Kaga Wildhoof, die RXPs Horde-Route nicht führt | geplant; Messwerte aus Testlauf 3 |
+| 0.2 | Mulgore 6–12 und Thunder Bluff: Leder- und Kräuterziele aus dem Mengenmodell, Abgabe der Berufs-Quests 97936 und 97933, Geselle in Kürschnerei, Kräuterkunde und Angeln, Auktionshaus, Hinweis zu «Gathering Leather», Angeln im Teich (optional) | gebaut und geprüft (13.10. abends); alle Schritte nach «Well» (#30), damit die Stelle des Testcharakters bleibt; im Spiel offen |
+| 0.2.x | Annehmen der Berufs-Quests bei Kaga, Kochen mit Lagerfeuer, Beginn von 6-12 Mulgore | geplant; liegt vor der Stelle des Testcharakters und braucht eine Lösung, die seine gespeicherte Stelle nicht verschiebt (Best Practice §6) |
 | 0.3 | Brachland bis zum Wechsel auf Lederverarbeitung und Verzauberkunst um Stufe 15 | geplant |
 | 0.4 | 17–22, Lager-Gegenstände, Merchant's Favor, Schlafsack-Strang (79007 ist in RXP) | geplant |
 
