@@ -1,0 +1,4 @@
+﻿nr;guide;anker;position;aktion;id;menge;karte;x;y;welt_a;welt_b;npc;text;kurz;bedingung;quelle;status
+1;1-6 Mulgore;accept 1656;vor;kaufen;7005;1;1412;;;-279.37;-2893.73;Kawnie Softbreeze;Kauf bei {npc} ein Messer zum Kürschnern (Skinning Knife);;;Verkauf: AHledger (NPC 3072) · Ort: Weltkoordinaten aus RXP v4.11.13;belegt
+2;1-6 Mulgore;accept 1656;vor;lernen;8613;;1412;44.5;76.7;;;Nawka Wildsong;Lerne Kürschnerei bei {npc};Lerne |T134366:0|t[Kürschnerei];;Icy Veins 44.6 76.8 · im Spiel gemessen 44.5 76.7 (Testlog 13.10.) · Zauber 8613 wie RXP Skyborne;Ort belegt, Umrechnung geschätzt
+3;1-6 Mulgore;accept 1656;vor;lernen;2366;;1412;44.2;77.8;;;Garan Sunstrider;Lerne Kräuterkunde bei {npc}. Ab jetzt unterwegs Tiere kürschnern und Kräuter sammeln, die am Weg liegen;Lerne |T136065:0|t[Kräuterkunde];;Icy Veins 44.2 77.8 · Zauber 2366 wie RXP Skyborne;Ort im Spiel ungeprüft, Umrechnung geschätzt
