@@ -1,4 +1,4 @@
--- Kombi-Guide 0.1.1 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.1.2 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Basis RestedXP v4.11.13, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
 if not (RXPGuides and RXPGuides.RegisterGuide) then return end
 if UnitFactionGroup("player") == "Alliance" then return end
@@ -452,13 +452,13 @@ step
     .target Kawnie Softbreeze
 step
     #label Kombi2
-    .goto 1412/1,-262.49,-2873.52--c:Mulgore,44.5,76.7 (Spielkoordinaten)
+    .goto 1412/1,-259.44,-2879.63--c:Mulgore,44.5,76.7 (Spielkoordinaten)
     >>Kombiguide: Lerne Kürschnerei bei |cRXP_FRIENDLY_Nawka Wildsong|r
     .train 8613 >>Lerne |T134366:0|t[Kürschnerei]
     .target Nawka Wildsong
 step
     #label Kombi3
-    .goto 1412/1,-244.21,-2918.20--c:Mulgore,44.2,77.8 (Spielkoordinaten)
+    .goto 1412/1,-240.97,-2924.76--c:Mulgore,44.2,77.8 (Spielkoordinaten)
     >>Kombiguide: Lerne Kräuterkunde bei |cRXP_FRIENDLY_Garan Sunstrider|r. Ab jetzt unterwegs Tiere kürschnern und Kräuter sammeln, die am Weg liegen
     .train 2366 >>Lerne |T136065:0|t[Kräuterkunde]
     .target Garan Sunstrider

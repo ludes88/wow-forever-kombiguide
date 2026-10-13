@@ -24,7 +24,7 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 2. **Kartentabelle** `data/karten/forever_karten.csv`
    - Pro Karte die RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1).
    - Werte aus dem Testlog-Eintrag `KARTE` sind exakt; Schätzungen sind als solche markiert.
-   - `tools/karte_aus_testlog.py <Testlog> <RXP-Tag>` übernimmt die KARTE-Zeilen und prüft RXPs Kommentar-Koordinaten dagegen. Stand 13.10.: 1456 Thunder Bluff exakt, 1412 Mulgore geschätzt, 1413 Brachland fehlt.
+   - `tools/karte_aus_testlog.py <Testlog> <RXP-Tag>` übernimmt die KARTE-Zeilen und prüft RXPs Kommentar-Koordinaten dagegen. Stand 13.10.: 1412 Mulgore, 1413 Brachland und 1456 Thunder Bluff exakt.
 3. **Mengen-Rechnung** (geplant, `tools/plan_mengen.py`): verteilt den Gesamtbedarf auf die Gebiete der Route.
    - Gesamtbedarf aus `data/rechnung/`, z. B. 416 Leichtes Leder für LW 125.
    - Kürschnerbare Gegner pro Gebiet aus den RXP-Schritten.
@@ -43,7 +43,7 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 |---|---|---|
 | 0.1 | Kürschnermesser, Kürschnerei und Kräuterkunde in Camp Narache | im Spiel getestet (Testlauf 2) |
 | 0.1.1 | Koordinaten über Kartentabelle; Testlog 2 (Fehler A–C behoben, Kartengrenzen, Sitzung meldet Kombiguide) | im Spiel geladen (13.10., aus dem Repo); Pfeil zu Nawka im Spiel offen |
-| 0.1.2 | exakte Kartenecken für Mulgore aus dem Testlog | wartet auf die KARTE-Zeile für 1412 |
+| 0.1.2 | exakte Kartenecken für Mulgore aus dem Testlog | gebaut und geprüft (13.10.); Pfeil zu Nawka rechnerisch auf der gemessenen Stelle |
 | 0.2 | Mulgore 6–12 und Thunder Bluff: Kürschnern und Kräuter mit Zielen aus der Rechnung, Kochen und Fischen, soweit nicht in der RXP-Route | geplant |
 | 0.3 | Brachland bis zum Wechsel auf Lederverarbeitung und Verzauberkunst um Stufe 15 | geplant |
 | 0.4 | 17–22, Lager-Gegenstände, Merchant's Favor, Schlafsack-Strang (79007 ist in RXP) | geplant |

@@ -14,7 +14,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Pull Request und Merge → beim Nutzer `aktualisieren.bat` und `/reload` (AddOns sind mit dem Repo verknüpft, `docs/vorgehen.md`) → der Nutzer testet.
 - **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`.
 - **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen und RXP dagegen prüfen), `tools/fetch_rxp.sh` (RXP in einer Version holen).
-- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff genau (Abschnitt 7, Risiko 17). Exakt gemessen ist bisher nur Thunder Bluff.
+- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff.
 
 ---
 
@@ -215,7 +215,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog-Einträge `TASCHE` mit Ort und Zeit auswerten |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
-| 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore: in Forever rund 1,19-mal grösser (Schätzung aus 2 Testlog-Punkten, Testlauf 2); 442 RXP-Punkte weichen gegen diese Schätzung im Median 3,5 % ab, höchstens 11 %. Thunder Bluff: 26 Punkte passen genau zu den gemessenen Ecken (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile liegen bis 35 Yards daneben | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1456 Thunder Bluff. Offen: 1412 Mulgore, 1413 Brachland |
+| 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore ist in Forever 6154 × 4102 Yards gross; 442 RXP-Punkte weichen im Median 3,5 % ab, höchstens 11,3 %. Thunder Bluff (26 Punkte) und Brachland (18 Punkte) passen genau (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile lagen bis 35 Yards daneben (v0.1) | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1412 Mulgore, 1413 Brachland, 1456 Thunder Bluff |
 
 ---
 
@@ -367,7 +367,7 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - **T0** bestanden, auch mit Testlog 2 und den verknüpften AddOns (SITZUNG meldet «Kombiguide 0.1.1-v4.11.13»).
 - **T1** bestanden: Gruppe sichtbar, Wechsel 1-6 → 6-12 innerhalb «Kombiguide (H)».
-- **T2** teilweise: Schritte am richtigen Ort, Pfeil zu Nawka rund 28 Yards daneben. In v0.1.1 korrigiert, im Spiel offen.
+- **T2** teilweise: Schritte am richtigen Ort, Pfeil zu Nawka rund 28 Yards daneben (v0.1). v0.1.2 zielt mit den exakten Kartenecken auf die gemessene Stelle. Im Spiel nur mit einem Charakter ohne Kürschnerei prüfbar, sonst überspringt RXP den Schritt.
 - **T4** indirekt: Ein schon gelernter Beruf wird übersprungen.
 - **T7** teilweise: BERUF, RXP, QUEST und TOD laufen; TASCHE zählt Herstellen und Entzaubern, noch ohne Kürschner-Daten; KARTE läuft (Thunder Bluff).
 - **T3, T5, T6, T8** offen.
@@ -404,3 +404,4 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - 13.10.2026: erstellt (Recherche RXP-Code, Forever-UI-Code, Berufsdaten, Machbarkeitsprobe, Testlog v1).
 - 13.10.2026: Testläufe 1 und 2 eingetragen, Koordinaten-Befund (Risiko 17), Generator mit Plan-Tabelle, Testlog 2.
 - 13.10.2026: Messdaten (Kartenecken Thunder Bluff, Herstellen, Entzaubern), `karte_aus_testlog.py`, Risiko 17 genauer, Ankerstellen nach RXP-Version, Update-Ablauf mit verknüpften AddOns.
+- 13.10.2026: Kartenecken Mulgore und Brachland exakt, Risiko 17 mit exakten Werten, Kombi-Guide v0.1.2.

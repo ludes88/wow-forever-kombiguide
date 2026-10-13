@@ -85,7 +85,9 @@ def main():
     for mid, row in sorted(found.items(), key=lambda kv: int(kv[0])):
         old = rows.get(mid)
         rows[mid] = row
-        note = "neu" if not old else ("ersetzt Schätzung" if old.get("status", "").startswith("geschätzt") else "aktualisiert")
+        same = old and all(old.get(k) == row[k] for k in ("a0", "b0", "a1", "b1"))
+        note = ("neu" if not old else "ersetzt Schätzung" if old.get("status", "").startswith("geschätzt")
+                else "unverändert" if same else "aktualisiert")
         msg = f"Karte {mid} {row['name']}: a0={row['a0']} b0={row['b0']} a1={row['a1']} b1={row['b1']} ({note})"
         if tag:
             msg += " | " + check_rxp(tag, row)
