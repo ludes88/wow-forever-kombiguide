@@ -17,7 +17,13 @@ Stand 13.10.2026: Kombi-Guide v0.1 im Spiel getestet (Forever-Beta, RestedXP v4.
 
 ## Einbau ins Spiel (Beta)
 
-Die Ordner aus `addons/` und den gebauten Ordner `build/RXPGuides_KombiGuide/` nach `World of Warcraft\_classic_beta_\Interface\AddOns\` kopieren, neben `RXPGuides`. Den Kombi-Guide baut `python3 tools/build_kombi.py <RXP-Version>`.
+Einmal: den Ordner `World of Warcraft\_classic_beta_\Interface\AddOns` mit der Maus auf `tools\windows\addons_verknuepfen.bat` ziehen. Das Skript verknüpft `KombiTestlog`, `RXPGuides_KombiGuide` und `RXPGuides_Kombi` aus diesem Repo mit dem AddOns-Ordner (Verzeichnis-Verknüpfung). Vorhandene Ordner gleichen Namens verschiebt es nach `AddOns\_alt_kombi`, es löscht nichts.
+
+Danach bei jeder neuen Version: `tools\windows\aktualisieren.bat` doppelklicken (oder `git pull`) und im Spiel `/reload`.
+
+Ohne Skript: die drei Ordner aus `addons/` nach `World of Warcraft\_classic_beta_\Interface\AddOns\` kopieren, neben `RXPGuides`.
+
+`addons/RXPGuides_KombiGuide/` ist erzeugt: `python3 tools/build_kombi.py <RXP-Version> addons`. Nicht von Hand ändern, sondern `data/kombi/plan.csv`.
 
 ## Herkunft
 

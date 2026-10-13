@@ -6,8 +6,9 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 
 - Claude arbeitet direkt in diesem Repo: Branch, Commit, Pull Request. Nach den automatischen Prüfungen führt Claude selbst zusammen (Merge).
 - Für Recherche, Mengen-Rechnung und Bauen kann Claude parallele Agenten einsetzen.
-- Sobald die Sitzung mit dem PC des Nutzers verbunden ist, legt Claude neue Addon-Versionen selbst in den AddOns-Ordner und liest die Testlog-Datei selbst. Die Testlog-Datei enthält Charakternamen und kommt NIE ins Repo.
-- Die Arbeit des Nutzers pro Runde: spielen, `/reload`, Bescheid geben.
+- Die Verbindung «Link to this computer» bot die Desktop-App für die erste Sitzung nicht an (13.10.). Ersatz: Die AddOns des Nutzers sind mit dem Repo verknüpft (`tools/windows/addons_verknuepfen.bat`, einmal). Der Kombi-Guide liegt deshalb erzeugt im Repo unter `addons/RXPGuides_KombiGuide/`.
+- Ist eine Sitzung mit dem PC verbunden, liest Claude die Testlog-Datei selbst; sonst schickt der Nutzer sie im Chat. Die Testlog-Datei enthält Charakternamen und kommt NIE ins Repo.
+- Die Arbeit des Nutzers pro Runde: `aktualisieren.bat` doppelklicken, `/reload`, spielen, Testlog schicken.
 
 ## Datenkette statt Handarbeit
 

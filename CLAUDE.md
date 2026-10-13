@@ -22,6 +22,8 @@ Vorgehen und Versionen: @docs/vorgehen.md
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
 | `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 2: schreibt auch Kartengrenzen `KARTE`) |
+| `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
+| `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, Quelle, Status); `VERSION` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
 | `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `validate.py`, `testlog_harness.py`, `merge_poc.py` (alte Probe) |
@@ -35,7 +37,7 @@ Vorgehen und Versionen: @docs/vorgehen.md
 ```bash
 pip install -r tools/requirements.txt                     # lupa (Lua 5.1 für Python)
 tools/fetch_rxp.sh v4.11.13                               # RXP in der Version des Nutzers nach vendor/ (steht im Testlog: SITZUNG … RXP v…)
-python3 tools/build_kombi.py v4.11.13                     # Kombi-Guide -> build/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen)
+python3 tools/build_kombi.py v4.11.13 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
 ```
@@ -61,7 +63,7 @@ RXP-Inhalte stehen unter CC BY-NC-SA 4.0: nur nicht-kommerziell, Herkunft nennen
 ## Arbeitsweise
 
 - Änderungen über Branch und Pull Request, nicht direkt auf `main`. Claude führt nach grünen Prüfungen selbst zusammen (Entscheidung des Nutzers, 13.10.).
-- Ziel: möglichst wenig Arbeit für den Nutzer. Ist die Sitzung mit seinem PC verbunden, installiert Claude Addons selbst und liest das Testlog selbst (`World of Warcraft\_classic_beta_\WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`).
+- Ziel: möglichst wenig Arbeit für den Nutzer. Seine AddOns sind mit dem Repo verknüpft (`tools/windows/addons_verknuepfen.bat`): Nach einem Merge genügt bei ihm `aktualisieren.bat` und `/reload`. Das Testlog schickt er im Chat (`/tl zeigen` oder die Datei `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`); ist eine Sitzung mit seinem PC verbunden, liest Claude es selbst.
 - Commit-Nachrichten auf Deutsch, kurz, Präsens, mit Bereich vorne: `testlog: zählt Kräuter mit`.
 - Keine Geheimnisse (API-Keys, Tokens) und keine Testlog-Dateien committen.
 - Neue Fakten mit Quelle ins Best-Practice-Dokument, neue Entscheidungen des Nutzers nach `docs/entscheidungen.md`.
