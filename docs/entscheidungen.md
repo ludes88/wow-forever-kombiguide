@@ -15,6 +15,10 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 - 13.10.2026: Arbeitsregeln, Überlegungen und die Art der Zusammenarbeit mit KI bleiben bewusst sichtbar. Sie zeigen, wie der Nutzer arbeitet.
 - 13.10.2026: Ziel ist möglichst wenig Arbeit für den Nutzer. Claude arbeitet direkt im Repo (Branch, Pull Request) und führt nach den automatischen Prüfungen selbst zusammen.
 - 13.10.2026: Die Claude-Sitzung wird mit dem PC des Nutzers verbunden. Claude installiert Addon-Versionen selbst und liest die Testlog-Datei selbst. (Die App bot die Verbindung nicht an; der Nutzer hat stattdessen die AddOns mit dem Repo verknüpft, siehe `vorgehen.md`.)
+- 13.10.2026: Die Mengen für Lederverarbeitung und Verzauberkunst werden auf eigene Forever-Messungen gestützt, nicht auf die Classic-Werte («wir machen es richtig und messen»). Dafür Testlog 3.
+- 13.10.2026: «Beim Kräutergarten zählt immer das gewinnbringendste Kraut.»
+- 13.10.2026: Beim Fischen zählt der Fisch, der im AH gekocht (oder roh) am meisten bringt.
+- 13.10.2026: Ziel: während des Speedruns die Berufe so effizient wie möglich mitskillen und genug Gold dafür haben, «inkl. der Skills usw.».
 - 13.10.2026: Der Nutzer überlässt Claude die Umsetzung. Claude setzt dafür die Datenkette aus Plan-Tabelle und Generator ein (Vorschlag von Claude, siehe `vorgehen.md`). Der Kombi-Guide wird für die RXP-Version gebaut, die beim Nutzer installiert ist (zurzeit v4.11.13).
 
 ## Offen
