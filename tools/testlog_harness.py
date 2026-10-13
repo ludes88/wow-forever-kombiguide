@@ -1,10 +1,10 @@
 # Simuliert die WoW-Umgebung grob und spielt typische Abläufe gegen KombiTestlog.lua durch
 # Aufruf: python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
+# Streng: Das Addon darf keine neuen globalen Variablen anlegen (ausser den erlaubten unten).
 import os, sys
 from lupa import lua51
 
-L = lua51.LuaRuntime(unpack_returned_tuples=True)
-L.execute(r'''
+PRELUDE = r'''
 messages = {}
 DEFAULT_CHAT_FRAME = { AddMessage = function(self, m) table.insert(messages, m) end }
 date = os.date
@@ -28,12 +28,13 @@ zoneEmpty = 2
 GetZoneText = function() if zoneEmpty > 0 then zoneEmpty = zoneEmpty - 1 return "" end return "Mulgore" end
 GetSubZoneText = function() return "Bloodhoof Village" end
 currentMap = 1412
+posX, posY = 0.468, 0.581
 -- Kartenecken in Weltkoordinaten (erfundene Testwerte, nur für den Ablauf)
 bounds = { [1412] = { 241.3, 2448.2, -3819.8, -3643.3 }, [1456] = { 500.0, 1000.0, -100.0, 400.0 } }
 CreateVector2D = function(x, y) return { x = x, y = y, GetXY = function(self) return self.x, self.y end } end
 C_Map = {
   GetBestMapForUnit = function() if logout then return nil end return currentMap end,
-  GetPlayerMapPosition = function() return { GetXY = function(self) return 0.468, 0.581 end } end,
+  GetPlayerMapPosition = function() return { GetXY = function(self) return posX, posY end } end,
   GetWorldPosFromMapPos = function(m, v)
     local b = bounds[m]
     if not b then return nil end
@@ -86,7 +87,15 @@ GetLootSlotLink = function(s)
 end
 GetLootSourceInfo = function(s) return lootsrc, 1 end
 IsFishingLoot = function() return fishing end
-Enum = { LootSlotType = { None = 0, Item = 1, Money = 2, Currency = 3 } }
+-- Werte wie im Forever-UI-Code 1.60.1 (PlayerInteractionManagerConstantsDocumentation.lua)
+Enum = { LootSlotType = { None = 0, Item = 1, Money = 2, Currency = 3 },
+         PlayerInteractionType = { QuestGiver = 4, Merchant = 5, TaxiNode = 6, Trainer = 7, MailInfo = 17,
+                                   Auctioneer = 21, Professions = 59 } }
+-- Version 3.2: laufende Interaktionen und Blizzard-Fenster (AuctionHouseFrame fehlt absichtlich, wie mit einem Ersatz-Addon)
+interacting = {}
+C_PlayerInteractionManager = { IsInteractingWithNpcOfType = function(t) return interacting[t] == true end }
+local function uiFrame() return { shown = false, IsShown = function(self) return self.shown end } end
+MailFrame, MerchantFrame, ClassTrainerFrame, TaxiFrame, ProfessionsFrame = uiFrame(), uiFrame(), uiFrame(), uiFrame(), uiFrame()
 C_Item = {
   GetItemCount = function(id) return counts[id] or 0 end,
   GetItemNameByID = function(id) if id == 2318 then return "Leichtes Leder" end if id == 765 then return "Silberblatt" end return nil end,
@@ -124,6 +133,7 @@ C_QuestLog = { GetTitleForQuestID = function(id) if id == 870 then return "Die V
 ticker = nil
 C_Timer = { After = function(s, f) f() end, NewTicker = function(s, f) ticker = f return {} end }
 frames = {}
+unknownEvents = {}   -- Ereignisse, die der «Client» nicht kennt: RegisterEvent wirft wie im echten Spiel
 local function newObj()
   local o = {}
   local mt = { __index = function(t, k) return function(...) return nil end end }
@@ -132,8 +142,14 @@ local function newObj()
 end
 CreateFrame = function(kind, name, parent, template)
   local f = { events = {}, scripts = {}, text = "", unitEvents = {} }
-  function f:RegisterEvent(e) self.events[e] = true end
-  function f:RegisterUnitEvent(e, ...) self.events[e] = true; self.unitEvents[e] = { ... } end
+  function f:RegisterEvent(e)
+    if unknownEvents[e] then error('Attempt to register unknown event "' .. e .. '"') end
+    self.events[e] = true
+  end
+  function f:RegisterUnitEvent(e, ...)
+    if unknownEvents[e] then error('Attempt to register unknown event "' .. e .. '"') end
+    self.events[e] = true; self.unitEvents[e] = { ... }
+  end
   function f:SetScript(s, fn) self.scripts[s] = fn end
   function f:SetText(t) self.text = t end
   function f:CreateFontString() local fs = newObj() fs.SetText = function(self, t) self.t = t end return fs end
@@ -148,13 +164,31 @@ function fire(event, ...)
     if f.events[event] and f.scripts.OnEvent then f.scripts.OnEvent(f, event, ...) end
   end
 end
-''')
+'''
+
+# Ab hier dürfen nur noch diese globalen Variablen neu entstehen (Addon: SavedVariables und Slash-Befehl)
+STRICT = r'''
+local allowed = { SLASH_KOMBITESTLOG1 = true, SLASH_KOMBITESTLOG2 = true, KombiTestlogDB = true, ticker = true, lootsrc = true }
+setmetatable(_G, { __newindex = function(t, k, v)
+  if allowed[k] then rawset(t, k, v) else error("neue globale Variable: " .. tostring(k), 2) end
+end })
+'''
 
 src = open(sys.argv[1], encoding="utf-8").read()
-chunk = L.globals().loadstring(src)
-if chunk is None:
-    print("loadstring failed"); sys.exit(1)
-chunk("KombiTestlog")
+
+def runtime(unknown=()):
+    L = lua51.LuaRuntime(unpack_returned_tuples=True)
+    L.execute(PRELUDE)
+    for e in unknown:
+        L.execute('unknownEvents["%s"] = true' % e)
+    L.execute(STRICT)
+    chunk = L.globals().loadstring(src)
+    if chunk is None:
+        print("loadstring failed"); sys.exit(1)
+    chunk("KombiTestlog")
+    return L
+
+L = runtime()
 g = L.globals()
 slash = lambda m: g.SlashCmdList["KOMBITESTLOG"](m)
 
@@ -194,6 +228,7 @@ g.ticker()  # merkt sich den letzten Kontext
 def later(s):
     L.execute("now_t = now_t + %d" % s)
 # Herstellen (Kochen): verbraucht 1 Rohfisch, ergibt 1 Kleinfisch, Kochen 5 -> 6
+L.execute("ProfessionsFrame.shown = true")
 g.fire("TRADE_SKILL_SHOW")
 later(1)
 g.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-1", 7751)
@@ -205,6 +240,7 @@ later(4); g.ticker()
 # Zauber bei offenem Berufsfenster ohne Wirkung: keine HERSTELLEN-Zeile
 g.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-1b", 5176)
 later(4); g.ticker()
+L.execute("ProfessionsFrame.shown = false")
 g.fire("TRADE_SKILL_CLOSE")
 # Entzaubern mit Lootfenster: Handschuhe weg, 2 Seltsamer Staub dazu
 later(10)
@@ -245,8 +281,19 @@ L.execute("fishing = true; loot = { { type = 1, name = 'Roher glänzender Kleinf
 g.fire("LOOT_OPENED", True, False)
 g.fire("LOOT_CLOSED")
 L.execute("fishing = false")
+# Version 3.2: ein Fisch entkommt, der zweite Wurf fängt: «Würfe 2»
+later(10)
+g.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-6", 7620)
+later(20)
+g.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-7", 7620)
+later(12)
+L.execute("fishing = true; loot = { { type = 1, name = 'Roher Langzahniger Matschschnapper', id = 6289, n = 1 } }")
+g.fire("LOOT_OPENED", True, False)
+g.fire("LOOT_CLOSED")
+L.execute("fishing = false")
 # Händler: drei Verkäufe und ein Kauf werden eine Zeile (verkauft, gekauft, Einnahmen, Ausgaben)
 later(10)
+L.execute("MerchantFrame.shown = true")
 g.fire("MERCHANT_SHOW")
 g.fire("MERCHANT_SHOW")           # doppelt gemeldet: keine zweite Sitzung
 L.execute("money = money + 15; bags[0][6] = nil")
@@ -256,23 +303,104 @@ for d in (30, 7):
     g.fire("PLAYER_MONEY")
 L.execute("money = money - 50; bags[0][7] = { id = 2320, n = 5, name = 'Grobes Garn' }")
 g.fire("PLAYER_MONEY"); g.fire("BAG_UPDATE_DELAYED")
+L.execute("MerchantFrame.shown = false")
 g.fire("MERCHANT_CLOSED")
 g.fire("MERCHANT_CLOSED")         # doppelt gemeldet: keine zweite Zeile
 # Post: Geld aus einem Verkauf und Leder aus einem Brief
 later(10)
+L.execute("MailFrame.shown = true")
 g.fire("MAIL_SHOW")
 L.execute("money = money + 10000")
 g.fire("PLAYER_MONEY")
 L.execute("bags[0][8] = { id = 2319, n = 20, name = 'Mittleres Leder' }")
 g.fire("BAG_UPDATE_DELAYED")
+L.execute("MailFrame.shown = false")
 g.fire("MAIL_CLOSED")
 # Lehrer: Kosten und gelernter Zauber
+L.execute("ClassTrainerFrame.shown = true")
 g.fire("TRAINER_SHOW")
 L.execute("money = money - 100")
 g.fire("PLAYER_MONEY")
 g.fire("LEARNED_SPELL_IN_SKILL_LINE", 5177, 1, False)
+L.execute("ClassTrainerFrame.shown = false")
 g.fire("TRAINER_CLOSED")
 g.fire("NEW_RECIPE_LEARNED", 2152)
+
+# --- Version 3.2: Fenster enden auch ohne CLOSED-Ereignis ---
+# A: Briefkasten zu, aber MAIL_CLOSED kommt nicht (Testlog 13.10. 22:26); danach Beute: gehört nicht zur Post
+later(10)
+L.execute("MailFrame.shown = true")
+g.fire("MAIL_SHOW")
+L.execute("bags[0][9] = { id = 4306, n = 2, name = 'Seidenstoff' }")
+g.fire("BAG_UPDATE_DELAYED")
+later(1)
+L.execute("MailFrame.shown = false")
+later(3)
+L.execute("loot = { { type = 1, name = 'Ebenenschreiterkralle', id = 4759, n = 1 } }; lootsrc = 'Creature-0-3299-1-12345-2956-0000ABCDEF'")
+g.fire("LOOT_OPENED", True, False)
+L.execute("bags[0][10] = { id = 4759, n = 1, name = 'Ebenenschreiterkralle' }")
+g.fire("BAG_UPDATE_DELAYED")
+g.fire("LOOT_CLOSED")
+# B: Händler nur über den Interaktions-Manager (kein MERCHANT_SHOW/CLOSED), Tick bei offenem Fenster
+later(10)
+L.execute("MerchantFrame.shown = true; interacting[5] = true")
+g.fire("PLAYER_INTERACTION_MANAGER_FRAME_SHOW", 5)
+L.execute("money = money + 40; bags[0][10] = nil")
+g.fire("PLAYER_MONEY"); g.fire("BAG_UPDATE_DELAYED")
+later(3); g.ticker()
+L.execute("MerchantFrame.shown = false; interacting[5] = false")
+g.fire("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", 5)
+# C: Auktionshaus ohne Blizzard-Fenster (Ersatz-Addon), Interaktion läuft; Ende, weil der Charakter weggeht
+later(10)
+L.execute("interacting[21] = true")
+g.fire("AUCTION_HOUSE_SHOW")
+L.execute("money = money - 2500; bags[0][11] = { id = 2321, n = 1, name = 'Feines Garn' }")
+g.fire("PLAYER_MONEY"); g.fire("BAG_UPDATE_DELAYED")
+later(3); g.ticker()
+L.execute("posX = posX + 0.1")    # Karte 1456 im Test: 600 Yards breit, also 60 Yards weiter
+later(2); g.ticker()
+L.execute("interacting[21] = false; posX = 0.468")
+# D: Gebietswechsel beendet eine Händlersitzung
+later(10)
+L.execute("MerchantFrame.shown = true")
+g.fire("MERCHANT_SHOW")
+L.execute("money = money - 7")
+g.fire("PLAYER_MONEY")
+g.fire("ZONE_CHANGED_NEW_AREA")
+L.execute("MerchantFrame.shown = false")
+# E: Briefkasten, dann ein Questgeber: andere Interaktion beendet die Post
+later(10)
+L.execute("MailFrame.shown = true; interacting[17] = true")
+g.fire("MAIL_SHOW")
+L.execute("bags[0][12] = { id = 2592, n = 5, name = 'Wollstoff' }")
+g.fire("BAG_UPDATE_DELAYED")
+g.fire("PLAYER_INTERACTION_MANAGER_FRAME_SHOW", 4)
+L.execute("MailFrame.shown = false; interacting[17] = false")
+# F: leeres Lootfenster ohne Quelle (vor dem Kürschnern): keine Zeile; mit Quelle: Zeile
+later(10)
+L.execute("loot = {}; lootsrc = nil")
+g.fire("LOOT_OPENED", True, False); g.fire("LOOT_CLOSED")
+L.execute("lootsrc = 'Creature-0-3299-1-12345-2958-0000ABCDEF'")
+g.fire("LOOT_OPENED", True, False); g.fire("LOOT_CLOSED")
+# G: Lehrerfenster zu, aber TRAINER_CLOSED fehlt: danach ist Geld wieder «sonst»
+later(10)
+L.execute("ClassTrainerFrame.shown = true")
+g.fire("TRAINER_SHOW")
+L.execute("money = money - 300")
+g.fire("PLAYER_MONEY")
+L.execute("ClassTrainerFrame.shown = false")
+later(3); g.ticker()
+L.execute("money = money + 5")
+g.fire("PLAYER_MONEY")
+# H: Flug: die Kosten kommen kurz nach dem Schliessen der Flugkarte
+later(10)
+L.execute("TaxiFrame.shown = true")
+g.fire("TAXIMAP_OPENED")
+L.execute("TaxiFrame.shown = false")
+g.fire("TAXIMAP_CLOSED")
+later(1)
+L.execute("money = money - 95")
+g.fire("PLAYER_MONEY")
 later(10); g.ticker()
 L.execute("logout = true")
 g.fire("PLAYER_LOGOUT")
@@ -350,6 +478,35 @@ check(not any(" | GELD | " in l and ("Händler" in l or "Post" in l) for l in li
 one("GELD", "Lehrer -1s")
 one("GELERNT", "Zorn (Rang 2) (5177)")
 one("REZEPT", "Leichter Rüstungssatz (2152)")
+# Version 3.2
+one("ANGELN", "Würfe 1", "1x Roher glänzender Kleinfisch (6291)")
+one("ANGELN", "Würfe 2", "1x Roher Langzahniger Matschschnapper (6289)")
+one("HÄNDLER", "verkauft: 1x Sehniges Wolfsfleisch (2672)", "Dauer 0 s, Ende MERCHANT_CLOSED")
+one("POST", "erhalten: 20x Mittleres Leder (2319)", "Ende MAIL_CLOSED")
+one("POST", "erhalten: 2x Seidenstoff (4306)", "Dauer 4 s, Ende Fenster zu")
+check(not any(" | POST | " in l and "Ebenenschreiterkralle" in l for l in lines), "Beute nach dem Briefkasten gehört nicht zur Post")
+one("BEUTE", "Kreatur 2956", "1x Ebenenschreiterkralle (4759)")
+one("HÄNDLER", "verkauft: 1x Ebenenschreiterkralle (4759)", "Einnahmen +40c (1)", "Dauer 3 s, Ende Interaktion zu")
+one("AUKTIONSHAUS", "erhalten: 1x Feines Garn (2321)", "Ausgaben -25s (1)", "Ende entfernt")
+one("HÄNDLER", "Ausgaben -7c (1)", "Ende Gebietswechsel")
+one("POST", "erhalten: 5x Wollstoff (2592)", "Ende andere Interaktion")
+check(not any("Quelle ? | keine Gegenstände" in l for l in lines), "leeres Lootfenster ohne Quelle: keine Zeile")
+one("BEUTE", "Kreatur 2958 | keine Gegenstände")
+one("GELD", "Lehrer -3s")
+one("GELD", "sonst +5c")
+one("GELD", "Flugmeister -95c")
+# Ein Ereignis, das der Client nicht kennt: Das Addon lädt trotzdem und meldet es beim Start
+try:
+    L2 = runtime(unknown=("AUCTION_HOUSE_CLOSED",))
+    g2 = L2.globals()
+    g2.fire("ADDON_LOADED", "KombiTestlog")
+    g2.fire("PLAYER_ENTERING_WORLD", True, False)
+    log2 = [g2.KombiTestlogDB.log[i] for i in range(1, len(g2.KombiTestlogDB.log) + 1)]
+except Exception as e:
+    log2 = []
+    check(False, "Addon lädt trotz unbekanntem Ereignis (%s)" % str(e).splitlines()[0])
+check(any(" | FEHLER | " in l and "AUCTION_HOUSE_CLOSED" in l for l in log2), "unbekanntes Ereignis als FEHLER gemeldet")
+check(any(" | SITZUNG | " in l for l in log2), "Addon läuft trotz unbekanntem Ereignis")
 # Format-Kopplung: tools/karte_aus_testlog.py muss die KARTE-Zeilen lesen, als Text und in der SavedVariables-Form
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import karte_aus_testlog as kt

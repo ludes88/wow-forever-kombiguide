@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 13.10.2026, Version 3.1
+-- Stand 13.10.2026, Version 3.2
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -18,19 +18,24 @@
 --   HERSTELLEN  Rezept, was verbraucht und was erhalten wurde, Berufspunkt ja/nein
 --   ENTZAUBERN  welches Teil (Waffe/Rüstung, Qualität, Gegenstandsstufe) und was herauskam
 --   SAMMELN     Kürschnern, Kräuter, Bergbau, Öffnen: Quelle (Kreatur- oder Objekt-ID) und Beute
---   ANGELN      Fang
---   BEUTE       Beute von Gegnern mit Geld
---   HÄNDLER     pro Händlerbesuch: verkauft, gekauft, Einnahmen, Ausgaben, Bestand
+--               («Opening - No Text» sind Quest-Gegenstände, die man aufhebt)
+--   ANGELN      Fang, dazu die Würfe seit dem letzten Fang (Version 3.2)
+--   BEUTE       Beute von Gegnern mit Geld (leere Lootfenster ohne Quelle: keine Zeile, Version 3.2)
+--   HÄNDLER     pro Händlerbesuch: verkauft, gekauft, Einnahmen, Ausgaben, Bestand, Dauer und wodurch beendet
 --   POST, AUKTIONSHAUS  ebenso für Briefkasten und Auktionshaus
 --   GELD        übrige Geldänderungen: Lehrer, Flugmeister, sonst (Betrag und Bestand)
 --   GELERNT     neuer Zauber (z. B. beim Lehrer)
 --   REZEPT      neues Rezept
 --
+-- Version 3.2: Ein Fenster (Händler, Post, Auktionshaus, Lehrer, Flugmeister, Beruf) gilt auch ohne
+-- CLOSED-Ereignis als zu, wenn das Blizzard-Fenster nicht mehr sichtbar ist und keine Interaktion läuft,
+-- wenn der Charakter weggeht oder das Gebiet wechselt (Testlog 13.10.: POST blieb 16 Minuten offen).
+--
 -- Gespeichert wird beim Ausloggen oder /reload in
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.1"
+local VERSION = "3.2"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -67,6 +72,30 @@ local GATHER_IDS = {
 local GATHER_WORDS = { "kürschn", "skinn", "kräuter", "herb", "bergbau", "mining", "öffnen", "Öffnen", "opening" }
 local CLASS_NAMES = { [2] = "Waffe", [4] = "Rüstung" }
 local QUALITY_NAMES = { [0] = "grau", [1] = "weiss", [2] = "grün", [3] = "blau", [4] = "lila" }
+-- Angeln: 7620 und 1240948 hat der Lehrer am 13.10. beigebracht (Testlog); welcher davon der Wurf ist,
+-- ist ungeprüft, darum auch über den Namen
+local FISHING_IDS = { [7620] = true, [1240948] = true }
+local FISHING_NAMES = { ["angeln"] = true, ["fishing"] = true }
+local FISHING_PAUSE = 120   -- Sekunden ohne Wurf: Zählung beginnt neu
+
+-- Fenster (Version 3.2). Interaktionstypen und Fensternamen aus dem Forever-UI-Code 1.60.1
+-- (PlayerInteractionManagerConstantsDocumentation.lua, MailFrame.xml, MerchantFrame.xml usw.)
+local IT = (Enum and Enum.PlayerInteractionType) or {}
+local SESSION_INFO = {
+    ["HÄNDLER"] = { itype = IT.Merchant or 5, frames = { "MerchantFrame" }, words = { "gekauft", "verkauft" } },
+    ["POST"] = { itype = IT.MailInfo or 17, frames = { "MailFrame" }, words = { "erhalten", "verschickt" } },
+    ["AUKTIONSHAUS"] = { itype = IT.Auctioneer or 21, frames = { "AuctionHouseFrame" }, words = { "erhalten", "abgegeben" } },
+}
+local WINDOW_INFO = {
+    trainer = { itype = IT.Trainer or 7, frames = { "ClassTrainerFrame" } },
+    taxi = { itype = IT.TaxiNode or 6, frames = { "TaxiFrame", "FlightMapFrame" } },
+    -- das eigene Berufsfenster bleibt beim Gehen offen: kein Abstand prüfen
+    profession = { itype = IT.Professions or 59, frames = { "ProfessionsFrame" }, free = true },
+}
+local KIND_BY_ITYPE = {}
+for kind, info in pairs(SESSION_INFO) do KIND_BY_ITYPE[info.itype] = kind end
+local WINDOW_YARDS = 25      -- weiter weg ist kein Händler- oder Briefkastenfenster mehr offen (grosszügig, Reichweite ungeprüft)
+local SESSION_MAX = 1800     -- Sekunden; Notbremse, falls nichts anderes greift
 
 local db
 local ready = false
@@ -87,7 +116,9 @@ local lootRecord           -- offenes Lootfenster
 local quietUntil = 0       -- bis dahin keine TASCHE-Zeilen (Änderung steht schon in einer Handlung)
 local moneyLast
 local session              -- offenes Händler-, Post- oder Auktionshausfenster
-local windows = {}         -- offene Fenster: profession, trainer, taxi, quest
+local windows = {}         -- offene Fenster: profession, trainer, taxi (mit Zeit und Ort), quest
+local fishCasts, fishLast = 0, 0   -- Würfe seit dem letzten Fang (Version 3.2)
+local missingEvents = {}   -- Ereignisse, die der Client nicht kennt (Version 3.2)
 
 local function say(msg)
     DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg)
@@ -567,12 +598,94 @@ local function finishLoot()
     lootRecord = nil
     if #r.items > 0 then quietUntil = now() + 1.5 end
     if not db.auto then return end
+    -- leeres Lootfenster ohne Quelle (kam am 13.10. oft vor dem Kürschnern): sagt nichts aus
+    if not r.src and #r.items == 0 and r.money == 0 then return end
     local parts = {}
     if r.how then table.insert(parts, r.how) end
     table.insert(parts, r.src or "Quelle ?")
     table.insert(parts, (#r.items > 0) and table.concat(r.items, ", ") or "keine Gegenstände")
     if r.money ~= 0 then table.insert(parts, "Geld " .. money(r.money, true)) end
     add(r.kind, table.concat(parts, " | "), true, r.ctx)
+end
+
+-- Fenster (Version 3.2): Ort beim Öffnen, Abstand, Sichtbarkeit, laufende Interaktion
+local function playerPos()
+    local mapID = bestMap()
+    if not mapID or isSecret(mapID) or not C_Map.GetPlayerMapPosition then return nil end
+    local pos = C_Map.GetPlayerMapPosition(mapID, "player")
+    if not pos then return nil end
+    local x, y = pos:GetXY()
+    if not x or not y or isSecret(x) or isSecret(y) then return nil end
+    return mapID, x, y
+end
+
+local function placeHere()
+    local rec = { t0 = now() }
+    local m, x, y = playerPos()
+    if m then
+        rec.map, rec.x, rec.y = m, x, y
+        if C_Map.GetMapWorldSize then
+            local ok, w, h = pcall(C_Map.GetMapWorldSize, m)
+            if ok and type(w) == "number" and type(h) == "number" and not isSecret(w) and w > 0 and h > 0 then
+                rec.w, rec.h = w, h
+            end
+        end
+    end
+    return rec
+end
+
+-- weiter als WINDOW_YARDS weg oder auf einer anderen Karte; ohne Ortsangabe: nein
+local function movedAway(rec)
+    if not rec.map then return false end
+    local m, x, y = playerPos()
+    if not m then return false end
+    if m ~= rec.map then return true end
+    if not (rec.w and rec.h) then return false end
+    local dx, dy = (x - rec.x) * rec.w, (y - rec.y) * rec.h
+    return dx * dx + dy * dy > WINDOW_YARDS * WINDOW_YARDS
+end
+
+local function interacting(itype)
+    local pim = C_PlayerInteractionManager
+    if not (pim and pim.IsInteractingWithNpcOfType) then return nil end
+    local ok, v = pcall(pim.IsInteractingWithNpcOfType, itype)
+    if not ok or isSecret(v) then return nil end
+    return v and true or false
+end
+
+-- true: offen, false: zu, nil: keine Auskunft (weder Fenster noch Interaktion abfragbar)
+local function stillOpen(info)
+    local busy = interacting(info.itype)
+    if busy then return true end
+    local known = (busy ~= nil)
+    for _, name in ipairs(info.frames) do
+        local f = rawget(_G, name)
+        if type(f) == "table" and type(f.IsShown) == "function" then
+            local ok, v = pcall(f.IsShown, f)
+            if ok and not isSecret(v) then
+                if v then return true end
+                known = true
+            end
+        end
+    end
+    if known then return false end
+    return nil
+end
+
+local function windowGone(rec, info)
+    if not info.free and movedAway(rec) then return "entfernt" end
+    if now() - rec.t0 > 2 and stillOpen(info) == false then return "Fenster zu" end
+    return nil
+end
+
+local function openWindow(name)
+    if not windows[name] then windows[name] = placeHere() end
+end
+
+local function closeWindow(name)
+    windows[name] = nil
+    -- Flugkosten werden erst kurz nach dem Schliessen abgebucht (darum 2 s Nachlauf in moneyContext)
+    if name == "taxi" then windows.taxiClosed = now() end
 end
 
 -- Geld (Version 3): Kontext aus offenen Fenstern
@@ -584,18 +697,14 @@ local function moneyContext()
     return "sonst"
 end
 
--- Händler, Post, Auktionshaus (Version 3): alles, was sich bei offenem Fenster in Taschen und Geld ändert, als eine Zeile
-local SESSION_WORDS = {
-    ["HÄNDLER"] = { "gekauft", "verkauft" },
-    ["POST"] = { "erhalten", "verschickt" },
-    ["AUKTIONSHAUS"] = { "erhalten", "abgegeben" },
-}
-
-local function finishSession()
+-- Händler, Post, Auktionshaus (Version 3): alles, was sich bei offenem Fenster in Taschen und Geld ändert, als eine Zeile.
+-- Version 3.2: mit Dauer und dem Grund, warum die Sitzung endete. «stale» = Fenster war schon vorher zu,
+-- die gerade laufende Änderung gehört nicht mehr dazu (darum keine Ruhezeit für TASCHE).
+local function finishSession(reason, stale)
     if not session then return end
     local s = session
     session = nil
-    quietUntil = now() + 1.5
+    if not stale then quietUntil = now() + 1.5 end
     if not db.auto then return end
     local ids = {}
     for id in pairs(s.diff) do table.insert(ids, id) end
@@ -607,7 +716,7 @@ local function finishSession()
         if d > 0 then table.insert(got, txt) else table.insert(gave, txt) end
     end
     if #got == 0 and #gave == 0 and s.nPlus == 0 and s.nMinus == 0 then return end
-    local w = SESSION_WORDS[s.kind]
+    local w = SESSION_INFO[s.kind].words
     local parts = {}
     if #gave > 0 then table.insert(parts, w[2] .. ": " .. table.concat(gave, ", ")) end
     if #got > 0 then table.insert(parts, w[1] .. ": " .. table.concat(got, ", ")) end
@@ -615,13 +724,30 @@ local function finishSession()
     if s.nMinus > 0 then table.insert(parts, string.format("Ausgaben %s (%d)", money(s.minus, true), s.nMinus)) end
     local m = getMoney()
     table.insert(parts, "Bestand " .. (m and money(m) or "?"))
-    add(s.kind, table.concat(parts, " | "))
+    table.insert(parts, string.format("Dauer %d s, Ende %s", math.floor(now() - s.t0 + 0.5), reason or "?"))
+    -- Ort und Schritt vom Öffnen: Wird das Ende erst später bemerkt, steht der Charakter schon woanders
+    add(s.kind, table.concat(parts, " | "), true, s.ctx)
 end
 
 local function startSession(kind)
     if session and session.kind == kind then return end   -- manche Fenster melden sich doppelt
-    finishSession()
-    session = { kind = kind, diff = {}, plus = 0, minus = 0, nPlus = 0, nMinus = 0 }
+    finishSession("neues Fenster")
+    session = placeHere()
+    session.kind, session.diff, session.ctx = kind, {}, context()
+    session.plus, session.minus, session.nPlus, session.nMinus = 0, 0, 0, 0
+end
+
+-- Version 3.2: die offene Sitzung, wenn ihr Fenster noch offen ist; sonst beenden
+local function liveSession()
+    local s = session
+    if not s then return nil end
+    local why = windowGone(s, SESSION_INFO[s.kind])
+    if not why and now() - s.t0 > SESSION_MAX then why = "Zeitlimit" end
+    if why then
+        finishSession(why, true)
+        return nil
+    end
+    return s
 end
 
 local function tick()
@@ -632,6 +758,11 @@ local function tick()
     local t = now()
     if pending and ((not pending.lootOpen and t - pending.tLast > 3) or t - pending.t0 > 60) then finishPending() end
     if lootRecord and t - lootRecord.t > 60 then finishLoot() end
+    liveSession()
+    for name, info in pairs(WINDOW_INFO) do
+        local rec = windows[name]
+        if rec and windowGone(rec, info) then closeWindow(name) end
+    end
 end
 
 -- Fenster zum Kopieren
@@ -783,6 +914,10 @@ end
 local function beginLogging()
     snapshot()
     sessionStart()
+    if #missingEvents > 0 then
+        table.sort(missingEvents)
+        add("FEHLER", "Ereignisse unbekannt, nicht registriert: " .. table.concat(missingEvents, ", "), false)
+    end
     lastContext = context()
     logMap(bestMap())
     C_Timer.NewTicker(2, function()
@@ -801,7 +936,11 @@ local function waitForZone(tries)
 end
 
 function handlers.PLAYER_ENTERING_WORLD()
-    if started then return end
+    if started then
+        -- Ladebildschirm (Ruhestein, Instanz): kein Fenster bleibt offen
+        finishSession("Ladebildschirm", true)
+        return
+    end
     started = true
     C_Timer.After(2, function() waitForZone(10) end)
 end
@@ -811,7 +950,7 @@ end
 function handlers.PLAYER_LOGOUT()
     finishPending()
     finishLoot()
-    finishSession()
+    finishSession("Ausloggen")
     add("ENDE", nil, true, lastContext)
 end
 
@@ -820,6 +959,7 @@ function handlers.PLAYER_LEVEL_UP(level)
 end
 
 function handlers.ZONE_CHANGED_NEW_AREA()
+    finishSession("Gebietswechsel", true)
     if db.auto and ready then
         add("GEBIET", nil)
         logMap(bestMap())
@@ -852,7 +992,8 @@ end
 
 function handlers.BAG_UPDATE_DELAYED()
     local diff = bagDiff()
-    local target = (pending and pending.diff) or (session and session.diff)
+    local s = (not pending) and liveSession()   -- Version 3.2: nur, solange das Fenster offen ist
+    local target = (pending and pending.diff) or (s and s.diff)
     if target and diff and next(diff) then
         for id, d in pairs(diff) do
             local v = (target[id] or 0) + d
@@ -868,10 +1009,20 @@ function handlers.SKILL_LINES_CHANGED()
 end
 
 -- Version 3: eigene Zauber
+local function isFishing(id, name)
+    if FISHING_IDS[id] then return true end
+    return type(name) == "string" and FISHING_NAMES[string.lower(name)] == true
+end
+
 function handlers.UNIT_SPELLCAST_SUCCEEDED(unit, _, spellID)
     if isSecret(unit) or unit ~= "player" or isSecret(spellID) or not ready then return end
     local name = spellName(spellID)
-    lastCast = { id = spellID, name = name, t = now() }
+    local t = now()
+    lastCast = { id = spellID, name = name, t = t }
+    if isFishing(spellID, name) then
+        if t - fishLast > FISHING_PAUSE then fishCasts = 0 end
+        fishCasts, fishLast = fishCasts + 1, t
+    end
     if not db.auto then return end
     if isDisenchant(spellID, name) then
         startPending("ENTZAUBERN", spellID, name)
@@ -880,12 +1031,13 @@ function handlers.UNIT_SPELLCAST_SUCCEEDED(unit, _, spellID)
     end
 end
 
-function handlers.TRADE_SKILL_SHOW() windows.profession = true end
-function handlers.TRADE_SKILL_CLOSE() windows.profession = false end
+function handlers.TRADE_SKILL_SHOW() openWindow("profession") end
+function handlers.TRADE_SKILL_CLOSE() closeWindow("profession") end
 
 -- Version 3: Lootfenster
 function handlers.LOOT_OPENED(_, isFromItem)
     if not ready then return end
+    liveSession()   -- Version 3.2: ein schon geschlossenes Fenster beenden, bevor Beute in die Taschen kommt
     if pending and pending.kind == "ENTZAUBERN" then
         pending.lootOpen = true
         pending.tLast = now()
@@ -896,6 +1048,8 @@ function handlers.LOOT_OPENED(_, isFromItem)
     local src, srcType = lootSource()
     if IsFishingLoot and IsFishingLoot() then
         kind = "ANGELN"
+        if fishCasts > 0 then how = "Würfe " .. fishCasts end
+        fishCasts = 0
     elseif lastCast and now() - lastCast.t < 3 and (isGather(lastCast) or srcType == "GameObject") then
         kind, how = "SAMMELN", lastCast.name
     elseif srcType == "GameObject" then
@@ -925,11 +1079,12 @@ function handlers.PLAYER_MONEY()
         lootRecord.money = lootRecord.money + d
         return
     end
-    if session then
+    local s = liveSession()   -- Version 3.2: nur, solange das Fenster offen ist
+    if s then
         if d > 0 then
-            session.plus, session.nPlus = session.plus + d, session.nPlus + 1
+            s.plus, s.nPlus = s.plus + d, s.nPlus + 1
         else
-            session.minus, session.nMinus = session.minus + d, session.nMinus + 1
+            s.minus, s.nMinus = s.minus + d, s.nMinus + 1
         end
         return
     end
@@ -940,17 +1095,42 @@ function handlers.PLAYER_MONEY()
 end
 
 function handlers.MERCHANT_SHOW() startSession("HÄNDLER") end
-function handlers.MERCHANT_CLOSED() finishSession() end
+function handlers.MERCHANT_CLOSED() finishSession("MERCHANT_CLOSED") end
 function handlers.MAIL_SHOW() startSession("POST") end
-function handlers.MAIL_CLOSED() finishSession() end
+function handlers.MAIL_CLOSED() finishSession("MAIL_CLOSED") end
 function handlers.AUCTION_HOUSE_SHOW() startSession("AUKTIONSHAUS") end
-function handlers.AUCTION_HOUSE_CLOSED() finishSession() end
-function handlers.TRAINER_SHOW() windows.trainer = true end
-function handlers.TRAINER_CLOSED() windows.trainer = false end
-function handlers.TAXIMAP_OPENED() windows.taxi = true end
-function handlers.TAXIMAP_CLOSED() windows.taxi = false; windows.taxiClosed = now() end
+function handlers.AUCTION_HOUSE_CLOSED() finishSession("AUCTION_HOUSE_CLOSED") end
+function handlers.TRAINER_SHOW() openWindow("trainer") end
+function handlers.TRAINER_CLOSED() closeWindow("trainer") end
+function handlers.TAXIMAP_OPENED() openWindow("taxi") end
+function handlers.TAXIMAP_CLOSED() closeWindow("taxi") end
 function handlers.QUEST_COMPLETE() windows.quest = true end
 function handlers.QUEST_FINISHED() windows.quest = false end
+
+-- Version 3.2: Das Forever-UI öffnet und schliesst diese Fenster über den Interaktions-Manager
+-- (PlayerInteractionFrameManager.lua). Das ist ein zweiter Weg neben MAIL_CLOSED und Co.
+local WINDOW_BY_ITYPE = {}
+for name, info in pairs(WINDOW_INFO) do
+    if not info.free then WINDOW_BY_ITYPE[info.itype] = name end
+end
+
+function handlers.PLAYER_INTERACTION_MANAGER_FRAME_SHOW(itype)
+    if isSecret(itype) then return end
+    local kind = KIND_BY_ITYPE[itype]
+    if kind then
+        startSession(kind)
+    elseif session then
+        -- eine andere Interaktion beendet die bisherige (z. B. Questgeber nach dem Briefkasten)
+        finishSession("andere Interaktion")
+    end
+    if WINDOW_BY_ITYPE[itype] then openWindow(WINDOW_BY_ITYPE[itype]) end
+end
+
+function handlers.PLAYER_INTERACTION_MANAGER_FRAME_HIDE(itype)
+    if isSecret(itype) then return end
+    if session and SESSION_INFO[session.kind].itype == itype then finishSession("Interaktion zu") end
+    if WINDOW_BY_ITYPE[itype] then closeWindow(WINDOW_BY_ITYPE[itype]) end
+end
 
 -- Version 3: Gelerntes (Zauber beim Lehrer, Rezepte)
 function handlers.LEARNED_SPELL_IN_SKILL_LINE(spellID)
@@ -965,12 +1145,15 @@ end
 
 local events = CreateFrame("Frame")
 for event in pairs(handlers) do
-    -- Zauber nur vom eigenen Charakter: Werte anderer Einheiten können «secret» sein (Forever-API)
+    -- Zauber nur vom eigenen Charakter: Werte anderer Einheiten können «secret» sein (Forever-API).
+    -- Version 3.2: Kennt der Client ein Ereignis nicht, bricht das Laden nicht ab (Meldung als FEHLER beim Start).
+    local ok
     if event == "UNIT_SPELLCAST_SUCCEEDED" and events.RegisterUnitEvent then
-        events:RegisterUnitEvent(event, "player")
+        ok = pcall(events.RegisterUnitEvent, events, event, "player")
     else
-        events:RegisterEvent(event)
+        ok = pcall(events.RegisterEvent, events, event)
     end
+    if not ok then table.insert(missingEvents, event) end
 end
 events:SetScript("OnEvent", function(_, event, ...)
     local h = handlers[event]

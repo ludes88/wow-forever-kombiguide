@@ -21,7 +21,7 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | Ordner | Inhalt |
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
-| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld; Liste im Dateikopf) |
+| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3.2: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld; Liste im Dateikopf) |
 | `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, Quelle, Status); `VERSION` |
@@ -54,6 +54,7 @@ Vor jedem Commit an Guides oder Addons: `validate.py` (handgeschriebene Guides m
 - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen.
 - Quest- und NPC-Namen nicht übersetzen: RXP holt Quest-Namen vom Client und übersetzt `.target`/`.mob` selbst.
 - Testlog liest Chat-Text nicht aus (kann im modernen Client «secret» sein), sondern zählt den Taschenbestand.
+- Fenster (Händler, Post, Auktionshaus, Lehrer, Flugkarte) öffnet und schliesst das Forever-UI über `PLAYER_INTERACTION_MANAGER_FRAME_SHOW`/`_HIDE`. CLOSED-Ereignisse wie `MAIL_CLOSED` können fehlen (13.10.); das Testlog prüft darum zusätzlich Fenster, Interaktion und Abstand (Risiko 19).
 - Koordinaten: Eigene Orte als Spielkoordinaten (Prozent, wie im Testlog) in `plan.csv`; `build_kombi.py` rechnet über `forever_karten.csv` in RXP-Weltkoordinaten um. NIE RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) als Grundlage nehmen: In Mulgore passen sie nicht zur Forever-Karte (Testlauf 2), in Thunder Bluff und im Brachland genau (Messung 13.10.). Exakte Kartenecken liefert das Testlog (`KARTE`), `karte_aus_testlog.py` übernimmt sie (exakt: 1412 Mulgore, 1413 Brachland, 1456 Thunder Bluff; weitere Karten kommen beim Spielen dazu).
 - Achsen: `C_Map.GetWorldPosFromMapPos` liefert (Welt-X, Welt-Y). RXPs `.goto Karte/1,A,B` hat A = Welt-Y (zu Karten-x) und B = Welt-X (zu Karten-y). In `forever_karten.csv`: a0 = Y(0,0), b0 = X(0,0), a1 = Y(1,1), b1 = X(1,1).
 - RXP-Schrittnummern zählen nur Schritte, die für Klasse und Rasse gelten (Tauren-Druide: Kombi-Schritte #36–#38 in «1-6 Mulgore», v0.1 bis v0.1.2).
