@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 13.10.2026, Version 3.2
+-- Stand 13.10.2026, Version 3.3
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -27,6 +27,7 @@
 --   GELERNT     neuer Zauber (z. B. beim Lehrer)
 --   REZEPT      neues Rezept
 --
+-- Version 3.3: Bestand in Fenster-Zeilen beim Ausloggen aus dem letzten bekannten Wert (GetMoney meldet dann 0).
 -- Version 3.2: Ein Fenster (Händler, Post, Auktionshaus, Lehrer, Flugmeister, Beruf) gilt auch ohne
 -- CLOSED-Ereignis als zu, wenn das Blizzard-Fenster nicht mehr sichtbar ist und keine Interaktion läuft,
 -- wenn der Charakter weggeht oder das Gebiet wechselt (Testlog 13.10.: POST blieb 16 Minuten offen).
@@ -35,7 +36,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.2"
+local VERSION = "3.3"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -722,7 +723,9 @@ local function finishSession(reason, stale)
     if #got > 0 then table.insert(parts, w[1] .. ": " .. table.concat(got, ", ")) end
     if s.nPlus > 0 then table.insert(parts, string.format("Einnahmen %s (%d)", money(s.plus, true), s.nPlus)) end
     if s.nMinus > 0 then table.insert(parts, string.format("Ausgaben %s (%d)", money(s.minus, true), s.nMinus)) end
+    -- Beim Ausloggen meldet GetMoney 0 (Testlog 13.10. 22:47, 22:48, 22:51): dann den letzten bekannten Stand nehmen
     local m = getMoney()
+    if reason == "Ausloggen" then m = moneyLast or m end
     table.insert(parts, "Bestand " .. (m and money(m) or "?"))
     table.insert(parts, string.format("Dauer %d s, Ende %s", math.floor(now() - s.t0 + 0.5), reason or "?"))
     -- Ort und Schritt vom Öffnen: Wird das Ende erst später bemerkt, steht der Charakter schon woanders

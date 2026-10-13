@@ -1,0 +1,15 @@
+abschnitt;bis;quest;ziel;kreatur;kreatur_id;stueck;kills_je_stueck;art;leder_anteil;fetzen_anteil;haut_anteil;quelle
+A;Thunder Bluff, Ruhestein (RXP-Label TBHome);756;Stalker Claws (6);Prairie Stalker;2959;6;2;Quest;0.38;0.62;0;Anzahl: RXP v4.11.23 (Kommentar) · kürschnerbar: Testlog 13.10. · Anteile: Testlog 13.10. (Mulgore, 8 Leder und 13 Fetzen aus 21 Häuten)
+A;Thunder Bluff, Ruhestein (RXP-Label TBHome);756;Cougar Claws (6);Flatland Cougar;3035;6;2;Quest;0.38;0.62;0;wie oben
+A;Thunder Bluff, Ruhestein (RXP-Label TBHome);766;Prairie Wolf Heart, Flatland Cougar Femur, Plainstrider Scale (je 1);Prairie Wolf, Flatland Cougar, Adult Plainstrider;2958, 3035, 2956;3;2;Quest;0.38;0.62;0;wie oben
+A;Thunder Bluff, Ruhestein (RXP-Label TBHome);761;Trophy Swoop Quill (8), Swoop Gizzard (1);Wiry Swoop, Swoop;2969, 2970;9;2;Option: kürschnerbar ungeprüft;0.38;0.62;0;Anzahl: RXP · im Testlog 13.10. nie gekürschnert
+A;Thunder Bluff, Ruhestein (RXP-Label TBHome);96130;Chakuyak's Pelt (1);Chakuyak;268558;1;1;Option: kürschnerbar ungeprüft;0.38;0.62;0;Anzahl: RXP · Kreatur-ID: AHledger
+B;Ende Mulgore (RXP-Label WildManeTurnIn);861;Flatland Prowler Claw (4);Flatland Prowler;3566;4;2;Quest;0.40;0.60;0;Anzahl: RXP · Anteile: MetaForge Kodo Calf (Stufe 7–8: 40 % Leder, 60 % Fetzen), Näherung
+B;Ende Mulgore (RXP-Label WildManeTurnIn);759;Prairie Alpha Tooth (8);Prairie Wolf Alpha;2960;8;2;Quest;0.40;0.60;0;wie oben
+B;Ende Mulgore (RXP-Label WildManeTurnIn);776;Horn of Arra'chea (1);Arra'chea;;1;1;Quest;0.40;0.60;0;wie oben · kürschnerbar ungeprüft
+B;Ende Mulgore (RXP-Label WildManeTurnIn);Grind;optionale RXP-Schritte «Grind to …/6500xp» in Nord-Mulgore (Annahme 15 Kills);Prairie Wolf Alpha, Prairie Stalker, Flatland Cougar, Plainstrider;;15;1;Option: Grind;0.40;0.60;0;Kills: Annahme, keine Quelle
+C;Brachland bis etwa Stufe 15 (Ausblick v0.3);844;Plainstrider Beak (7);Greater Plainstrider, Fleeting Plainstrider;;7;2;Quest;0.60;0.35;0.05;Anzahl: RXP · Anteile: MetaForge Zhevra Runner (Stufe 13–14), Näherung
+C;Brachland bis etwa Stufe 15 (Ausblick v0.3);869;Raptor Head (12);Sunscale Lashtail, Sunscale Screecher;;12;2;Quest;0.60;0.35;0.05;wie oben
+C;Brachland bis etwa Stufe 15 (Ausblick v0.3);845;Zhevra Hooves (4);Zhevra Runner;;4;2;Quest;0.60;0.35;0.05;wie oben
+C;Brachland bis etwa Stufe 15 (Ausblick v0.3);821;Plainstrider Kidney (5);Greater Plainstrider, Fleeting Plainstrider;;5;2;Quest;0.60;0.35;0.05;wie oben · zum Teil erst nach Stufe 15
+C;Brachland bis etwa Stufe 15 (Ausblick v0.3);903, 821;Prowler Claws (7) und Savannah Lion Tusk (5), gleiche Kreatur;Savannah Prowler;;7;2;Quest;0.60;0.35;0.05;wie oben · zum Teil erst nach Stufe 15

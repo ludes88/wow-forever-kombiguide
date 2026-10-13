@@ -18,7 +18,7 @@ VERSION = open(os.path.join(ROOT, "data", "kombi", "VERSION"), encoding="utf-8")
 FILES = ["Guides/forever/Horde-1-12_Mulgore.lua", "Guides/forever/Horde-12-22_Barrens.lua"]
 NEW_GROUP = "Kombiguide (H)"
 LAST_NEXT = "RestedXP Forever Guide (H)\\22-24 Hillsbrad"
-ZONES = {"1412": "Mulgore", "1413": "The Barrens", "1456": "Thunder Bluff"}
+ZONES = {"1412": "Mulgore", "1413": "The Barrens", "1454": "Orgrimmar", "1456": "Thunder Bluff"}
 
 
 def read_csv(path):
@@ -39,8 +39,11 @@ def anchor_regex(anker):
 
 
 def world(row, maps):
-    if row["welt_a"] and row["welt_b"]:
+    """Weltkoordinaten (a, b) und Spielkoordinaten (x, y) oder None, wenn die Zeile keinen Ort hat."""
+    if row.get("welt_a") and row.get("welt_b"):
         return float(row["welt_a"]), float(row["welt_b"]), None
+    if not (row.get("karte") and row.get("x") and row.get("y")):
+        return None
     m = maps.get(row["karte"])
     if not m:
         raise SystemExit(f"Plan-Zeile {row['nr']}: Karte {row['karte']} fehlt in data/karten/forever_karten.csv")
@@ -51,23 +54,63 @@ def world(row, maps):
     return a0 + (a1 - a0) * x / 100, b0 + (b1 - b0) * y / 100, (x, y)
 
 
+# Aktionen der Plan-Tabelle und das RXP-Element, das daraus wird (id, menge aus der Zeile):
+#   lernen        .train id                      (Zauber-ID)
+#   kaufen        .collect id,menge
+#   ziel          .collect id,menge,0,1,24       (Fortschritt «x/menge»; Flags 8 = Bank zählt mit, 16 = keine Quest;
+#                                                 Quest 0 und Ziel-Maske 1, weil RXP leere Argumente überspringt)
+#   fertigkeit    .skill id,menge                (id = Berufsname, z. B. herbalism; erfüllt ab menge)
+#   maxfertigkeit .maxskill id,menge             (z. B. Geselle gelernt: Maximum 150)
+#   abgeben       .turnin id   ·   annehmen  .accept id
+#   hingehen      nur .goto mit radius           (erledigt beim Ankommen)
+#   hinweis       nur Text                       (braucht «bis», sonst bliebe der Schritt hängen)
+AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis")
+
+
 def make_step(row, maps):
-    a, b, xy = world(row, maps)
-    zone = ZONES.get(row["karte"], row["karte"])
-    goto = f"    .goto {row['karte']}/1,{a:.2f},{b:.2f}"
-    if xy:
-        goto += f"--c:{zone},{xy[0]:.1f},{xy[1]:.1f} (Spielkoordinaten)"
-    text = row["text"].replace("{npc}", f"|cRXP_FRIENDLY_{row['npc']}|r" if row["npc"] else "")
-    lines = ["step", f"    #label Kombi{row['nr']}", goto, f"    >>Kombiguide: {text}"]
     akt, kurz = row["aktion"], row["kurz"]
+    if akt not in AKTIONEN:
+        raise SystemExit(f"Plan-Zeile {row['nr']}: Aktion {akt!r} kennt der Generator nicht ({', '.join(AKTIONEN)})")
+    text = row["text"].replace("{npc}", f"|cRXP_FRIENDLY_{row['npc']}|r" if row["npc"] else "")
+    lines = ["step", f"    #label Kombi{row['nr']}"]
+    if row.get("bis"):
+        lines.append(f"    #completewith {row['bis']}")
+    pos = world(row, maps)
+    if pos:
+        a, b, xy = pos
+        goto = f"    .goto {row['karte']}/1,{a:.2f},{b:.2f}"
+        if row.get("radius"):
+            goto += f",{row['radius']}"
+        if xy:
+            goto += f"--c:{ZONES.get(row['karte'], row['karte'])},{xy[0]:.1f},{xy[1]:.1f} (Spielkoordinaten)"
+        lines.append(goto)
+    elif akt == "hingehen":
+        raise SystemExit(f"Plan-Zeile {row['nr']}: «hingehen» braucht einen Ort")
+    if akt == "hingehen" and not row.get("radius"):
+        raise SystemExit(f"Plan-Zeile {row['nr']}: «hingehen» braucht einen Radius")
+    if akt == "hinweis" and not row.get("bis"):
+        raise SystemExit(f"Plan-Zeile {row['nr']}: «hinweis» braucht «bis» (Label oder next)")
+    lines.append(f"    >>Kombiguide: {text}")
+    k = f" >>{kurz}" if kurz else ""
     if akt == "lernen":
-        lines.append(f"    .train {row['id']}" + (f" >>{kurz}" if kurz else ""))
+        lines.append(f"    .train {row['id']}{k}")
     elif akt == "kaufen":
-        lines.append(f"    .collect {row['id']},{row['menge'] or 1}" + (f" >>{kurz}" if kurz else ""))
-    else:
-        raise SystemExit(f"Plan-Zeile {row['nr']}: Aktion {akt!r} kennt der Generator noch nicht")
+        lines.append(f"    .collect {row['id']},{row['menge'] or 1}{k}")
+    elif akt == "ziel":
+        lines.append(f"    .collect {row['id']},{row['menge']},0,1,24{k}")
+    elif akt == "fertigkeit":
+        lines.append(f"    .skill {row['id']},{row['menge']}{k}")
+    elif akt == "maxfertigkeit":
+        lines.append(f"    .maxskill {row['id']},{row['menge']}{k}")
+    elif akt == "abgeben":
+        lines.append(f"    .turnin {row['id']}{k}")
+    elif akt == "annehmen":
+        lines.append(f"    .accept {row['id']}{k}")
     if row["bedingung"]:
         lines.append("    " + row["bedingung"])
+    for extra in (row.get("extra") or "").split(" // "):
+        if extra.strip():
+            lines.append("    " + extra.strip())
     if row["npc"]:
         lines.append(f"    .target {row['npc']}")
     return lines
@@ -97,7 +140,7 @@ blocks = {}
 for row in plan:
     blocks.setdefault((row["guide"], row["anker"], row["position"]), []).append(row)
 
-report, problems, out_blocks, used = [], [], [], set()
+report, problems, out_blocks, used, guide_labels = [], [], [], set(), {}
 for path in FILES:
     for body in re.findall(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]\)", show(path), re.S):
         head, steps = split_steps(body)
@@ -136,7 +179,9 @@ for path in FILES:
             used.update(r["nr"] for r in rows)
             report.append(f"{name}: {len(new)} Schritte {pos} '{anker}' (RXP-Schritt {i + 1}) eingefügt, Zeilen {', '.join(r['nr'] for r in rows)}")
         report.append(f"{name}: {len(steps)} Schritte")
-        out_blocks.append("\n".join(newhead) + "\n" + "\n".join("\n".join(s) for s in steps))
+        block = "\n".join(newhead) + "\n" + "\n".join("\n".join(s) for s in steps)
+        guide_labels[name] = set(re.findall(r"^\s*#label\s+(\S+)\s*$", block, re.M))
+        out_blocks.append(block)
 
 missing = [r["nr"] for r in plan if r["nr"] not in used]
 if missing:
@@ -171,11 +216,18 @@ for i in range(1, len(cap) + 1):
         if m.group(1) not in funcs:
             unknown.add(m.group(1))
 for row in plan:
-    for field in ("text", "kurz", "bedingung", "npc"):
-        if "--" in row[field]:
+    for field in ("text", "kurz", "bedingung", "npc", "bis", "extra"):
+        value = row.get(field) or ""
+        if "--" in value:
             problems.append(f"Plan-Zeile {row['nr']}: '--' in {field}")
-        if "[[" in row[field] or "]]" in row[field]:
+        if "[[" in value or "]]" in value:
             problems.append(f"Plan-Zeile {row['nr']}: '[[' oder ']]' in {field}")
+    for value in [row.get("bedingung") or ""] + (row.get("extra") or "").split(" // "):
+        if re.search(r"^\s*\.\w+\s+[^>]*,,", value):
+            problems.append(f"Plan-Zeile {row['nr']}: leeres Argument (',,') in '{value.strip()}': RXP überspringt es")
+    bis = row.get("bis") or ""
+    if bis and bis != "next" and bis not in guide_labels.get(row["guide"], set()):
+        problems.append(f"Plan-Zeile {row['nr']}: Label '{bis}' (bis) gibt es in '{row['guide']}' nicht")
 if unknown:
     problems.append("unbekannte Befehle: " + ", ".join(sorted(unknown)))
 report.append(f"Lua 5.1 ok, {len(cap)} Guides registriert, {len(used)} Plan-Zeilen eingefügt, Datei {len(lua_src) // 1024} KB")

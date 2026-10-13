@@ -23,6 +23,7 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 - 13.10.2026: LW-Route 1–150: Claude wählt «nach bestem Wissen und Gewissen».
 - 13.10.2026: Der Nutzer hat seine Addons über CurseForge aktualisiert. Laut Testlog (13.10. 22:07) läuft jetzt RestedXP v4.11.23; der Kombi-Guide ist seither darauf gebaut.
 - 13.10.2026: Der Nutzer überlässt Claude die Umsetzung. Claude setzt dafür die Datenkette aus Plan-Tabelle und Generator ein (Vorschlag von Claude, siehe `vorgehen.md`). Der Kombi-Guide wird für die RXP-Version gebaut, die beim Nutzer installiert ist (zurzeit v4.11.23).
+- 13.10.2026: Mengen, Orte und Farmstellen sollen schon jetzt mit den Quests der Route verbunden sein, auch als Simulation, damit der Nutzer sie im Spiel testen kann («Falls du schon Mengenangaben und Locations und Farmspots mit den Speedrunquests synergieren kannst … dann bau das bitte ein»). Umgesetzt in Kombi-Guide v0.2 mit dem Mengenmodell `docs/plan/mengen-leder.md`.
 
 ## Offen
 
@@ -31,3 +32,4 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 3. Format der Plan-Tabelle: CSV mit Semikolon ist gesetzt (Vorgabe von Claude, für Excel), änderbar.
 4. Welcher AH-Markt für die Preise zählt: zum Start ein EU-Realm, Normal oder PvP. Bis dahin rechnet Claude mit den US-Beta-Preisen von AHledger (PvP Horde).
 5. Zählt beim «gewinnbringendsten Kraut» die Zusatzbeute mit (Swiftthistle, Frilled Lichen, Samen)? Claude rechnet vorerst mit Zusatzbeute, also mit dem Wert pro Kräuterknoten.
+6. Wie die Leder-Lücke gefüllt wird. Das Modell erwartet bis etwa Stufe 15 rund 70 Leichtes Leder aus der Route; der Bedarf liegt bei 416 bis 644 (`docs/plan/mengen-leder.md`). Möglich sind z. B. Kauf im AH, Farm-Stopps, Kürschnerei länger behalten oder ein anderer Charakter; die Wahl liegt beim Nutzer.

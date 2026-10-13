@@ -12,9 +12,10 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Pflicht im Kopf jedes Guides:** `#forever`, `#name`, `#group`, `<< Horde`. Ohne `#forever` lädt RXP den Guide in Forever nicht.
 - **Eigene Gruppe:** `#group Kombiguide (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
 - **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Pull Request und Merge → beim Nutzer `aktualisieren.bat` und `/reload` (AddOns sind mit dem Repo verknüpft, `docs/vorgehen.md`) → der Nutzer testet.
-- **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`). Version 3.2 beendet Fenster-Sitzungen auch ohne CLOSED-Ereignis (Risiko 19) und zählt beim Angeln die Würfe pro Fang.
+- **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`). Version 3.2 beendet Fenster-Sitzungen auch ohne CLOSED-Ereignis (Risiko 19) und zählt beim Angeln die Würfe pro Fang; 3.3 nimmt beim Ausloggen den letzten bekannten Geldstand.
 - **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen und RXP dagegen prüfen), `tools/fetch_rxp.sh` (RXP in einer Version holen).
-- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff.
+- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff, Orgrimmar und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff, Orgrimmar.
+- **Mengen:** `tools/plan_mengen.py` rechnet aus `data/kombi/modell_leder.csv`, wie viel Leder die Route bis zum Berufswechsel bringt (Bericht `docs/plan/mengen-leder.md`). Die Ziele im Kombi-Guide kommen daher.
 
 ---
 
@@ -126,6 +127,9 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - `--` in einer Textzeile schneidet den Rest ab (Kommentar).
 - `[[` oder `]]` im Text beendet den Lua-String.
 - `.subzone` ohne Text führt zu einem Ladefehler.
+- Leere Argumente gibt es nicht: RXP teilt die Argumente mit `string.gmatch(args, "[^,]+")` (`GuideLoader.lua`, `parseLine`). `.collect 2318,19,,0,8` wird deshalb zu Quest 0 und Ziel-Maske 8. Richtig: `.collect 2318,19,0,1,24` (Flags 8 = Bank zählt mit, 16 = nicht an eine Quest gebunden). Der Generator meldet `,,` als Fehler.
+- `.collect` zeigt bei Forever (Spielversion unter 90000) «Text» und darunter «Gegenstand: x/y»; erfüllt ab y, wieder offen, wenn der Bestand sinkt (`functions.lua`).
+- `.skill beruf,n` ohne dritten Wert zeigt keinen Zähler, nur den Text und ein Häkchen ab Fertigkeit n. `.maxskill beruf,150` ist erfüllt, sobald der Geselle gelernt ist (ohne Zauber-ID).
 
 ---
 
@@ -149,6 +153,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
    - Ein Anker muss genau einmal vorkommen, sonst bricht das Skript ab und meldet es.
    - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen. Das Skript schiebt die Einfügestelle weiter.
    - Berufsschritte bekommen Bedingungen, damit sie ohne den Beruf verschwinden (`.skill leatherworking,<1,1`).
+   - Aktionen der Plan-Tabelle: `lernen`, `kaufen`, `ziel` (Menge mit Fortschritt), `fertigkeit`, `maxfertigkeit`, `abgeben`, `annehmen`, `hingehen` (Ort mit Radius), `hinweis` (nur Text, braucht `bis`). Spalte `bis` setzt `#completewith`, `extra` nimmt weitere RXP-Zeilen (getrennt mit ` // `), `radius` gilt für den Ort. Liste im Kopf von `tools/build_kombi.py`.
    - Käufe im AH bekommen `#ah`.
 5. Herkunft und Lizenz in den Dateikopf schreiben.
 6. Prüfen:
@@ -172,7 +177,9 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - Kochen: «The Great Outdoors» (96605) und «Camping 101: Cooking» (96661) in Mulgore.
 - Fischen: ein Raw Brilliant Smallfish im Teich von Thunder Bluff für «Stalk With The Earthmother» (76240).
 - Schlafsack: «...and that note you found» (79007) im Guide 17-22. Erst ab v4.11.23 (RXP-Commit «Added Engraved Ring / Sleeping bag part 1», 10.10.), nicht in v4.11.13.
-- Berufs-Quests bei Kaga Wildhoof (Stonebull Lake, gleicher Ort wie «Camping 101: Cooking» in RXP): 97933 «Grundlagen des Zeltens: Kräuterkunde» und 97936 «Grundlagen des Zeltens: Kürschnerei» (im Spiel angenommen, Testlog 13.10. 22:13; Abgabe **ungeprüft**). RXPs Horde-Route führt beide nicht (v4.11.13, v4.11.23, Hauptzweig df745bd vom 13.10. abends). Für die Allianz führt RXP die Gegenstücke 97921 «Camping 101: Herbalism» und 97924 «Camping 101: Skinning» mit `.skill herbalism,<1,1` bzw. `.skill skinning,<1,1` (`Guides/forever/Alliance-1-13_Human.lua`). Kandidat für v0.2.
+- Berufs-Quests bei Kaga Wildhoof (Stonebull Lake, gleicher Ort wie «Camping 101: Cooking» in RXP): 97933 «Grundlagen des Zeltens: Kräuterkunde» und 97936 «Grundlagen des Zeltens: Kürschnerei» (im Spiel angenommen, Testlog 13.10. 22:13). RXPs Horde-Route führt beide nicht (v4.11.13, v4.11.23, Hauptzweig df745bd vom 13.10. abends). Für die Allianz führt RXP die Gegenstücke 97921 «Camping 101: Herbalism» und 97924 «Camping 101: Skinning» mit `.skill herbalism,<1,1` bzw. `.skill skinning,<1,1` (`Guides/forever/Alliance-1-13_Human.lua`).
+  - Ziel jeweils Fertigkeit 20, ab Stufe 6 (benötigt 4), Belohnung 270 XP und das Rezept des Lager-Gegenstands (Camp Chair bzw. Incense Candle). Abgabe Horde in Mulgore: Kürschnerei bei Yonn Deepcut (Bloodhoof, 45.0, 61.4), Kräuterkunde bei Komin Winterhoof (Thunder Bluff, 49.8, 39.8). Quelle: warcraft.wiki.gg, Seiten «Camping 101: Skinning» und «Camping 101: Herbalism» (abgerufen 13.10.).
+  - Im Kombi-Guide v0.2: Abgabe beider Quests (mit `.isQuestComplete`). Das Annehmen bei Kaga fehlt noch; es liegt vor der Stelle des Testcharakters (Abschnitt 6).
 - Unterschied v4.11.13 → v4.11.23 in den zwei Horde-Dateien: +463/−181 Zeilen aus 8 Commits (03.–10.10.), gemessen am 13.10. mit `git diff` im RXP-Klon.
 
 ---
@@ -190,6 +197,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
      - was von Hand nachgebessert wurde
   4. Der Nutzer ersetzt die Datei (bei verknüpften AddOns: `aktualisieren.bat`). Der Fortschritt bleibt, solange Gruppe und Name gleich sind; die Stelle kann sich aber verschieben (nächster Punkt).
 - **Wie RXP die Stelle wiederfindet** (Code v4.11.23): Pro Guide speichert RXP die Schrittnummer und eine Schritt-Kennung aus der Zeilennummer im Guide-Text (`stepId = linenumber + guide.guideId`, `GuideLoader.lua` L1090). Beim Laden sucht es zuerst diese Kennung, sonst nimmt es die Nummer (`GuideWindow.lua` L1894–1901).
+  - Gezählt werden nur nicht-leere Zeilen; Kommentarzeilen entfernt RXP vorher (`string.gmatch(text, "[^\n\r]+")`). Die Nummer zählt nur angezeigte Schritte (`ProcessGuideTable`, `IsStepShown`; z. B. fehlen `#hardcore`-Schritte).
+  - Regel für Neubauten während eines Tests: neue Schritte nur **nach** der Stelle des Testcharakters einfügen. Dann bleiben Kennung und Nummer gleich (v0.2: Stelle «Well» #30, Zeile 339, unverändert).
   - Ändert ein Neubau nur Koordinaten (gleiche Zeilen, z. B. v0.1.1 → v0.1.2), bleibt die Stelle genau.
   - Ändert sich die Route (andere Zeilen, z. B. Neubau auf einer neueren RXP-Version), kann RXP an einer anderen Stelle stehen. Erledigte Schritte überspringt RXP selbst (Testlauf 2); liegt die Stelle zu weit vorne, hilft die Schrittliste. Im Spiel **ungeprüft** (Test T6).
 - **Wann aktualisieren?** Das entscheidet der Nutzer. Möglich sind:
@@ -220,8 +229,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog 3: `SAMMELN` (Quelle mit Kreatur- oder Objekt-ID und Beute), `BEUTE`, `ANGELN` mit Ort und Zeit auswerten |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
-| 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore ist in Forever 6154 × 4102 Yards gross; 442 RXP-Punkte weichen im Median 3,5 % ab, höchstens 11,3 %. Thunder Bluff (26 Punkte) und Brachland (18 Punkte) passen genau (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile lagen bis 35 Yards daneben (v0.1) | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1412 Mulgore, 1413 Brachland, 1456 Thunder Bluff |
-| 19 | CLOSED-Ereignisse kommen nicht immer: Am 13.10. blieb eine Post-Sitzung von etwa 22:26 bis zum Ausloggen offen (MAIL_SHOW ja, MAIL_CLOSED nein). Das Forever-UI öffnet und schliesst diese Fenster über den Interaktions-Manager (`PLAYER_INTERACTION_MANAGER_FRAME_SHOW`/`_HIDE`, `PlayerInteractionFrameManager.lua`, UI 1.60.1) | Beute, Quest-Abgaben und Geld landen in der falschen Zeile (POST statt BEUTE, TASCHE, GELD); Lehrer- und Flugkosten könnten falsch zugeordnet werden | Testlog 3.2: Ende auch über die Interaktions-Ereignisse, über die Prüfung «Blizzard-Fenster sichtbar oder Interaktion läuft» (`C_PlayerInteractionManager.IsInteractingWithNpcOfType`), bei mehr als 25 Yards Abstand, Gebietswechsel und Ladebildschirm; jede Zeile nennt Dauer und Grund |
+| 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore ist in Forever 6154 × 4102 Yards gross; 442 RXP-Punkte weichen im Median 3,5 % ab, höchstens 11,3 %. Thunder Bluff (26 Punkte) und Brachland (18 Punkte) passen genau (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile lagen bis 35 Yards daneben (v0.1) | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1412 Mulgore, 1413 Brachland, 1454 Orgrimmar, 1456 Thunder Bluff; in Orgrimmar passen RXPs Kommentare genau (14 Punkte) |
+| 19 | CLOSED-Ereignisse kommen nicht immer: Am 13.10. blieb eine Post-Sitzung von etwa 22:26 bis zum Ausloggen offen (MAIL_SHOW ja, MAIL_CLOSED nein). Von fünf Post-Sitzungen an diesem Abend endeten vier erst beim Ausloggen (Testlauf 3, Nr. 15). Das Forever-UI öffnet und schliesst diese Fenster über den Interaktions-Manager (`PLAYER_INTERACTION_MANAGER_FRAME_SHOW`/`_HIDE`, `PlayerInteractionFrameManager.lua`, UI 1.60.1) | Beute, Quest-Abgaben und Geld landen in der falschen Zeile (POST statt BEUTE, TASCHE, GELD); Lehrer- und Flugkosten könnten falsch zugeordnet werden | Testlog 3.2: Ende auch über die Interaktions-Ereignisse, über die Prüfung «Blizzard-Fenster sichtbar oder Interaktion läuft» (`C_PlayerInteractionManager.IsInteractingWithNpcOfType`), bei mehr als 25 Yards Abstand, Gebietswechsel und Ladebildschirm; jede Zeile nennt Dauer und Grund |
 
 ---
 
@@ -346,6 +355,8 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 
 **Händler für Berufsmaterial** [Forever, AHledger]
 - Nata Dawnstrider (Thunder Bluff): Copper Rod 1s 24c, Mote of Magic 10c, Simple Wood 38c. **Widerspruch:** MetaForge führt dort keine Motes.
+- Simple Wood (1 pro Lagerfeuer, 2 für den Camp Chair): Kuruk (Thunder Bluff) 35c, Nata Dawnstrider (Thunder Bluff) 38c, Barg (Crossroads) 35c; in Bloodhoof kein Händler gelistet, die Liste ist unvollständig («and 34 more»). Quelle: AHledger Item 4470, Stand 13.10.
+- Quest «Gathering Leather» (768, Veren Tallstrider, Thunder Bluff): 12 Leichtes Leder; Belohnung 875 XP und Animal Skin Belt oder Double-layered Gloves, kein Geld (AHledger, 13.10.). Im Kombi-Guide ein Hinweis davor: Die Quest kostet Leder aus dem Vorrat.
 - LW-Bedarf:
   - Yonada (Camp Taurajo): Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c, Salt 50c
   - Mahu (Thunder Bluff), Tari'qa (Crossroads), Wunna Darkmane (Bloodhoof)
@@ -396,8 +407,8 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - **T1** bestanden: Gruppe sichtbar, Wechsel 1-6 → 6-12 innerhalb «Kombiguide (H)».
 - **T2** teilweise: Schritte am richtigen Ort, Pfeil zu Nawka rund 28 Yards daneben (v0.1). v0.1.2 zielt mit den exakten Kartenecken auf die gemessene Stelle. Im Spiel nur mit einem Charakter ohne Kürschnerei prüfbar, sonst überspringt RXP den Schritt.
 - **T4** indirekt: Ein schon gelernter Beruf wird übersprungen.
-- **T7** teilweise: BERUF, RXP, QUEST, TOD und KARTE laufen; mit Testlog 3 (13.10. 22:12–22:42) auch SAMMELN (Kürschnern, Kräuter), ANGELN, BEUTE, HÄNDLER, GELD (Lehrer), GELERNT und REZEPT. Eine Post-Sitzung blieb offen (Risiko 19), behoben in Testlog 3.2. Im Spiel noch offen: HERSTELLEN, ENTZAUBERN, AUKTIONSHAUS, Flugkosten.
-- **T6** teilweise: Update v0.1.1 → v0.1.2 (nur Koordinaten) behielt die Stelle («06-12 Mulgore #13», 13.10. 22:08). Neubau auf RXP v4.11.23: neue Quest 99411 «Kyle's Gone Missing!» (`#softcore`); für den Tauren-Druiden kommen davor zwei Schritte dazu. Erwartet für den Stand vom 13.10. 22:42 («06-12 Mulgore #28», Quest 754): RXP findet die Kennung nicht, nimmt #28 (Abgabe 748, erledigt), springt selbst auf #30, dieselbe Stelle. Im Spiel offen (`docs/tests/testlauf-3.md`).
+- **T7** teilweise: BERUF, RXP, QUEST, TOD und KARTE laufen; mit Testlog 3 (13.10. 22:12–22:42) auch SAMMELN (Kürschnern, Kräuter), ANGELN, BEUTE, HÄNDLER, GELD (Lehrer), GELERNT, REZEPT und AUKTIONSHAUS. Eine Post-Sitzung blieb offen (Risiko 19), behoben in Testlog 3.2; «Bestand 0c» beim Ausloggen behoben in 3.3. Im Spiel noch offen: HERSTELLEN, ENTZAUBERN, Flugkosten.
+- **T6** teilweise: Update v0.1.1 → v0.1.2 (nur Koordinaten) behielt die Stelle («06-12 Mulgore #13», 13.10. 22:08). Neubau auf RXP v4.11.23: neue Quest 99411 «Kyle's Gone Missing!» (`#softcore`); für den Tauren-Druiden kommen davor zwei Schritte dazu. Erwartet für den Stand vom 13.10. 22:42 («06-12 Mulgore #28», Quest 754): RXP findet die Kennung nicht, nimmt #28 (Abgabe 748, erledigt), springt selbst auf #30, dieselbe Stelle. **Bestanden** (13.10. 22:50: SITZUNG zeigt #30; `docs/tests/testlauf-3.md`, Nr. 13).
 - **T3, T5, T8** offen.
 
 ---
@@ -436,3 +447,4 @@ Stand und Liste: `docs/entscheidungen.md`. Am 13.10. entschieden: Update-Rhythmu
 - 13.10.2026: Recherche Kräuter, Fische, Kochen und Kosten (`docs/recherche/`), Wertvergleich in Abschnitt 9; Risiko 18 entfernt (beruhte auf einem Missverständnis: «Kräuterfarmen», nicht «Kräutergarten»); offene Entscheidungen nach `entscheidungen.md` verwiesen.
 - 13.10.2026: Kombi-Guide auf RXP v4.11.23 gebaut (Testlog zeigt v4.11.23 nach dem CurseForge-Update); neue Addon-Ordner brauchen einen Neustart; Teststand T0 und T6.
 - 13.10.2026: Testlauf 3, zweiter Abschnitt: Messwerte Kürschnern, Kräuter, Angeln, Lehrer und Geld (§9); Lehrer-Koordinaten gemessen; Berufs-Quests 97933 und 97936 (§5); Risiko 19 und Testlog 3.2; T6-Erwartung neu gerechnet, T7.
+- 13.10.2026: Kombi-Guide v0.2 (6-12 Mulgore, Thunder Bluff) mit Mengenmodell; T6 bestanden; Regel «neue Schritte nach der Teststelle» (§6); Berufs-Quests mit Ziel, Abgabe und Belohnung (§5); Karte Orgrimmar exakt; Testlog 3.3; «Gathering Leather» und Simple Wood (§9).
