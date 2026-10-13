@@ -49,7 +49,7 @@ counts = { [2318] = 10, [765] = 3, [6291] = 5 }
 now_t = 1000
 GetTime = function() return now_t end
 money = 12345
-GetMoney = function() return money end
+GetMoney = function() if logout then return 0 end return money end   -- beim Ausloggen meldet der Client 0 (Testlog 13.10.)
 NUM_BAG_SLOTS = 4
 bags = { [0] = {
   [1] = { id = 6291, n = 5, name = "Roher glänzender Kleinfisch", q = 1 },
@@ -402,6 +402,11 @@ later(1)
 L.execute("money = money - 95")
 g.fire("PLAYER_MONEY")
 later(10); g.ticker()
+# I: Briefkasten offen beim Ausloggen: Bestand aus dem letzten bekannten Wert, nicht 0
+L.execute("MailFrame.shown = true")
+g.fire("MAIL_SHOW")
+L.execute("money = money + 405")
+g.fire("PLAYER_MONEY")
 L.execute("logout = true")
 g.fire("PLAYER_LOGOUT")
 L.execute("logout = false")
@@ -495,6 +500,7 @@ one("BEUTE", "Kreatur 2958 | keine Gegenstände")
 one("GELD", "Lehrer -3s")
 one("GELD", "sonst +5c")
 one("GELD", "Flugmeister -95c")
+one("POST", "Einnahmen +4s 5c (1)", "Bestand 1g 99s 68c", "Ende Ausloggen")
 # Ein Ereignis, das der Client nicht kennt: Das Addon lädt trotzdem und meldet es beim Start
 try:
     L2 = runtime(unknown=("AUCTION_HOUSE_CLOSED",))
