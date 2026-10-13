@@ -1,4 +1,4 @@
--- Kombi-Guide 0.1.2 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.2 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Basis RestedXP v4.11.23, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
 if not (RXPGuides and RXPGuides.RegisterGuide) then return end
 if UnitFactionGroup("player") == "Alliance" then return end
@@ -820,6 +820,14 @@ step << Tauren
     >>|cRXP_WARN_Use the|r |T135139:0|t[Winterhoof Cleansing Totem] |cRXP_WARN_at the Well|r
     .complete 754,1 --Cleanse the Winterhoof Water Well (1)
 step
+    #label Kombi4
+    #completewith TBHome
+    >>Kombiguide: Bis Thunder Bluff jedes Tier kürschnern und Kräuter am Weg sammeln. Leder behalten, es ist Material für Lederverarbeitung. Einen Rohen glänzenden Kleinfisch für die Quest in Thunder Bluff aufheben.
+    .collect 2318,19,0,1,24 >>Leder-Ziel bis Thunder Bluff (Modell A)
+    .skill skinning,<1,1
+    .skill herbalism,20 >>Kräuterkunde 20 für «Grundlagen des Zeltens: Kräuterkunde»
+    .collect 6291,1,0,1,24 >>Für Quest 76240 aufheben
+step
     #label Stones
     #loop
     .goto 1412/1,-729.42,-2547.12,0--c:Mulgore,54.06,66.40
@@ -929,6 +937,13 @@ step
     .train 2550 >>Train Cooking
     .turnin 96661 >>Turn in Camping 101: Cooking
     .target Pyall Silentstride
+step
+    #label Kombi5
+    .goto 1412/1,-290.21,-2252.01--c:Mulgore,45.0,61.4 (Spielkoordinaten)
+    >>Kombiguide: Gib bei |cRXP_FRIENDLY_Yonn Deepcut|r «Grundlagen des Zeltens: Kürschnerei» ab (Ziel: Kürschnerei 20). Belohnung: Rezept Camp Chair und 270 XP.
+    .turnin 97936
+    .isQuestComplete 97936
+    .target Yonn Deepcut
 step
     #label Vision
     .goto 1412/1,-405.75,-2243.32--c:Mulgore,47.76,57.53
@@ -1345,6 +1360,31 @@ step
     .home >>Set your Hearthstone to Thunder Bluff
     .target Innkeeper Pala
     .bindlocation 1638
+step
+    #label Kombi6
+    .goto 1456/1,44.58,-1263.32,15--c:Thunder Bluff,45.2,59.4 (Spielkoordinaten)
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und Rohe glänzende Kleinfische bis auf einen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c), 1 pro Lagerfeuer und 2 für den Camp Chair. Gekochtes Essen gibt 5 % mehr XP aus Kills für 15 Minuten.
+step
+    #label Kombi7
+    .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
+    >>Kombiguide: Gib bei |cRXP_FRIENDLY_Komin Winterhoof|r «Grundlagen des Zeltens: Kräuterkunde» ab (Ziel: Kräuterkunde 20). Belohnung: Rezept Incense Candle und 270 XP.
+    .turnin 97933
+    .isQuestComplete 97933
+    .target Komin Winterhoof
+step
+    #label Kombi8
+    .goto 1456/1,52.93,-1150.53
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie.
+    .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
+    .skill skinning,<50,1
+    .target Mooranta
+step
+    #label Kombi9
+    #completewith WildManeTurnIn
+    >>Kombiguide: Bis Ende Mulgore weiter jedes Tier kürschnern, auch beim optionalen Grinden in Nord-Mulgore, und Kräuter sammeln. Vor Kürschnerei 75 den Gesellen bei Mooranta in Thunder Bluff lernen.
+    .collect 2318,29,0,1,24 >>Leder-Ziel bis Ende Mulgore (Modell B)
+    .skill skinning,<1,1
+    .skill herbalism,50 >>Kräuterkunde 50 (ab 50 Mageroyal im Brachland)
 step
     #completewith SacredBurial
     .goto 1456/1,186.800,-1309.400,30,0
@@ -2079,6 +2119,18 @@ step
     .train 8613 >>Train |T134366:0|t[Skinning]
     .target Mooranta
 step
+    #label Kombi11
+    .goto 1456/1,52.93,-1150.53
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen.
+    .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
+    .skill skinning,<50,1
+    .target Mooranta
+step
+    #label Kombi10
+    #completewith next
+    >>Kombiguide: «Gathering Leather» kostet 12 Leichtes Leder aus deinem Vorrat. Belohnung laut AHledger: 875 XP und Animal Skin Belt oder Double-layered Gloves. Wer das Leder behalten will, überspringt die drei Schritte zu dieser Quest.
+    .skill skinning,<1,1
+step
     #ah
     .goto 1456/1,53.35,-1161.18--c:Thunder Bluff,44.39,44.72
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Veren|r
@@ -2100,6 +2152,20 @@ step
     .turnin 768 >> Turn in Gathering Leather
     .target Veren Tallstrider
     .skill skinning,<1,1
+step
+    #label Kombi12
+    .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
+    >>Kombiguide: Gib bei |cRXP_FRIENDLY_Komin Winterhoof|r «Grundlagen des Zeltens: Kräuterkunde» ab, falls noch offen. Belohnung: Rezept Incense Candle und 270 XP.
+    .turnin 97933
+    .isQuestComplete 97933
+    .target Komin Winterhoof
+step
+    #label Kombi13
+    .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Komin Winterhoof|r Geselle Kräuterkunde. Ohne Gesellen bleibt Kräuterkunde bei 75 stehen.
+    .maxskill herbalism,150 >>Geselle Kräuterkunde (Maximum 150)
+    .skill herbalism,<50,1
+    .target Komin Winterhoof
 step << Hunter
     .goto 1456/1,-29.42,-1182.54--c:Thunder Bluff,52.32,47.79
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Kaga|r
@@ -2275,6 +2341,20 @@ step
     >>|cRXP_WARN_He is|r |T132320:0|t[Stealthed]
     .turnin 76240 >>Turn in Stalk With The Earthmother
     .target Boarton Shadetotem
+step
+    #label Kombi14
+    .goto 1456/1,94.79,-1257.41--c:Thunder Bluff,40.4,58.5 (Spielkoordinaten)
+    >>Kombiguide: Optional: im Teich angeln bis Angeln 50, danach den Gesellen bei Kah Mistrunner lernen. Gemessen am Stonebull Lake: rund 27 Sekunden und 1 Punkt pro Fang. Überspringen: Häkchen setzen.
+    .skill fishing,50 >>Angeln 50 (optional)
+    .skill fishing,<1,1
+step
+    #label Kombi15
+    .goto 1456/1,-69.19,-1172.80--c:Thunder Bluff,56.1,46.4 (Spielkoordinaten)
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kah Mistrunner|r Geselle Angeln (ab Angeln 50 und Stufe 10).
+    .maxskill fishing,150 >>Geselle Angeln (Maximum 150)
+    .skill fishing,<50,1
+    .xp <10,1
+    .target Kah Mistrunner
 step
     .goto 1456/1,-123.15,-1412.93--c:Thunder Bluff,61.3,80.9
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Melor|r
