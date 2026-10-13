@@ -1,6 +1,6 @@
-# Messdaten 13.10.2026 (Testlog, Thunder Bluff)
+# Messdaten 13.10.2026 (Testlog)
 
-Herkunft: Testlog vom 13.10., 19:17–19:51 Uhr, ein Charakter auf Stufe 15 in Thunder Bluff, RestedXP v4.11.13. Bis 19:50 lief Testlog 1, danach Testlog 2 (nach dem Verknüpfen der AddOns mit dem Repo und `/reload`). Die Datei selbst enthält Charakternamen und liegt nicht im Repo.
+Herkunft: Testlog vom 13.10., 19:17–20:11 Uhr, ein Charakter auf Stufe 15, RestedXP v4.11.13. Bis 19:50 lief Testlog 1, danach Testlog 2 (nach dem Verknüpfen der AddOns mit dem Repo und `/reload`). Ab 19:53 ein Flug Thunder Bluff → Crossroads → Thunder Bluff, damit das Testlog die Karten Mulgore und Brachland misst. Die Datei selbst enthält Charakternamen und liegt nicht im Repo.
 
 Quellen für die Vergleiche:
 - Entzaubern in Forever: https://www.wow-professions.com/forever/disenchanting-guide (Tabelle «What You Get» und Zeile «11–15»)
@@ -9,24 +9,43 @@ Quellen für die Vergleiche:
 - Forever-API: https://github.com/Gethe/wow-ui-source/tree/forever (`Blizzard_APIDocumentationGenerated`)
 - Rechnung des Projekts: `data/rechnung/Kreislauf.csv`
 
-## 1. Kartenecken Thunder Bluff (exakt)
+## 1. Kartenecken (exakt)
 
-Testlog 2 schrieb gleich nach dem Einloggen:
+Testlog 2 schreibt die Ecken jeder Karte einmal mit, sobald der Charakter dort ist (Eintrag `KARTE`):
 
-| Karte | Ecke (0,0): Welt-X, Welt-Y | Ecke (1,1): Welt-X, Welt-Y | Grösse |
-|---|---|---|---|
-| 1456 Thunder Bluff | −850.00, 516.67 | −1545.83, −527.08 | 1043.8 × 695.8 Yards |
+| Karte | Ecke (0,0): Welt-X, Welt-Y | Ecke (1,1): Welt-X, Welt-Y | Grösse | Gemessen |
+|---|---|---|---|---|
+| 1412 Mulgore | 266.67, 2479.17 | −3835.42, −3675.00 | 6154.2 × 4102.1 Yards | 19:53, im Flug |
+| 1413 Das Brachland | 1612.50, 2622.92 | −5143.75, −7510.42 | 10133.3 × 6756.2 Yards | 19:54, im Flug |
+| 1456 Thunder Bluff | −850.00, 516.67 | −1545.83, −527.08 | 1043.8 × 695.8 Yards | 19:50, nach `/reload` |
 
-- `tools/karte_aus_testlog.py` hat die Zeile in `data/karten/forever_karten.csv` übernommen: a0 = 516.67, b0 = −850.00, a1 = −527.08, b1 = −1545.83 (Status «exakt»).
+- `tools/karte_aus_testlog.py` hat die Zeilen in `data/karten/forever_karten.csv` übernommen (Status «exakt»). Die Schätzung für Mulgore aus Testlauf 2 ist damit ersetzt.
+- KARTE kommt also auch im Flug.
 - **Achsen:** `C_Map.GetWorldPosFromMapPos` liefert (Welt-X, Welt-Y). RXP schreibt `.goto Karte/1,A,B` mit A = Welt-Y (gehört zu Karten-x) und B = Welt-X (gehört zu Karten-y). Beleg: RXPs Schritt für Mooranta, `.goto 1456/1,52.93,-1150.53--c:Thunder Bluff,44.43,43.19`, ergibt mit den gemessenen Ecken genau 44.43 / 43.19.
 - **Vergleich mit RXPs Kommentar-Koordinaten (`--c:`), RXP v4.11.13:**
 
-  | Karte | Ecken | RXP-Punkte mit Kommentar | Abweichung Median | Abweichung max |
-  |---|---|---|---|---|
-  | 1456 Thunder Bluff | exakt (Testlog) | 26 | 0.00 % | 0.00 % |
-  | 1412 Mulgore | geschätzt (Testlauf 2) | 442 | 3.47 % | 10.95 % |
+  | Karte | RXP-Punkte mit Kommentar | Abweichung Median | Abweichung max |
+  |---|---|---|---|
+  | 1412 Mulgore | 442 | 3.50 % | 11.34 % |
+  | 1413 Das Brachland | 18 | 0.00 % | 0.00 % |
+  | 1456 Thunder Bluff | 26 | 0.00 % | 0.00 % |
 
-  In Thunder Bluff passen RXPs Kommentare also genau zur Forever-Karte, in Mulgore nicht. Für Mulgore ist das nur gegen die Schätzung aus zwei Punkten gemessen. Die exakten Ecken für Mulgore (1412) und das Brachland (1413) fehlen noch.
+  In Thunder Bluff und im Brachland passen RXPs Kommentare genau zur Forever-Karte, in Mulgore nicht.
+- **Wie gut war die Schätzung aus Testlauf 2?** Sie war 1 % zu klein (6091.5 × 4061.1 statt 6154.2 × 4102.1 Yards). Am Ort der Kombi-Schritte verschiebt sich das Ziel damit um rund 7 Yards:
+
+  | Ziel | Spielkoordinaten | v0.1.1 (Schätzung) | v0.1.2 (exakt) | Abstand |
+  |---|---|---|---|---|
+  | Nawka Wildsong (gemessen, Testlauf 2) | 44.5 / 76.7 | −262.49, −2873.52 | −259.44, −2879.63 | 6.8 Yards |
+  | Garan Sunstrider (Icy Veins) | 44.2 / 77.8 | −244.21, −2918.20 | −240.97, −2924.76 | 7.3 Yards |
+
+- **Gegenprobe mit RXPs Weltkoordinaten** (exakte Ecken, Standort aus dem Testlog von Testlauf 2):
+
+  | NPC | RXP ergibt | Testlog | Abstand |
+  |---|---|---|---|
+  | Gart Mistrunner | 44.65 / 76.55 | 44.6 / 76.7 | 6.8 Yards |
+  | Baine Bloodhoof (Quest 746) | 46.67 / 63.38 | 46.6 / 63.4 | 4.3 Yards |
+
+  Das Testlog rundet auf 0,1 %; in Mulgore sind das bis rund 3 Yards (x) und 2 Yards (y). Dazu kommt, dass man beim Ansprechen neben dem NPC steht.
 
 ## 2. Lederverarbeitung 98 → 109
 
