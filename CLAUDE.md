@@ -26,7 +26,7 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, Quelle, Status); `VERSION` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
-| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `validate.py`, `testlog_harness.py`, `merge_poc.py` (alte Probe) |
+| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py`, `merge_poc.py` (alte Probe) |
 | `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
 | `testlogs/` | Testlog-Dateien aus dem Spiel (`KombiTestlog.lua`), nicht versioniert |
@@ -40,6 +40,7 @@ tools/fetch_rxp.sh v4.11.13                               # RXP in der Version d
 python3 tools/build_kombi.py v4.11.13 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
+python3 tools/karte_aus_testlog.py <Testlog> v4.11.13      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen
 ```
 
 Vor jedem Commit an Guides oder Addons: `validate.py` bzw. `testlog_harness.py` laufen lassen.
@@ -53,7 +54,8 @@ Vor jedem Commit an Guides oder Addons: `validate.py` bzw. `testlog_harness.py` 
 - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen.
 - Quest- und NPC-Namen nicht übersetzen: RXP holt Quest-Namen vom Client und übersetzt `.target`/`.mob` selbst.
 - Testlog liest Chat-Text nicht aus (kann im modernen Client «secret» sein), sondern zählt den Taschenbestand.
-- Koordinaten: Eigene Orte als Spielkoordinaten (Prozent, wie im Testlog) in `plan.csv`; `build_kombi.py` rechnet über `forever_karten.csv` in RXP-Weltkoordinaten um. NIE RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) als Grundlage nehmen, sie passen nicht zur Forever-Karte (Testlauf 2). Exakte Kartenecken liefert das Testlog (`KARTE`).
+- Koordinaten: Eigene Orte als Spielkoordinaten (Prozent, wie im Testlog) in `plan.csv`; `build_kombi.py` rechnet über `forever_karten.csv` in RXP-Weltkoordinaten um. NIE RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) als Grundlage nehmen: In Mulgore passen sie nicht zur Forever-Karte (Testlauf 2), in Thunder Bluff genau (Messung 13.10.). Exakte Kartenecken liefert das Testlog (`KARTE`), `karte_aus_testlog.py` übernimmt sie (exakt: 1456 Thunder Bluff; offen: 1412 Mulgore, 1413 Brachland).
+- Achsen: `C_Map.GetWorldPosFromMapPos` liefert (Welt-X, Welt-Y). RXPs `.goto Karte/1,A,B` hat A = Welt-Y (zu Karten-x) und B = Welt-X (zu Karten-y). In `forever_karten.csv`: a0 = Y(0,0), b0 = X(0,0), a1 = Y(1,1), b1 = X(1,1).
 - RXP-Schrittnummern zählen nur Schritte, die für Klasse und Rasse gelten (Tauren-Druide: Kombi-Schritte #36–#38 in «1-6 Mulgore», v0.1/v0.1.1).
 
 ## Lizenz

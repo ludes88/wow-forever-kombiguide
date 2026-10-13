@@ -12,7 +12,7 @@ Stand 13.10.2026: Kombi-Guide v0.1 im Spiel getestet (Forever-Beta, RestedXP v4.
 - `data/karten/forever_karten.csv`: Kartenecken für die Koordinaten-Umrechnung
 - `docs/Weg-A_Best-Practice.md`: Aufbau, RXP-Syntax, Update-Ablauf, Risiken, Berufsdaten, Testplan
 - `docs/vorgehen.md`: Arbeitsweise, Datenkette, Versionen
-- `tools/`: Kombi-Guide bauen (`build_kombi.py`), Prüfen, Testlauf
+- `tools/`: Kombi-Guide bauen (`build_kombi.py`), Kartenecken aus dem Testlog übernehmen (`karte_aus_testlog.py`), Prüfen, Testlauf
 - `data/rechnung/`: Rechnung Lederverarbeitung und Verzauberkunst
 
 ## Einbau ins Spiel (Beta)
