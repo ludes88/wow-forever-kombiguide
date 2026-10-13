@@ -48,4 +48,4 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 | 0.3 | Brachland bis zum Wechsel auf Lederverarbeitung und Verzauberkunst um Stufe 15 | geplant |
 | 0.4 | 17–22, Lager-Gegenstände, Merchant's Favor, Schlafsack-Strang (79007 ist in RXP) | geplant |
 
-Die Beta läuft bis 22.10.2026 (Stufen-Grenze 30). Bis dahin lassen sich Messdaten sammeln.
+Die Beta läuft bis 22.10.2026 (Stufen-Grenze 30), der Start ist am 04.11.2026 (https://www.warcrafttavern.com/forever/guides/beta/, geprüft am 13.10.). Bis 22.10. lassen sich Messdaten sammeln.

@@ -92,4 +92,4 @@ Das Testlog sah 15 Zugänge an Entzauberungsmaterial, je etwa 5 Sekunden auseina
 ## 7. Grenzen des Testlogs (Stand Testlog 2)
 
 - Es zählt nur ausgewählte Gegenstände. Rezept, Ergebnis und die entzauberten Gegenstände fehlen deshalb.
-- **Vorschlag, offen:** Herstellen und Entzaubern über das Ereignis `UNIT_SPELLCAST_SUCCEEDED` mit Zauber-ID festhalten. In der Forever-API ist es als `SecretWhenUnitSpellCastRestricted` markiert (`UnitDocumentation.lua`). Ob es beim Herstellen lesbar ist, ist **ungeprüft**.
+- **Vorschlag, offen:** Herstellen und Entzaubern über das Ereignis `UNIT_SPELLCAST_SUCCEEDED` mit Zauber-ID festhalten. In der Forever-API ist es als `SecretWhenUnitSpellCastRestricted` markiert (`UnitDocumentation.lua`). Das heisst laut `SecretPredicatesDocumentation.lua`: «secret» nur, wenn die Einheit nicht der Spieler oder sein Begleiter ist; einzelne Zauber können abweichen. Ob es beim Herstellen im Spiel lesbar ist, ist **ungeprüft**.

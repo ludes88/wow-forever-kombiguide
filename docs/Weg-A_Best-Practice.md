@@ -186,7 +186,10 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
      - was sich in den gemischten Abschnitten geändert hat
      - welche Anker noch passen
      - was von Hand nachgebessert wurde
-  4. Der Nutzer ersetzt die Datei. Der Fortschritt bleibt, solange Gruppe und Name gleich sind.
+  4. Der Nutzer ersetzt die Datei (bei verknüpften AddOns: `aktualisieren.bat`). Der Fortschritt bleibt, solange Gruppe und Name gleich sind; die Stelle kann sich aber verschieben (nächster Punkt).
+- **Wie RXP die Stelle wiederfindet** (Code v4.11.23): Pro Guide speichert RXP die Schrittnummer und eine Schritt-Kennung aus der Zeilennummer im Guide-Text (`stepId = linenumber + guide.guideId`, `GuideLoader.lua` L1090). Beim Laden sucht es zuerst diese Kennung, sonst nimmt es die Nummer (`GuideWindow.lua` L1894–1901).
+  - Ändert ein Neubau nur Koordinaten (gleiche Zeilen, z. B. v0.1.1 → v0.1.2), bleibt die Stelle genau.
+  - Ändert sich die Route (andere Zeilen, z. B. Neubau auf einer neueren RXP-Version), kann RXP an einer anderen Stelle stehen. Erledigte Schritte überspringt RXP selbst (Testlauf 2); liegt die Stelle zu weit vorne, hilft die Schrittliste. Im Spiel **ungeprüft** (Test T6).
 - **Wann aktualisieren?** Das entscheidet der Nutzer. Möglich sind:
   - (a) nur bei Bedarf, also wenn ein Routenfehler stört
   - (b) wöchentlich in der Beta
@@ -211,7 +214,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 10 | `#next` in den gekauften Guide greift nicht | Bei 22 kein automatischer Wechsel | Von Hand wählen; Test T5 |
 | 11 | Deutscher Client | Eigene Texte gemischt mit englischen Ortsnamen | Eigene Texte ohne ungeprüfte Eigennamen; Quest- und NPC-Namen kommen von RXP/Client |
 | 12 | Lizenz CC BY-NC-SA 4.0 | Nur nicht-kommerziell, mit Herkunft, gleiche Lizenz | Hinweis in jeder Datei; nie verkaufen oder kommerziell verteilen |
-| 13 | «Secret values» im modernen Client (Forever nutzt die Mainline-Vorlagen) | Chat-Text kann für Addons gesperrt sein (`CHAT_MSG_LOOT` ist nicht «NeverSecret») | Testlog zählt über Taschenbestand statt Chat; Abfrage `issecretvalue` |
+| 13 | «Secret values» im modernen Client (Forever nutzt die Mainline-Vorlagen) | Chat-Text kann für Addons gesperrt sein (`CHAT_MSG_LOOT` ist nicht «NeverSecret») | Testlog zählt über Taschenbestand statt Chat; Abfrage `issecretvalue`. Zauber-Ereignisse wie `UNIT_SPELLCAST_SUCCEEDED` sind laut Forever-API nur für fremde Einheiten «secret», nicht für den Spieler und seinen Begleiter; einzelne Zauber können abweichen (`SecretPredicatesDocumentation.lua`, `SecretWhenUnitSpellCastRestricted`) |
 | 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog-Einträge `TASCHE` mit Ort und Zeit auswerten |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
@@ -405,3 +408,4 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - 13.10.2026: Testläufe 1 und 2 eingetragen, Koordinaten-Befund (Risiko 17), Generator mit Plan-Tabelle, Testlog 2.
 - 13.10.2026: Messdaten (Kartenecken Thunder Bluff, Herstellen, Entzaubern), `karte_aus_testlog.py`, Risiko 17 genauer, Ankerstellen nach RXP-Version, Update-Ablauf mit verknüpften AddOns.
 - 13.10.2026: Kartenecken Mulgore und Brachland exakt, Risiko 17 mit exakten Werten, Kombi-Guide v0.1.2.
+- 13.10.2026: Wie RXP die Stelle nach einem Update wiederfindet (Abschnitt 6); Zauber-Ereignisse des Spielers sind laut Forever-API nicht «secret» (Risiko 13).
