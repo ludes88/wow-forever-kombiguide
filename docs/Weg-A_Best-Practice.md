@@ -136,6 +136,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - `Interface\AddOns\RXPGuides_Kombi\` nur für den WC-Test (Testlauf 1).
 - `Interface\AddOns\KombiTestlog\` für Notizen und Protokoll.
 - Ordner der Beta: `World of Warcraft\_classic_beta_\` (kami-labs, 10.10.; beim Start am 04.11. **ungeprüft**).
+- Neu verknüpfte Addon-Ordner lädt der Client erst nach einem Neustart des Spiels; Änderungen an Addons, die schon geladen waren, übernimmt `/reload` (Testlog 13.10.: um 19:50 nach `/reload` «Kombi-Test nicht geladen», um 22:07 nach dem Neustart geladen; Testlog 2 kam um 19:50 per `/reload`).
 
 **Mischen (Skript)**
 1. RXP-Release holen, das der Nutzer installiert hat (Tag aus dem Testlog).
@@ -386,12 +387,13 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T8 | Quellen-Widersprüche vor Ort prüfen | Koordinaten Yonn Deepcut, Rang-Grenzen Kürschnerei/Kräuterkunde, Bruiseweed, Dokimi |
 
 Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
-- **T0** bestanden, auch mit Testlog 2 und den verknüpften AddOns (SITZUNG meldet «Kombiguide 0.1.1-v4.11.13»).
+- **T0** bestanden, auch mit Testlog 2 und den verknüpften AddOns (SITZUNG meldet «Kombiguide 0.1.1-v4.11.13»), und am 13.10. 22:08 mit RestedXP v4.11.23, Testlog 3 und «Kombiguide 0.1.2-v4.11.13» (der ältere Bau läuft mit dem neueren RXP).
 - **T1** bestanden: Gruppe sichtbar, Wechsel 1-6 → 6-12 innerhalb «Kombiguide (H)».
 - **T2** teilweise: Schritte am richtigen Ort, Pfeil zu Nawka rund 28 Yards daneben (v0.1). v0.1.2 zielt mit den exakten Kartenecken auf die gemessene Stelle. Im Spiel nur mit einem Charakter ohne Kürschnerei prüfbar, sonst überspringt RXP den Schritt.
 - **T4** indirekt: Ein schon gelernter Beruf wird übersprungen.
 - **T7** teilweise: BERUF, RXP, QUEST und TOD laufen; TASCHE zählt Herstellen und Entzaubern, noch ohne Kürschner-Daten; KARTE läuft (Thunder Bluff).
-- **T3, T5, T6, T8** offen.
+- **T6** teilweise: Update v0.1.1 → v0.1.2 (nur Koordinaten) behielt die Stelle («06-12 Mulgore #13», 13.10. 22:08). Neubau auf RXP v4.11.23: Die Route hat vor Schritt #17 von «6-12 Mulgore» einen neuen Schritt (Quest 99411 «Kyle's Gone Missing!», `#softcore`), alle späteren Zeilen rücken um 6. Erwartet: RXP steht nach dem Update auf der Annahme von Quest 743 (schon erledigt) und springt selbst weiter. Im Spiel offen (`docs/tests/testlauf-3.md`).
+- **T3, T5, T8** offen.
 
 ---
 
@@ -427,3 +429,4 @@ Stand und Liste: `docs/entscheidungen.md`. Am 13.10. entschieden: Update-Rhythmu
 - 13.10.2026: Wie RXP die Stelle nach einem Update wiederfindet (Abschnitt 6); Zauber-Ereignisse des Spielers sind laut Forever-API nicht «secret» (Risiko 13).
 - 13.10.2026: Testlog 3 (Herstellen, Entzaubern, Sammeln, Angeln, Beute, Händler, Post, Auktionshaus, Geld, Gelerntes); Gewächshaus (Abschnitt 8).
 - 13.10.2026: Recherche Kräuter, Fische, Kochen und Kosten (`docs/recherche/`), Wertvergleich in Abschnitt 9; Risiko 18 entfernt (beruhte auf einem Missverständnis: «Kräuterfarmen», nicht «Kräutergarten»); offene Entscheidungen nach `entscheidungen.md` verwiesen.
+- 13.10.2026: Kombi-Guide auf RXP v4.11.23 gebaut (Testlog zeigt v4.11.23 nach dem CurseForge-Update); neue Addon-Ordner brauchen einen Neustart; Teststand T0 und T6.

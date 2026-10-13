@@ -46,7 +46,7 @@ Stand 13.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 |---|---|---|
 | 0.1 | Kürschnermesser, Kürschnerei und Kräuterkunde in Camp Narache | im Spiel getestet (Testlauf 2) |
 | 0.1.1 | Koordinaten über Kartentabelle; Testlog 2 (Fehler A–C behoben, Kartengrenzen, Sitzung meldet Kombiguide) | im Spiel geladen (13.10., aus dem Repo); Pfeil zu Nawka im Spiel offen |
-| 0.1.2 | exakte Kartenecken für Mulgore aus dem Testlog | gebaut und geprüft (13.10.); Pfeil zu Nawka rechnerisch auf der gemessenen Stelle |
+| 0.1.2 | exakte Kartenecken für Mulgore aus dem Testlog | gebaut und geprüft (13.10.); Pfeil zu Nawka rechnerisch auf der gemessenen Stelle; im Spiel geladen (13.10. 22:08). Seit 13.10. abends auf Basis RXP v4.11.23 (gleiche Berufsschritte) |
 | 0.2 | Mulgore 6–12 und Thunder Bluff: Kürschnern und Kräuter mit Zielen aus der Rechnung, Kochen und Fischen, soweit nicht in der RXP-Route | geplant |
 | 0.3 | Brachland bis zum Wechsel auf Lederverarbeitung und Verzauberkunst um Stufe 15 | geplant |
 | 0.4 | 17–22, Lager-Gegenstände, Merchant's Favor, Schlafsack-Strang (79007 ist in RXP) | geplant |

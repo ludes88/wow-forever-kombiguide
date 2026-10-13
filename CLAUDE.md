@@ -36,11 +36,11 @@ Vorgehen und Versionen: @docs/vorgehen.md
 
 ```bash
 pip install -r tools/requirements.txt                     # lupa (Lua 5.1 für Python)
-tools/fetch_rxp.sh v4.11.13                               # RXP in der Version des Nutzers nach vendor/ (steht im Testlog: SITZUNG … RXP v…)
-python3 tools/build_kombi.py v4.11.13 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
+tools/fetch_rxp.sh v4.11.23                               # RXP in der Version des Nutzers nach vendor/ (steht im Testlog: SITZUNG … RXP v…)
+python3 tools/build_kombi.py v4.11.23 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
-python3 tools/karte_aus_testlog.py <Testlog> v4.11.13      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen
+python3 tools/karte_aus_testlog.py <Testlog> v4.11.23      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen
 ```
 
 Vor jedem Commit an Guides oder Addons: `validate.py` (handgeschriebene Guides mit einem `RegisterGuide`), `build_kombi.py` (prüft den erzeugten Kombi-Guide selbst; `validate.py` passt dafür nicht) bzw. `testlog_harness.py` laufen lassen.

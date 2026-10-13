@@ -2,7 +2,7 @@
 
 Ein RestedXP-Guide für Stufe 1–22 (Horde, Tauren-Druide), der RXPs Gratis-Route mit Berufsschritten verbindet: Kräuterkunde und Kürschnerei bis etwa Stufe 15, danach Lederverarbeitung und Verzauberkunst bis 150, dazu Fischen und Kochen.
 
-Stand 13.10.2026: Kombi-Guide v0.1 im Spiel getestet (Forever-Beta, RestedXP v4.11.13), v0.1.1 gebaut. Testberichte in `docs/tests/`.
+Stand 13.10.2026: Kombi-Guide v0.1.2 auf Basis RestedXP v4.11.23, Testlog 3.1; im Spiel getestet (Forever-Beta). Testberichte in `docs/tests/`.
 
 ## Inhalt
 
