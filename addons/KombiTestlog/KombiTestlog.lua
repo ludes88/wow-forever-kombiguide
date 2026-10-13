@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 13.10.2026, Version 1
+-- Stand 13.10.2026, Version 2
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -8,6 +8,7 @@
 --   /tl zeigen alle   alle Einträge
 --   /tl auto          automatische Einträge an/aus
 --   /tl item <Link>   Gegenstand zusätzlich mitzählen (Shift-Klick auf den Gegenstand)
+--   /tl karte         Kartengrenzen der aktuellen Karte nochmals festhalten
 --   /tl status        Überblick
 --   /tl leeren ja     Protokoll löschen
 --   /tl hilfe         diese Hilfe
@@ -16,7 +17,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "1"
+local VERSION = "2"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -30,6 +31,11 @@ local DEFAULT_ITEMS = {
     2449,  -- Earthroot
     2589,  -- Linen Cloth
     6291,  -- Raw Brilliant Smallfish
+    2447,  -- Peacebloom (Classic-ID, in Forever ungeprüft)
+    765,   -- Silverleaf (Classic-ID; im Spiel am 13.10. als «Silberblatt» bestätigt)
+    785,   -- Mageroyal (Classic-ID, in Forever ungeprüft)
+    2450,  -- Briarthorn (Classic-ID, in Forever ungeprüft)
+    2453,  -- Bruiseweed (Classic-ID, in Forever ungeprüft)
     10940, -- Strange Dust
     10938, -- Lesser Magic Essence
     10939, -- Greater Magic Essence
@@ -43,6 +49,8 @@ local itemLast = {}
 local skillLast = {}
 local questTitles = {}
 local rxpLast
+local lastContext   -- letzter bekannter Kontext, für ENDE beim Ausloggen
+local started = false
 
 local function say(msg)
     DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg)
@@ -86,11 +94,11 @@ local function context()
     return string.format("L%d %d%% | %s | %s | %s", level, pct, zoneText(), coords(), rxpText())
 end
 
-local function add(kind, text, withContext)
+local function add(kind, text, withContext, ctx)
     if not db then return end
     local line = date("%d.%m. %H:%M:%S") .. " | " .. kind
     if withContext ~= false then
-        line = line .. " | " .. context()
+        line = line .. " | " .. (ctx or context())
     end
     if text and text ~= "" then
         line = line .. " | " .. text
@@ -101,10 +109,21 @@ local function add(kind, text, withContext)
     end
 end
 
--- Berufe: alle Fertigkeiten, die man verlernen kann, dazu Linien mit Berufs-Maximum
+-- Berufe: alle Fertigkeiten, die man verlernen kann, dazu Linien mit Berufs-Maximum.
+-- Sprachen zählen nicht (Überschrift «Sprachen»/«Languages» oder Name mit Doppelpunkt, nicht verlernbar).
+local LANGUAGE_HEADERS = { ["Languages"] = true, ["Sprachen"] = true }
+
+local function isLanguage(header, name, abandon)
+    if type(header) == "string" then
+        if LANGUAGE_HEADERS[header] or header == rawget(_G, "LANGUAGES_LABEL") then return true end
+    end
+    return (not abandon) and type(name) == "string" and name:find(":", 1, true) ~= nil
+end
+
 local function readSkills()
     local out = {}
     local level = UnitLevel("player") or 0
+    local header
     local num = 0
     if C_SkillInfo and C_SkillInfo.GetNumSkillLines then
         num = C_SkillInfo.GetNumSkillLines() or 0
@@ -124,7 +143,8 @@ local function readSkills()
             local n, h, _, r, _, _, m, a = GetSkillLineInfo(i)
             name, isHeader, rank, maxRank, abandon = n, h, r, m, a
         end
-        if name and not isHeader and not isSecret(name) then
+        if name and isHeader and not isSecret(name) then header = name end
+        if name and not isHeader and not isSecret(name) and not isLanguage(header, name, abandon) then
             local profMax = (maxRank == 75 or maxRank == 150 or maxRank == 225 or maxRank == 300)
                 and maxRank ~= level * 5
             if abandon or profMax then
@@ -233,6 +253,11 @@ local function addonLoaded(name)
     return false
 end
 
+local function guideAddon(name)
+    if addonLoaded(name) then return addonVersion(name) end
+    return "nicht geladen"
+end
+
 local function sessionStart()
     local build = "-"
     if GetBuildInfo then
@@ -240,10 +265,60 @@ local function sessionStart()
         build = tostring(v) .. " (" .. tostring(b) .. ")"
     end
     local who = (UnitName("player") or "?") .. "-" .. (GetRealmName() or "?")
-    add("SITZUNG", string.format("%s | Client %s | RXP %s | Kombi-Guide %s | Testlog %s",
+    add("SITZUNG", string.format("%s | Client %s | RXP %s | Kombi-Test %s | Kombiguide %s | Testlog %s",
         who, build, addonVersion("RXPGuides"),
-        addonLoaded("RXPGuides_Kombi") and addonVersion("RXPGuides_Kombi") or "nicht geladen",
-        VERSION))
+        guideAddon("RXPGuides_Kombi"), guideAddon("RXPGuides_KombiGuide"), VERSION))
+end
+
+-- Kartengrenzen: Weltkoordinaten der Kartenecken (0,0) und (1,1) und Grösse in Yards.
+-- Damit rechnet Claude Spielkoordinaten exakt in RXP-Weltkoordinaten um.
+local function bestMap()
+    if not (C_Map and C_Map.GetBestMapForUnit) then return nil end
+    return C_Map.GetBestMapForUnit("player")
+end
+
+local function mapBounds(mapID)
+    if not (C_Map and C_Map.GetWorldPosFromMapPos and CreateVector2D) then return nil end
+    local ok0, c0, p0 = pcall(C_Map.GetWorldPosFromMapPos, mapID, CreateVector2D(0, 0))
+    local ok1, _, p1 = pcall(C_Map.GetWorldPosFromMapPos, mapID, CreateVector2D(1, 1))
+    if not (ok0 and ok1 and p0 and p1) then return nil end
+    local x0, y0 = p0:GetXY()
+    local x1, y1 = p1:GetXY()
+    if not (x0 and y0 and x1 and y1) or isSecret(x0) then return nil end
+    local w, h
+    if C_Map.GetMapWorldSize then
+        local ok, a, b = pcall(C_Map.GetMapWorldSize, mapID)
+        if ok then w, h = a, b end
+    end
+    return { c = c0, x0 = x0, y0 = y0, x1 = x1, y1 = y1, w = w, h = h }
+end
+
+local function logMap(mapID, force)
+    if not mapID or not db then return end
+    db.maps = db.maps or {}
+    if db.maps[mapID] and not force then return end
+    local name = "?"
+    if C_Map and C_Map.GetMapInfo then
+        local ok, info = pcall(C_Map.GetMapInfo, mapID)
+        if ok and type(info) == "table" and info.name and not isSecret(info.name) then name = info.name end
+    end
+    local b = mapBounds(mapID)
+    if b then
+        db.maps[mapID] = { name = name, c = b.c, x0 = b.x0, y0 = b.y0, x1 = b.x1, y1 = b.y1, w = b.w, h = b.h }
+        add("KARTE", string.format("%d %s | Kontinent %s | 0,0 = %.2f, %.2f | 1,1 = %.2f, %.2f | Grösse %s x %s",
+            mapID, name, tostring(b.c), b.x0, b.y0, b.x1, b.y1,
+            b.w and string.format("%.1f", b.w) or "-", b.h and string.format("%.1f", b.h) or "-"))
+    else
+        db.maps[mapID] = { name = name, fehlt = true }
+        add("KARTE", string.format("%d %s | keine Weltkoordinaten verfügbar", mapID, name))
+    end
+end
+
+local function tick()
+    checkRXP()
+    lastContext = context()
+    local m = bestMap()
+    if m and not (db.maps and db.maps[m]) then logMap(m) end
 end
 
 -- Fenster zum Kopieren
@@ -296,6 +371,7 @@ local function help()
     say("/tl <Text>  Notiz  ·  /tl bug <Text>  ·  /tl idee <Text>")
     say("/tl zeigen [alle]  Protokoll kopieren  ·  /tl status")
     say("/tl auto  automatische Einträge an/aus  ·  /tl item <Shift-Klick>  mitzählen")
+    say("/tl karte  Kartengrenzen der aktuellen Karte festhalten")
     say("/tl leeren ja  alles löschen")
 end
 
@@ -348,6 +424,14 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         else
             say("Gegenstand per Shift-Klick einfügen: /tl item [Gegenstand]")
         end
+    elseif lower == "karte" then
+        local m = bestMap()
+        if m then
+            logMap(m, true)
+            say("Kartengrenzen für Karte " .. m .. " festgehalten")
+        else
+            say("Keine Karte gefunden")
+        end
     elseif lower == "status" then
         local n = 0
         for _ in pairs(db.items) do n = n + 1 end
@@ -379,19 +463,27 @@ function handlers.ADDON_LOADED(name)
     db.version = VERSION
 end
 
-function handlers.PLAYER_LOGIN()
-    C_Timer.After(5, function()
+-- Start erst, wenn der Charakter in der Welt steht (nach dem Ladebildschirm).
+-- PLAYER_LOGIN kam beim frischen Einloggen zu früh: Zone leer, Karte = Kontinent (Testlauf 1).
+function handlers.PLAYER_ENTERING_WORLD()
+    if started then return end
+    started = true
+    C_Timer.After(2, function()
         snapshot()
         sessionStart()
+        lastContext = context()
+        logMap(bestMap())
         C_Timer.NewTicker(2, function()
-            local ok, err = pcall(checkRXP)
-            if not ok then add("FEHLER", "checkRXP: " .. tostring(err), false) end
+            local ok, err = pcall(tick)
+            if not ok then add("FEHLER", "tick: " .. tostring(err), false) end
         end)
     end)
 end
 
+-- Beim Ausloggen liefert der Client Stufe-XP und Karte nicht mehr zuverlässig (Testlauf 2):
+-- deshalb den zuletzt bekannten Kontext verwenden.
 function handlers.PLAYER_LOGOUT()
-    add("ENDE", nil)
+    add("ENDE", nil, true, lastContext)
 end
 
 function handlers.PLAYER_LEVEL_UP(level)
@@ -399,7 +491,10 @@ function handlers.PLAYER_LEVEL_UP(level)
 end
 
 function handlers.ZONE_CHANGED_NEW_AREA()
-    if db.auto and ready then add("GEBIET", nil) end
+    if db.auto and ready then
+        add("GEBIET", nil)
+        logMap(bestMap())
+    end
 end
 
 function handlers.QUEST_ACCEPTED(questID)
