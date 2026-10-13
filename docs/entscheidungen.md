@@ -21,8 +21,8 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 - 13.10.2026: Ziel: während des Speedruns die Berufe so effizient wie möglich mitskillen und genug Gold dafür haben, «inkl. der Skills usw.».
 - 13.10.2026: Update-Rhythmus: «Ich aktualisiere so oft ich kann.» Claude baut neu, sobald es etwas Neues gibt (neue RXP-Version beim Nutzer oder eigene Änderung).
 - 13.10.2026: LW-Route 1–150: Claude wählt «nach bestem Wissen und Gewissen».
-- 13.10.2026: Der Nutzer hat seine Addons über CurseForge aktualisiert. Welche RestedXP-Version jetzt läuft, zeigt das nächste Testlog; danach baut Claude den Kombi-Guide dafür neu.
-- 13.10.2026: Der Nutzer überlässt Claude die Umsetzung. Claude setzt dafür die Datenkette aus Plan-Tabelle und Generator ein (Vorschlag von Claude, siehe `vorgehen.md`). Der Kombi-Guide wird für die RXP-Version gebaut, die beim Nutzer installiert ist (zurzeit v4.11.13).
+- 13.10.2026: Der Nutzer hat seine Addons über CurseForge aktualisiert. Laut Testlog (13.10. 22:07) läuft jetzt RestedXP v4.11.23; der Kombi-Guide ist seither darauf gebaut.
+- 13.10.2026: Der Nutzer überlässt Claude die Umsetzung. Claude setzt dafür die Datenkette aus Plan-Tabelle und Generator ein (Vorschlag von Claude, siehe `vorgehen.md`). Der Kombi-Guide wird für die RXP-Version gebaut, die beim Nutzer installiert ist (zurzeit v4.11.23).
 
 ## Offen
 

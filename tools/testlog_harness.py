@@ -23,7 +23,9 @@ UnitName = function(u) if u == "player" then return "Testheld" end return "Prair
 UnitExists = function(u) return u == "target" end
 GetRealmName = function() return "Beta" end
 GetBuildInfo = function() return "1.60.1", "70338" end
-GetZoneText = function() return "Mulgore" end
+-- nach einem Neustart meldet der Client die Zone erst nach einigen Sekunden (Testlog 13.10. 22:07)
+zoneEmpty = 2
+GetZoneText = function() if zoneEmpty > 0 then zoneEmpty = zoneEmpty - 1 return "" end return "Mulgore" end
 GetSubZoneText = function() return "Bloodhoof Village" end
 currentMap = 1412
 -- Kartenecken in Weltkoordinaten (erfundene Testwerte, nur für den Ablauf)
@@ -275,6 +277,7 @@ later(10); g.ticker()
 L.execute("logout = true")
 g.fire("PLAYER_LOGOUT")
 L.execute("logout = false")
+slash("liste")                  # Kurzform für zeigen, keine Notiz
 slash("zeigen")
 slash("leeren")
 db = g.KombiTestlogDB
@@ -297,8 +300,15 @@ print("nach 'leeren ja':", len(db.log), "vorher", before)
 fails = []
 def check(cond, text):
     if not cond: fails.append(text)
+# Gleichnamige lokale Funktionen überdecken sich in Lua still (13.10.: startSession zweimal)
+import re as _re
+_names = _re.findall(r"^local function (\w+)", src, _re.M)
+_dups = sorted({n for n in _names if _names.count(n) > 1})
+check(not _dups, "keine doppelten lokalen Funktionsnamen (%s)" % ", ".join(_dups))
 kinds = [l.split(" | ")[1] for l in lines]
 check(kinds.count("SITZUNG") == 1, "genau eine SITZUNG")
+check(g.zoneEmpty == 0, "Start wartet, bis der Client eine Zone meldet")
+check(not any(" | NOTIZ | " in l and "liste" in l for l in lines), "/tl liste öffnet das Protokoll statt einer Notiz")
 sitz = next(l for l in lines if " | SITZUNG | " in l)
 check("Mulgore" in sitz and "1412 46.8,58.1" in sitz, "SITZUNG mit Ort und Karte")
 check("Kombiguide 0.1.1-v4.11.13" in sitz and "Kombi-Test nicht geladen" in sitz, "SITZUNG meldet beide Guide-Addons")

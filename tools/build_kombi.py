@@ -1,6 +1,6 @@
 # Kombi-Guide bauen: RXP-Gratis-Route 1-22 (Horde, Forever) als eigene Gruppe, Berufsschritte aus der Plan-Tabelle einfügen, prüfen.
 #
-# Aufruf:  tools/fetch_rxp.sh v4.11.13 && python3 tools/build_kombi.py v4.11.13 [Ausgabeordner]
+# Aufruf:  tools/fetch_rxp.sh v4.11.23 && python3 tools/build_kombi.py v4.11.23 [Ausgabeordner]
 # Eingaben: data/kombi/plan.csv (eine Zeile pro Berufsschritt), data/karten/forever_karten.csv (Kartenecken), data/kombi/VERSION
 # Ausgabe:  <Ausgabeordner, Standard build/>/RXPGuides_KombiGuide/{RXPGuides_KombiGuide.toc, Kombi_Guide.lua}
 #
@@ -12,7 +12,7 @@ from lupa import lua51
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 RXP = os.environ.get("RXP_DIR", os.path.join(ROOT, "vendor", "rxpguides"))
-TAG = sys.argv[1] if len(sys.argv) > 1 else "v4.11.13"
+TAG = sys.argv[1] if len(sys.argv) > 1 else "v4.11.23"
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "build")
 VERSION = open(os.path.join(ROOT, "data", "kombi", "VERSION"), encoding="utf-8").read().strip()
 FILES = ["Guides/forever/Horde-1-12_Mulgore.lua", "Guides/forever/Horde-12-22_Barrens.lua"]

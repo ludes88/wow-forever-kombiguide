@@ -1,10 +1,10 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 13.10.2026, Version 3
+-- Stand 13.10.2026, Version 3.1
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
 --   /tl idee <Text>   Idee festhalten
---   /tl zeigen        letzte 1000 Einträge zum Kopieren (Strg+A, Strg+C)
+--   /tl zeigen        letzte 1000 Einträge zum Kopieren (Strg+A, Strg+C); auch /tl liste
 --   /tl zeigen alle   alle Einträge
 --   /tl auto          automatische Einträge an/aus
 --   /tl item <Link>   Gegenstand zusätzlich mitzählen (Shift-Klick auf den Gegenstand)
@@ -30,7 +30,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3"
+local VERSION = "3.1"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -721,7 +721,7 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         note("BUG", rest)
     elseif lower == "idee" then
         note("IDEE", rest)
-    elseif lower == "zeigen" then
+    elseif lower == "zeigen" or lower == "liste" or lower == "list" then
         if string.lower(rest) == "alle" then showExport(0) else showExport(tonumber(rest) or 1000) end
     elseif lower == "auto" then
         db.auto = not db.auto
@@ -778,19 +778,32 @@ end
 
 -- Start erst, wenn der Charakter in der Welt steht (nach dem Ladebildschirm).
 -- PLAYER_LOGIN kam beim frischen Einloggen zu früh: Zone leer, Karte = Kontinent (Testlauf 1).
+-- Auch 2 Sekunden nach PLAYER_ENTERING_WORLD war die Zone nach einem Neustart des Spiels noch leer
+-- (Testlog 13.10. 22:07): darum warten, bis der Client eine Zone meldet, höchstens etwa 12 Sekunden.
+local function beginLogging()
+    snapshot()
+    sessionStart()
+    lastContext = context()
+    logMap(bestMap())
+    C_Timer.NewTicker(2, function()
+        local ok, err = pcall(tick)
+        if not ok then add("FEHLER", "tick: " .. tostring(err), false) end
+    end)
+end
+
+local function waitForZone(tries)
+    local zone = GetZoneText and GetZoneText() or ""
+    if (zone == nil or zone == "" or isSecret(zone)) and tries > 0 then
+        C_Timer.After(1, function() waitForZone(tries - 1) end)
+        return
+    end
+    beginLogging()
+end
+
 function handlers.PLAYER_ENTERING_WORLD()
     if started then return end
     started = true
-    C_Timer.After(2, function()
-        snapshot()
-        sessionStart()
-        lastContext = context()
-        logMap(bestMap())
-        C_Timer.NewTicker(2, function()
-            local ok, err = pcall(tick)
-            if not ok then add("FEHLER", "tick: " .. tostring(err), false) end
-        end)
-    end)
+    C_Timer.After(2, function() waitForZone(10) end)
 end
 
 -- Beim Ausloggen liefert der Client Stufe-XP und Karte nicht mehr zuverlässig (Testlauf 2):
