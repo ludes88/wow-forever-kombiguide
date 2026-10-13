@@ -11,10 +11,10 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Wie er geladen wird:** als eigenes kleines Addon (`RXPGuides_KombiGuide`, gebaut von `tools/build_kombi.py`), das `RXPGuides.RegisterGuide([[ … ]])` aufruft. Das Import-Fenster von RXP nimmt nur verschlüsselte, kontogebundene Texte. Im Spiel bestätigt am 13.10. (Testlauf 1 und 2, `docs/tests/`).
 - **Pflicht im Kopf jedes Guides:** `#forever`, `#name`, `#group`, `<< Horde`. Ohne `#forever` lädt RXP den Guide in Forever nicht.
 - **Eigene Gruppe:** `#group Kombiguide (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
-- **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Dateien in Projekt und Chat → der Nutzer testet.
+- **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Pull Request und Merge → beim Nutzer `aktualisieren.bat` und `/reload` (AddOns sind mit dem Repo verknüpft, `docs/vorgehen.md`) → der Nutzer testet.
 - **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`.
-- **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/fetch_rxp.sh` (RXP in einer Version holen).
-- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen nicht zur Forever-Karte (Abschnitt 7, Risiko 17).
+- **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen und RXP dagegen prüfen), `tools/fetch_rxp.sh` (RXP in einer Version holen).
+- **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff genau (Abschnitt 7, Risiko 17). Exakt gemessen ist bisher nur Thunder Bluff.
 
 ---
 
@@ -164,13 +164,14 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - Kopf richtig umgeschrieben: Gruppe ersetzt, `#defaultfor` entfernt, letztes `#next` mit Gruppe.
 - Im Spiel nicht getestet.
 
-**Ankerstellen in der RXP-Route, die zu den Berufen passen** (v4.11.23)
+**Ankerstellen in der RXP-Route, die zu den Berufen passen** (v4.11.23; ausser dem Schlafsack auch schon in v4.11.13)
 - Mulgore 6-12, Thunder Bluff:
   - Kürschnerei bei Mooranta lernen, mit Hinweis «This will unlock an easy quest»
   - Quest «Gathering Leather» (768): 12 Leichtes Leder, sonst im AH gekauft (`#ah`, nur mit Kürschnerei)
 - Kochen: «The Great Outdoors» (96605) und «Camping 101: Cooking» (96661) in Mulgore.
 - Fischen: ein Raw Brilliant Smallfish im Teich von Thunder Bluff für «Stalk With The Earthmother» (76240).
-- Schlafsack: «...and that note you found» (79007) im Guide 17-22.
+- Schlafsack: «...and that note you found» (79007) im Guide 17-22. Erst ab v4.11.23 (RXP-Commit «Added Engraved Ring / Sleeping bag part 1», 10.10.), nicht in v4.11.13.
+- Unterschied v4.11.13 → v4.11.23 in den zwei Horde-Dateien: +463/−181 Zeilen aus 8 Commits (03.–10.10.), gemessen am 13.10. mit `git diff` im RXP-Klon.
 
 ---
 
@@ -214,7 +215,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 14 | Leder pro Stunde unbekannt | Farmmengen pro Gebiet nur geschätzt | Testlog-Einträge `TASCHE` mit Ort und Zeit auswerten |
 | 15 | Platz für 400–650 Leder | Taschen voll | Leinentaschen, Bankchar, Apprentice's Skinning Satchel (Abschnitt 8) |
 | 16 | Kiste «40 Linen Cloth» lässt sich nicht füllen (Stapel 20) | Merchant's Favor fehlt | Variante 20 Leichtes Leder nutzen (allthings.how, Mobalytics) |
-| 17 | RXPs Kommentar-Koordinaten (`--c:Mulgore,x,y`) passen nicht zur Forever-Karte; Mulgore ist in Forever rund 1,19-mal grösser (Schätzung aus 2 Testlog-Punkten, Testlauf 2) | Eigene Pfeile liegen bis 35 Yards daneben | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1) |
+| 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore: in Forever rund 1,19-mal grösser (Schätzung aus 2 Testlog-Punkten, Testlauf 2); 442 RXP-Punkte weichen gegen diese Schätzung im Median 3,5 % ab, höchstens 11 %. Thunder Bluff: 26 Punkte passen genau zu den gemessenen Ecken (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile liegen bis 35 Yards daneben | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1456 Thunder Bluff. Offen: 1412 Mulgore, 1413 Brachland |
 
 ---
 
@@ -295,6 +296,11 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 - **Widerspruch** bei Bruiseweed: warcraft.wiki.gg nennt 85.
 - Neu in Forever: Frilled Lichen als seltener Zusatz, unter anderem aus Briarthorn im südlichen Brachland (16 % von 51 Beute-Fenstern, AHledger).
 
+**Entzaubern** [Forever, wow-professions Disenchanting Guide]
+- Grüne Rüstung: 75 % Staub, 20 % Essenz. Grüne Waffen: 20 % Staub, 75 % Essenz. Splitter 3–5 %.
+- Zeile «11–15»: 2–3 Strange Dust, 1–2 Greater Magic Essence, Small Glimmering Shard.
+- Messung 13.10. (15 Zugänge, Art der Teile unbekannt): 8× Staub, 6× Essenz, 1× Splitter; Mengen wie in der Zeile «11–15». 9 Greater Magic Essence ergaben 27 Lesser Magic Essence (1 : 3). Details: `docs/tests/messdaten-2026-10-13.md`.
+
 **Fischen und Kochen** [Forever]
 - In Startgebieten entkommen ab Fertigkeit 25 keine Fische mehr, in Hauptstädten ab 75 (wow-professions).
 - Stellen: Stonebull Lake für 1–75, Teich in Thunder Bluff für 75–130. An der Lushwater Oasis gibt es auch Deviate Fish (AHledger).
@@ -358,12 +364,12 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T7 | Testlog prüfen | `TASCHE`-Einträge beim Kürschnern; `BERUF` bei jedem Punkt; `RXP` bei jedem Schritt |
 | T8 | Quellen-Widersprüche vor Ort prüfen | Koordinaten Yonn Deepcut, Rang-Grenzen Kürschnerei/Kräuterkunde, Bruiseweed, Dokimi |
 
-Stand 13.10.2026 (Testlauf 1 und 2, `docs/tests/`):
-- **T0** bestanden.
+Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
+- **T0** bestanden, auch mit Testlog 2 und den verknüpften AddOns (SITZUNG meldet «Kombiguide 0.1.1-v4.11.13»).
 - **T1** bestanden: Gruppe sichtbar, Wechsel 1-6 → 6-12 innerhalb «Kombiguide (H)».
 - **T2** teilweise: Schritte am richtigen Ort, Pfeil zu Nawka rund 28 Yards daneben. In v0.1.1 korrigiert, im Spiel offen.
 - **T4** indirekt: Ein schon gelernter Beruf wird übersprungen.
-- **T7** teilweise: BERUF, RXP, QUEST und TOD laufen; TASCHE noch ohne Kürschner-Daten.
+- **T7** teilweise: BERUF, RXP, QUEST und TOD laufen; TASCHE zählt Herstellen und Entzaubern, noch ohne Kürschner-Daten; KARTE läuft (Thunder Bluff).
 - **T3, T5, T6, T8** offen.
 
 ---
@@ -397,3 +403,4 @@ Stand 13.10.2026 (Testlauf 1 und 2, `docs/tests/`):
 
 - 13.10.2026: erstellt (Recherche RXP-Code, Forever-UI-Code, Berufsdaten, Machbarkeitsprobe, Testlog v1).
 - 13.10.2026: Testläufe 1 und 2 eingetragen, Koordinaten-Befund (Risiko 17), Generator mit Plan-Tabelle, Testlog 2.
+- 13.10.2026: Messdaten (Kartenecken Thunder Bluff, Herstellen, Entzaubern), `karte_aus_testlog.py`, Risiko 17 genauer, Ankerstellen nach RXP-Version, Update-Ablauf mit verknüpften AddOns.

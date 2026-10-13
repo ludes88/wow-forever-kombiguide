@@ -1,6 +1,6 @@
 # Simuliert die WoW-Umgebung grob und spielt typische Abläufe gegen KombiTestlog.lua durch
 # Aufruf: python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
-import sys
+import os, sys
 from lupa import lua51
 
 L = lua51.LuaRuntime(unpack_returned_tuples=True)
@@ -173,5 +173,15 @@ ende = next(l for l in lines if " | ENDE | " in l)
 check(" L13 45% " in ende and "1456 46.8,58.1" in ende, "ENDE mit letztem bekanntem Kontext")
 check(not any(" | FEHLER | " in l for l in lines), "keine FEHLER")
 check(isinstance(db.maps[1412].x0, float) or db.maps[1412].x0 is not None, "db.maps gespeichert")
+# Format-Kopplung: tools/karte_aus_testlog.py muss die KARTE-Zeilen lesen, als Text und in der SavedVariables-Form
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import karte_aus_testlog as kt
+als_text = kt.parse("\n".join(karten))
+als_lua = kt.parse("KombiTestlogDB = {\n\t[\"log\"] = {\n" + "".join('\t\t"%s", -- [%d]\n' % (l, i) for i, l in enumerate(karten, 1)) + "\t},\n}\n")
+check(sorted(als_text) == ["1412", "1456"], "karte_aus_testlog liest KARTE-Text (%s)" % sorted(als_text))
+check(als_lua == als_text, "karte_aus_testlog liest KARTE aus der Lua-Datei gleich wie aus dem Text")
+r = als_text.get("1412", {})
+check((r.get("a0"), r.get("b0"), r.get("a1"), r.get("b1")) == ("2448.20", "241.30", "-3643.30", "-3819.80"),
+      "Achsen: a0 = Welt-Y(0,0), b0 = Welt-X(0,0), a1 = Welt-Y(1,1), b1 = Welt-X(1,1) (%s)" % r)
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)
