@@ -14,7 +14,7 @@ Das heisst für dieses Repo:
 - Bearbeitete RXP-Inhalte stehen unter derselben Lizenz.
 - Kenntlich machen, dass etwas geändert wurde.
 
-Betroffen: `addons/RXPGuides_Kombi/*.lua` und alles, was `tools/merge_poc.py` nach `build/` schreibt.
+Betroffen: `addons/RXPGuides_Kombi/*.lua` und alles, was `tools/build_kombi.py` oder `tools/merge_poc.py` nach `build/` schreiben. In `data/kombi/plan.csv` stammen Weltkoordinaten in den Spalten `welt_a`/`welt_b` aus RestedXP, wo die Spalte `quelle` das sagt.
 
 ## Eigene Teile
 

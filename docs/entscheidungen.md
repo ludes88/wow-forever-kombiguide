@@ -13,6 +13,9 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 - 13.10.2026: Repo `ludes88/wow-forever-kombiguide` angelegt, öffentlich.
 - 13.10.2026: Keine persönlichen Daten im Repo, auch kein Vorname. Addons heissen deshalb `KombiTestlog` und `RXPGuides_Kombi`, die Guide-Gruppe `Kombiguide (H)`.
 - 13.10.2026: Arbeitsregeln, Überlegungen und die Art der Zusammenarbeit mit KI bleiben bewusst sichtbar. Sie zeigen, wie der Nutzer arbeitet.
+- 13.10.2026: Ziel ist möglichst wenig Arbeit für den Nutzer. Claude arbeitet direkt im Repo (Branch, Pull Request) und führt nach den automatischen Prüfungen selbst zusammen.
+- 13.10.2026: Die Claude-Sitzung wird mit dem PC des Nutzers verbunden. Claude installiert Addon-Versionen selbst und liest die Testlog-Datei selbst.
+- 13.10.2026: Der Nutzer überlässt Claude die Umsetzung. Claude setzt dafür die Datenkette aus Plan-Tabelle und Generator ein (Vorschlag von Claude, siehe `vorgehen.md`). Der Kombi-Guide wird für die RXP-Version gebaut, die beim Nutzer installiert ist (zurzeit v4.11.13).
 
 ## Offen
 
@@ -20,3 +23,5 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 2. LW-Route 1–150: wow-professions oder kami-labs.
 3. Welche Quellen-Widersprüche zuerst im Spiel geprüft werden.
 4. Lizenz für die eigenen Teile.
+5. RestedXP auf v4.11.23 aktualisieren (die neuere Route enthält Kürschnerei bei Mooranta und die Leder-Quest 768).
+6. Format der Plan-Tabelle: CSV mit Semikolon ist gesetzt (Vorgabe von Claude, für Excel), änderbar.

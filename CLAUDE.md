@@ -3,6 +3,7 @@
 Ein RestedXP-Guide für Stufe 1–22 (Horde, Tauren-Druide, Start Mulgore): RXPs Gratis-Route mit eigenen Berufsschritten an den passenden Stellen («Weg A»). Dazu das Test-Addon KombiTestlog.
 Ausführlich, mit Belegen: @docs/Weg-A_Best-Practice.md
 Entscheidungen: @docs/entscheidungen.md
+Vorgehen und Versionen: @docs/vorgehen.md
 
 ## Arbeitsregeln des Nutzers (gelten in jeder Sitzung)
 
@@ -20,9 +21,11 @@ Entscheidungen: @docs/entscheidungen.md
 | Ordner | Inhalt |
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
-| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` |
-| `tools/` | `fetch_rxp.sh`, `merge_poc.py`, `validate.py`, `testlog_harness.py` |
-| `docs/` | Best Practice, Entscheidungen |
+| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 2: schreibt auch Kartengrenzen `KARTE`) |
+| `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, Quelle, Status); `VERSION` |
+| `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
+| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `validate.py`, `testlog_harness.py`, `merge_poc.py` (alte Probe) |
+| `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
 | `testlogs/` | Testlog-Dateien aus dem Spiel (`KombiTestlog.lua`), nicht versioniert |
 | `vendor/`, `build/` | RXP-Klon und erzeugte Dateien, nicht versioniert |
@@ -31,8 +34,8 @@ Entscheidungen: @docs/entscheidungen.md
 
 ```bash
 pip install -r tools/requirements.txt                     # lupa (Lua 5.1 für Python)
-tools/fetch_rxp.sh v4.11.23                               # RXP in genau dieser Version nach vendor/
-python3 tools/merge_poc.py v4.11.23                       # Mischprobe -> build/Kombi_Probe.lua
+tools/fetch_rxp.sh v4.11.13                               # RXP in der Version des Nutzers nach vendor/ (steht im Testlog: SITZUNG … RXP v…)
+python3 tools/build_kombi.py v4.11.13                     # Kombi-Guide -> build/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen)
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
 ```
@@ -48,6 +51,8 @@ Vor jedem Commit an Guides oder Addons: `validate.py` bzw. `testlog_harness.py` 
 - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen.
 - Quest- und NPC-Namen nicht übersetzen: RXP holt Quest-Namen vom Client und übersetzt `.target`/`.mob` selbst.
 - Testlog liest Chat-Text nicht aus (kann im modernen Client «secret» sein), sondern zählt den Taschenbestand.
+- Koordinaten: Eigene Orte als Spielkoordinaten (Prozent, wie im Testlog) in `plan.csv`; `build_kombi.py` rechnet über `forever_karten.csv` in RXP-Weltkoordinaten um. NIE RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) als Grundlage nehmen, sie passen nicht zur Forever-Karte (Testlauf 2). Exakte Kartenecken liefert das Testlog (`KARTE`).
+- RXP-Schrittnummern zählen nur Schritte, die für Klasse und Rasse gelten (Tauren-Druide: Kombi-Schritte #36–#38 in «1-6 Mulgore», v0.1/v0.1.1).
 
 ## Lizenz
 
@@ -55,7 +60,8 @@ RXP-Inhalte stehen unter CC BY-NC-SA 4.0: nur nicht-kommerziell, Herkunft nennen
 
 ## Arbeitsweise
 
-- Änderungen über Branch und Pull Request, nicht direkt auf `main`.
+- Änderungen über Branch und Pull Request, nicht direkt auf `main`. Claude führt nach grünen Prüfungen selbst zusammen (Entscheidung des Nutzers, 13.10.).
+- Ziel: möglichst wenig Arbeit für den Nutzer. Ist die Sitzung mit seinem PC verbunden, installiert Claude Addons selbst und liest das Testlog selbst (`World of Warcraft\_classic_beta_\WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`).
 - Commit-Nachrichten auf Deutsch, kurz, Präsens, mit Bereich vorne: `testlog: zählt Kräuter mit`.
 - Keine Geheimnisse (API-Keys, Tokens) und keine Testlog-Dateien committen.
 - Neue Fakten mit Quelle ins Best-Practice-Dokument, neue Entscheidungen des Nutzers nach `docs/entscheidungen.md`.
