@@ -1,6 +1,6 @@
 # Weg A: Kombi-Guide aus RXP-Route und Berufen – Best Practice
 
-Stand 13.10.2026. Gilt für die Forever-Beta: Client 1.60.1 (Build 70338), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 9c7aaaf (13.10.).
+Stand 14.10.2026. Gilt für die Forever-Beta: Client 1.60.1 (Build 70338), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 9c7aaaf (13.10.).
 Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link oder Code-Stelle) oder als **ungeprüft** markiert.
 
 ---
@@ -15,7 +15,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`). Version 3.2 beendet Fenster-Sitzungen auch ohne CLOSED-Ereignis (Risiko 19) und zählt beim Angeln die Würfe pro Fang; 3.3 nimmt beim Ausloggen den letzten bekannten Geldstand.
 - **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen und RXP dagegen prüfen), `tools/fetch_rxp.sh` (RXP in einer Version holen).
 - **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff, Orgrimmar und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff, Orgrimmar.
-- **Mengen:** `tools/plan_mengen.py` rechnet aus `data/kombi/modell_leder.csv`, wie viel Leder die Route bis zum Berufswechsel bringt (Bericht `docs/plan/mengen-leder.md`). Die Ziele im Kombi-Guide kommen daher.
+- **Mengen:** `tools/plan_mengen.py` rechnet aus `data/kombi/*.csv`, wie viel Leder die RXP-Route bis Stufe 20 bringt (mit und ohne Farm-Stopps), was Lederverarbeitung 150 und Verzauberkunst 150 brauchen und wie gross die Lücke ist (Bericht `docs/plan/mengen-leder.md`). Die Ziele im Kombi-Guide kommen daher.
+- **Schritte lesen und Stellen prüfen:** `tools/rxp_schritte.py liste …` zeigt die Schritte so, wie RXP sie einem Charakter zeigt; `… vergleich …` prüft vor dem Merge, dass ein Neubau die gespeicherte Stelle eines Testcharakters nicht verschiebt (§6).
 
 ---
 
@@ -28,6 +29,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
   - 488 für VZ 130 mit 90 % Sicherheit
   - 644 für VZ 150 mit 90 % Sicherheit
   - dazu 100 Ruined Leather Scraps, 27 Light Hide, 10 Medium Hide
+  - Die Herleitung dieser Zahlen ist im Repo nicht mehr auffindbar. Neu gerechnet am 14.10. mit den Forever-Routen (`docs/plan/mengen-leder.md`): Lederverarbeitung 150 braucht netto 240 (kami-labs) bis 416 (wow-professions) Leichtes Leder; mit Verzauberkunst 150 aus eigenem Entzaubern 567 bis 614. Die 416 stimmen zahlenmässig mit dem Netto-Bedarf der wow-professions-Route überein; ob die alte Zahl so entstand, ist offen.
+- Vorgabe des Nutzers vom 14.10.: Das Material muss nicht mit Stufe 15 fertig sein; es soll um Stufe 20 für Lederverarbeitung 150 und Verzauberkunst 150 reichen (Lesart von Claude, Rückfrage offen, `docs/entscheidungen.md`).
 - Leitsatz des Nutzers: nicht «farme 650 Leder» als Block, sondern pro Gebiet so viel, wie dort effizient geht, dann weiter im Takt der Route.
 
 ---
@@ -130,6 +133,9 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - Leere Argumente gibt es nicht: RXP teilt die Argumente mit `string.gmatch(args, "[^,]+")` (`GuideLoader.lua`, `parseLine`). `.collect 2318,19,,0,8` wird deshalb zu Quest 0 und Ziel-Maske 8. Richtig: `.collect 2318,19,0,1,24` (Flags 8 = Bank zählt mit, 16 = nicht an eine Quest gebunden). Der Generator meldet `,,` als Fehler.
 - `.collect` zeigt bei Forever (Spielversion unter 90000) «Text» und darunter «Gegenstand: x/y»; erfüllt ab y, wieder offen, wenn der Bestand sinkt (`functions.lua`).
 - `.skill beruf,n` ohne dritten Wert zeigt keinen Zähler, nur den Text und ein Häkchen ab Fertigkeit n. `.maxskill beruf,150` ist erfüllt, sobald der Geselle gelernt ist (ohne Zauber-ID).
+- `.goto` ohne Radius zeigt den Pfeil und hält den Schritt nicht auf (Element «textOnly»). Ein Radius über 0 macht das Hingehen zur Bedingung, ausser mit einem fünften Argument (wie in RXPs Schleifen `…,60,0`); Radius 0 ohne fünftes Argument nimmt den Pfeil weg (`functions.lua`, `addon.functions["goto"]`). Farm-Stopps nutzen deshalb `.goto` ohne Radius.
+- `.xp N,1` überspringt einen Schritt ab Stufe N, `.xp <N,1` unter Stufe N; `.xp N` allein heisst «Grind to level N» (`functions.lua`, `addon.functions.xp`). Daraus stammen die Stufen-Stände der Route im Mengenmodell.
+- `#maxlevel N` blendet einen Schritt beim Laden aus, wenn der Charakter über Stufe N ist und «Skip overleveled steps» an ist (Standard; `RXPGuides.lua` `LevelCheck`).
 
 ---
 
@@ -180,6 +186,13 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - Berufs-Quests bei Kaga Wildhoof (Stonebull Lake, gleicher Ort wie «Camping 101: Cooking» in RXP): 97933 «Grundlagen des Zeltens: Kräuterkunde» und 97936 «Grundlagen des Zeltens: Kürschnerei» (im Spiel angenommen, Testlog 13.10. 22:13). RXPs Horde-Route führt beide nicht (v4.11.13, v4.11.23, Hauptzweig df745bd vom 13.10. abends). Für die Allianz führt RXP die Gegenstücke 97921 «Camping 101: Herbalism» und 97924 «Camping 101: Skinning» mit `.skill herbalism,<1,1` bzw. `.skill skinning,<1,1` (`Guides/forever/Alliance-1-13_Human.lua`).
   - Ziel jeweils Fertigkeit 20, ab Stufe 6 (benötigt 4), Belohnung 270 XP und das Rezept des Lager-Gegenstands (Camp Chair bzw. Incense Candle). Abgabe Horde in Mulgore: Kürschnerei bei Yonn Deepcut (Bloodhoof, 45.0, 61.4), Kräuterkunde bei Komin Winterhoof (Thunder Bluff, 49.8, 39.8). Quelle: warcraft.wiki.gg, Seiten «Camping 101: Skinning» und «Camping 101: Herbalism» (abgerufen 13.10.).
   - Im Kombi-Guide v0.2: Abgabe beider Quests (mit `.isQuestComplete`). Das Annehmen bei Kaga fehlt noch; es liegt vor der Stelle des Testcharakters (Abschnitt 6).
+- Brachland und Südbrachland bis Stufe 20 (gelesen am 14.10., v4.11.23, Tauren-Druide; Liste mit Schrittnummern in `docs/plan/mengen-leder.md`):
+  - «6-12 Mulgore» endet in den Crossroads (#186–#194, Druiden-Lehrer davor mit `.xp <12,1`): Ankunft um Stufe 12.
+  - Tier-Quests im Brachland: 844 (7 Schnäbel), 869 (12 Raptorenköpfe), 845 (4 Hufe), 903 und 821 (Savannah Prowler, Ebenenschreiter-Nieren, Thunder Lizard Horn), 95494 (6 Savannah Lion Hide, neu in Forever, bei Vrang), 905 und 865 (Sunscale Scytheclaw), 881 (Echeyakee), 880 (Oasis Snapjaw), 882 und 10338 (Ishamuhale, Zhevra Charger), 907 und 913 (Donnerechsen, Donnerfalke), im Eschental 98251 (je 6 Bären und Hirsche).
+  - Stufen laut RXP: Druiden-Lehrer bei 14–15 (12-17 #34), «Grinding to level 16 here is important» an der Sludge Fen (#83), Lakota'mani erst ab 18 (#152), Lehrer 18–19 bzw. ab 20 nach dem ersten Steinkrallen-Besuch (17-22 #28/#29), Wolf Bracers ab 20 in Ratchet (17-22 #58), «Grind to level 21» im Eschental (#166).
+  - Rund um die Crossroads tötet die Route gleich nach der Ankunft dieselben Tiere für 844, 869 und 845 (rund 46 Kills). Ein Farm-Stopp dort würde diese Kills nur vorziehen; zusätzliches Leder bringt Farmen erst an Tieren, deren Quests schon fertig sind.
+  - Synergie: RXP schlägt an der Sludge Fen ohnehin Grinden auf Stufe 16 vor; der Kombi-Guide schlägt dafür Raptoren und Savannenkatzen gleich daneben vor (RXP-Schleifen #81/#82), damit das Grinden Leder bringt.
+- Kombi-Guide v0.3 (14.10.): Leder-Zähler pro Abschnitt und drei optionale Farm-Stopps S1–S3 (Nordbrachland beim RXP-Grinden auf 16, Südbrachland bei den Scytheclaws, Camp Taurajo) mit Ziel aus dem Mengenmodell, ab Stufe 16 auch Mittleres Leder. Alle mit `.skill skinning,<1,1`, verschwinden also ohne Kürschnerei. In «12-17» erst nach Schritt #77 eingefügt (zweiter Testcharakter, §6).
 - Unterschied v4.11.13 → v4.11.23 in den zwei Horde-Dateien: +463/−181 Zeilen aus 8 Commits (03.–10.10.), gemessen am 13.10. mit `git diff` im RXP-Klon.
 
 ---
@@ -199,6 +212,9 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Wie RXP die Stelle wiederfindet** (Code v4.11.23): Pro Guide speichert RXP die Schrittnummer und eine Schritt-Kennung aus der Zeilennummer im Guide-Text (`stepId = linenumber + guide.guideId`, `GuideLoader.lua` L1090). Beim Laden sucht es zuerst diese Kennung, sonst nimmt es die Nummer (`GuideWindow.lua` L1894–1901).
   - Gezählt werden nur nicht-leere Zeilen; Kommentarzeilen entfernt RXP vorher (`string.gmatch(text, "[^\n\r]+")`). Die Nummer zählt nur angezeigte Schritte (`ProcessGuideTable`, `IsStepShown`; z. B. fehlen `#hardcore`-Schritte).
   - Regel für Neubauten während eines Tests: neue Schritte nur **nach** der Stelle des Testcharakters einfügen. Dann bleiben Kennung und Nummer gleich (v0.2: Stelle «Well» #30, Zeile 339, unverändert).
+  - Prüfen vor dem Merge: `python3 tools/rxp_schritte.py vergleich git:HEAD:addons/RXPGuides_KombiGuide/Kombi_Guide.lua addons/RXPGuides_KombiGuide/Kombi_Guide.lua "<Guide>" --stelle N --klasse <klasse>` (Exit 1, wenn sich ein Schritt bis N verschiebt). Text ändern bei gleicher Zeilenzahl ist erlaubt: RXP findet die Stelle über die Zeilennummer.
+  - Stellen am 14.10.: Testcharakter Tauren-Druide in «6-12 Mulgore» #30 (Testlog 13.10. 22:50), zweiter Testcharakter (Stufe 15, Tauren, Klasse nicht im Testlog) in «12-17 The Barrens» #77 der Gruppe «Kombiguide (H)» (Testlog 13.10. 22:48). Für alle Tauren-Klassen liegt #77 spätestens bei Zeile 1742 (RXP-Zählung, `tools/rxp_schritte.py`); v0.3 fügt in «12-17» erst danach ein (geprüft für Druide, Jäger, Schamane, Krieger).
+  - Ausweg für Schritte davor, ungeprüft im Spiel: `#maxlevel 14` blendet einen Schritt für Charaktere ab Stufe 15 aus, dann zählt er für deren Nummer nicht mit (`LevelCheck`, wird beim Laden des Guides geprüft).
   - Ändert ein Neubau nur Koordinaten (gleiche Zeilen, z. B. v0.1.1 → v0.1.2), bleibt die Stelle genau.
   - Ändert sich die Route (andere Zeilen, z. B. Neubau auf einer neueren RXP-Version), kann RXP an einer anderen Stelle stehen. Erledigte Schritte überspringt RXP selbst (Testlauf 2); liegt die Stelle zu weit vorne, hilft die Schrittliste. Im Spiel **ungeprüft** (Test T6).
 - **Wann aktualisieren?** Das entscheidet der Nutzer. Möglich sind:
@@ -293,6 +309,7 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 
 **Rang-Grenzen**
 - LW und VZ: Journeyman ab Fertigkeit 50 und Stufe 10; Expert ab 125 und Stufe 20, kostet 50s; Artisan ab 200 und Stufe 35 [Forever, wow-professions].
+- Der Geselle (Journeyman) hebt das Maximum auf 150; den Experten braucht man erst für mehr als 150 [Forever: wow-professions Enchanting Leveling Guide «Journeyman (70-150)», «Expert (150-225)»; kami-labs Leatherworking: «Your limit then rises to 150», Expert «learn it before continuing past 150»; abgerufen 14.10.]. Lederverarbeitung 150 und Verzauberkunst 150 gehen also ab Stufe 10, ohne Stufe 20.
 - Kürschnerei: laut wow-professions ohne Stufen-Voraussetzung (50/125/200). **Widerspruch:** RankedBoost nennt 75/150/225.
 - Kräuterkunde: laut wow-professions ohne Stufen-Voraussetzung. **Widerspruch:** Icy Veins nennt Stufe 10/20/35.
 - Fischen: Journeyman ab 50 und Stufe 10. Expert ab 125 und Stufe 20, über ein Buch von Old Man Heming in Booty Bay [Forever, Icy Veins].
@@ -312,7 +329,10 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 - Stufen [Classic, Wowhead]:
   - Mulgore: Plainstrider 1–2, Prairie Wolf 5–6, Prairie Stalker 7–8, Swoop 7–9, Prairie Wolf Alpha 9–10
   - Brachland: Greater Plainstrider 11–12, Zhevra Runner 13–14, Savannah Prowler 14–15, Sunscale Scytheclaw 16–18, Stormsnout 18–19, Thunderhead 20–21
-- Ob Oasis Snapjaw kürschnerbar ist, ist offen. Die Beute bei AHledger enthält Leichtes Leder, sie ist aber nicht als Kürschnerei markiert.
+- Ob Oasis Snapjaw kürschnerbar ist, ist offen. Die Beute bei AHledger enthält Leichtes Leder, sie ist aber nicht als Kürschnerei markiert. Wowhead (Classic) nennt Schildkröten unter den Lederquellen im Brachland.
+- Weitere Stufen [Classic]: Sunscale Lashtail 11–13, Sunscale Screecher 13–15, Sunscale Scytheclaw 16–18, Savannah Highmane 12–13, Savannah Prowler 14–15, Savannah Patriarch 15–16, Oasis Snapjaw 15–16, Ishamuhale 19 (Warcraft Tavern, Hunter-Pets-Seiten); Ornery Plainstrider 17, Savannah Matriarch 18, Zhevra Charger 18, Echeyakee 16, Thunderhawk Hatchling 20, Thunderhawk Cloudscraper 22, Ashenvale Bear 22, Shadowhorn Stag 23 (MetaForge, Seite «Medium Hide», VMaNGOS-Daten). Kreatur-IDs aus den Links der AHledger-Seite «The Barrens»: Greater Plainstrider 3244, Ornery Plainstrider 3245, Zhevra Runner 3242, Sunscale Screecher 3255, Sunscale Scytheclaw 3256, Savannah Prowler 3425, Savannah Patriarch 3241, Savannah Matriarch 3416, Stormsnout 3240, Thunderhead 3239 (Fleeting Plainstrider 3246 nur erschlossen).
+- Wowhead, «Classic Leather Farming: Early Leather» (RenataKane, Stand 09.06.2021, Patch 1.15.2) [Classic]: Leichtes Leder ab Gegnerstufe 6, am besten 11–20; Mittleres Leder ab 16, am besten 21–30; Bälge meist mit dem passenden Leder, etwa 3–5 %; ab Stufe 11 bis zu 2 Leichtes Leder pro Haut; im Brachland nördlich von Camp Taurajo eher Leichtes, südlich eher Mittleres Leder. https://cn.classic.wowhead.com/guides/classic-leather-farming-early-leather
+- Medium Hide kürschnert man laut MetaForge ab Gegnerstufe 16 (z. B. Echeyakee, Zhevra Charger, Sunscale Scytheclaw, Savannah Matriarch, Stormsnout).
 
 **Kräuter** [Forever, Icy Veins 11.10.]
 - Peacebloom 1, Silverleaf 1, Earthroot 15, Mageroyal 50, Briarthorn 70, Stranglekelp 85, Bruiseweed 100, Wild Steelbloom 115.
@@ -366,7 +386,14 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 - Fraktion: Durotar Supply and Logistics. Lager vor dem Westtor der Crossroads, Abgabe bei Dokimi.
 - **Widerspruch** bei den Koordinaten: 50.1, 29.3 (Mobalytics) / 42, 34 (Overgear).
 
-**LW-Route 1–150:** wow-professions und kami-labs unterscheiden sich, siehe Projekt-Rechnung und die Links in Abschnitt 11. Die Wahl ist offen.
+**LW-Route 1–150** (Wahl bei Claude, Entscheidung des Nutzers vom 13.10.; Zahlen in `data/kombi/bedarf_lw_vz.csv` und `docs/plan/mengen-leder.md`):
+- wow-professions (Forever-Beta, abgerufen 14.10.): 1–30 Light Leather aus Fetzen, 30–55 Cured Light Hide, 55–75 Embossed Leather Gloves, 75–80 Medium Leather (aus 4 Leichtem Leder), 80–90 Cured Medium Hide, 90–100 Fine Leather Belt, 100–115 Light Leather Pants, 115–125 Dark Leather Belt, 125–130 Heavy Leather, 130–140 Cured Heavy Hide, 140–155 Hillman's Leather Gloves. Netto bis 150: 416 Leichtes Leder, 223 Mittleres Leder, 99 Fetzen, 27 Light Hide, 10 Medium Hide, 20 Heavy Hide. Laut Seite werden die meisten Rezepte in Forever 25 Punkte früher grau als in Classic.
+- kami-labs (Stand 08.10.): 1–36 Light Armor Kit, 36–62 Cured Light Hide, 62–85 Embossed Leather Gloves, 85–100 Fine Leather Belt, 100–128 Cured Medium Hide, 128–130 Dark Leather Belt, 130–143 Hillman's Shoulders, 143–150 Forceful Heavy Armor Kit (neu, Muster bei Saenorion in Darnassus oder Nioma im Hinterland, für Horde **ungeprüft**). Netto: 240 Leichtes Leder, 72 Mittleres Leder, 32 Light Hide, 42 Medium Hide.
+- Messung 13.10. (`docs/tests/messdaten-2026-10-13.md`): ein Rezept mit 4 Mittlerem Leder gab ab LW 98 Punkte, ab 105 kamen Fehlschläge. Das passt zur Aussage von wow-professions (Rezepte früher grau). Welches Rezept es war, steht nicht im Testlog.
+- Planungsgrundlage deshalb vorerst wow-professions (die vorsichtigere Rechnung), kami-labs als günstigere Variante daneben. Testlog 3 zeichnet beim Herstellen Rezept und Punkte auf (HERSTELLEN); damit lassen sich die Farbbereiche prüfen.
+
+**VZ-Route 1–150** (wow-professions, Forever-Beta, abgerufen 14.10.): Staub-Weg 275 Strange Dust und 4 Lesser Magic Essence oder Essenz-Weg 313 Lesser Magic Essence und 3 Strange Dust, dazu Copper Rod, 19 Mote of Magic, Silver Rod, Shadowgem; Greater Magic Essence lässt sich 1 : 3 in Lesser umwandeln. Lehrer Horde: Mot und Teg Dawnstrider (Thunder Bluff), Experte Hgarth (Sun Rock Retreat).
+- Entzaubern der grünen Teile aus der LW-Route liefert laut Modell rund 73 (kami-labs) bis 123 (wow-professions) Strange Dust. Für den Rest braucht es rund 200 bis 330 Leichtes Leder mehr (zusätzliche Embossed Leather Gloves) oder Strange Dust aus dem AH (Beta: unter 1g 40s).
 
 **Alle 14 Widersprüche zwischen den Quellen** (Recherche 13.10., im Spiel zu prüfen)
 1. Koordinaten Yonn Deepcut (Kürschnerei, Bloodhoof)
@@ -401,6 +428,8 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T6 | Update-Übung: neue Kombi-Datei einspielen | Fortschritt bleibt erhalten |
 | T7 | Testlog prüfen | `SAMMELN` beim Kürschnern und Kräutersammeln, `HERSTELLEN`/`ENTZAUBERN` beim Beruf, `HÄNDLER`/`GELD` beim Einkaufen und beim Lehrer; `BERUF` bei jedem Punkt; `RXP` bei jedem Schritt |
 | T8 | Quellen-Widersprüche vor Ort prüfen | Koordinaten Yonn Deepcut, Rang-Grenzen Kürschnerei/Kräuterkunde, Bruiseweed, Dokimi |
+| T9 | Leder-Zähler im Kombi-Guide (v0.2/v0.3) gegen den echten Bestand | Zähler zeigt «x/Ziel»; das Testlog (SAMMELN, TASCHE) zeigt, ob das Modell zu hoch oder zu tief liegt |
+| T10 | Farm-Stopps S1–S3 (optional) | Pfeil zur Farmstelle; Häute pro Stunde, Anteil Leichtes/Mittleres Leder und Stücke pro Haut ab Gegnerstufe 11 im Testlog (SAMMELN mit Kreatur-ID und Zeit) |
 
 Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - **T0** bestanden, auch mit Testlog 2 und den verknüpften AddOns (SITZUNG meldet «Kombiguide 0.1.1-v4.11.13»), und am 13.10. 22:08 mit RestedXP v4.11.23, Testlog 3 und «Kombiguide 0.1.2-v4.11.13» (der ältere Bau läuft mit dem neueren RXP).
@@ -428,6 +457,7 @@ Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
   - https://metaforge.app/wow-forever/database/creatures · https://seemeta.com/en/wow-forever/professions/cooking
   - https://warcraft.wiki.gg/wiki/Skinning · https://wowpedia.fandom.com/wiki/Skinning
 - Beta: https://www.warcrafttavern.com/forever/guides/beta/
+- Leder und Gegnerstufen: https://cn.classic.wowhead.com/guides/classic-leather-farming-early-leather · https://metaforge.app/wow-forever/database/trade-goods/medium-hide · https://www.warcrafttavern.com/wow-classic/hunter-pets/violet-raptors/ · https://www.warcrafttavern.com/wow-classic/hunter-pets/golden-lions/ · https://www.warcrafttavern.com/wow-classic/hunter-pets/brown-tallstriders/ · https://www.warcrafttavern.com/wow-classic/hunter-pets/blue-turtles/ · https://www.warcrafttavern.com/wow-classic/hunter-pets/pets/savannah-patriarch/
 - Daten-Seiten ohne JavaScript: AHledger, MetaForge (teilweise), SeeMeta, wow-professions, Icy Veins. Wowhead-Forever-Seiten bleiben oft leer.
 
 ---
@@ -448,3 +478,4 @@ Stand und Liste: `docs/entscheidungen.md`. Am 13.10. entschieden: Update-Rhythmu
 - 13.10.2026: Kombi-Guide auf RXP v4.11.23 gebaut (Testlog zeigt v4.11.23 nach dem CurseForge-Update); neue Addon-Ordner brauchen einen Neustart; Teststand T0 und T6.
 - 13.10.2026: Testlauf 3, zweiter Abschnitt: Messwerte Kürschnern, Kräuter, Angeln, Lehrer und Geld (§9); Lehrer-Koordinaten gemessen; Berufs-Quests 97933 und 97936 (§5); Risiko 19 und Testlog 3.2; T6-Erwartung neu gerechnet, T7.
 - 13.10.2026: Kombi-Guide v0.2 (6-12 Mulgore, Thunder Bluff) mit Mengenmodell; T6 bestanden; Regel «neue Schritte nach der Teststelle» (§6); Berufs-Quests mit Ziel, Abgabe und Belohnung (§5); Karte Orgrimmar exakt; Testlog 3.3; «Gathering Leather» und Simple Wood (§9).
+- 14.10.2026: RXP-Route bis Stufe 20 gelesen (§5); Mengenmodell bis Stufe 20 mit Bedarf für LW 150 und VZ 150 (§1, §9); Geselle reicht bis 150 (§9); LW-Routen von wow-professions und kami-labs verglichen, Planungsgrundlage gewählt (§9); Gegnerstufen und Leder-Anteile im Brachland (§9); `.goto` ohne Radius, `.xp`, `#maxlevel` (§4); Kombi-Guide v0.3 mit Leder-Zählern und Farm-Stopps (§5); Stellen-Prüfung mit `tools/rxp_schritte.py` (§6); Tests T9 und T10 (§10).

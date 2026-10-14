@@ -1,4 +1,4 @@
--- Kombi-Guide 0.2 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.3 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Basis RestedXP v4.11.23, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
 if not (RXPGuides and RXPGuides.RegisterGuide) then return end
 if UnitFactionGroup("player") == "Alliance" then return end
@@ -1380,9 +1380,9 @@ step
     .target Mooranta
 step
     #label Kombi9
-    #completewith WildManeTurnIn
-    >>Kombiguide: Bis Ende Mulgore weiter jedes Tier kürschnern, auch beim optionalen Grinden in Nord-Mulgore, und Kräuter sammeln. Vor Kürschnerei 75 den Gesellen bei Mooranta in Thunder Bluff lernen.
-    .collect 2318,29,0,1,24 >>Leder-Ziel bis Ende Mulgore (Modell B)
+    #completewith Kombi10
+    >>Kombiguide: Bis «Gathering Leather» in Thunder Bluff weiter jedes Tier kürschnern, auch beim optionalen Grinden in Nord-Mulgore, und Kräuter sammeln. Vor Kürschnerei 75 den Gesellen bei Mooranta in Thunder Bluff lernen.
+    .collect 2318,25,0,1,24 >>Leder-Ziel bis «Gathering Leather» (Modell B1)
     .skill skinning,<1,1
     .skill herbalism,50 >>Kräuterkunde 50 (ab 50 Mageroyal im Brachland)
 step
@@ -2166,6 +2166,12 @@ step
     .maxskill herbalism,150 >>Geselle Kräuterkunde (Maximum 150)
     .skill herbalism,<50,1
     .target Komin Winterhoof
+step
+    #label Kombi16
+    #completewith WildManeTurnIn
+    >>Kombiguide: Nach «Gathering Leather» bis zum Ende von Mulgore weiter jedes Tier kürschnern. Das Ziel rechnet die 12 abgegebenen Leder schon ab. Im Brachland tötet die Route rund um die Crossroads gleich viele Tiere für Quests (Ebenenschreiter, Raptoren, Zhevras); zusätzliches Leder bringen die Farm-Stopps ab dem Nordbrachland.
+    .collect 2318,16,0,1,24 >>Leder-Ziel bis Ende Mulgore (Modell B2)
+    .skill skinning,<1,1
 step << Hunter
     .goto 1456/1,-29.42,-1182.54--c:Thunder Bluff,52.32,47.79
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Kaga|r
@@ -4375,6 +4381,16 @@ step
     .complete 821,1 --Savannah Lion Tusk (5)
     .mob Savannah Prowler
 step
+    #label Kombi17
+    .goto 1413/1,-2818.68,747.70--c:The Barrens,53.7,12.8 (Spielkoordinaten)
+    >>Kombiguide: Farm-Stopp S1 im Nordbrachland (optional, etwa 25 Minuten): RXP schlägt im nächsten Schritt vor, hier auf Stufe 16 zu grinden. Grinde dafür an Raptoren und Savannenkatzen (Schleifen von RXP #81 und #82) und kürschnere alles, dann bringt das Grinden auch Leder. Überspringen oder früher aufhören: Häkchen setzen.
+    .collect 2318,72,0,1,24 >>Leder-Ziel Farm-Stopp S1 (Plan)
+    .skill skinning,<1,1
+    .mob Sunscale Lashtail
+    .mob Sunscale Screecher
+    .mob Sunscale Scytheclaw
+    .mob Savannah Prowler
+step
     #optional
     .goto 1413/1,-3102.42,1105.78
     >>Grinding to level 16 here is important, due to the next 3 quests being quite hard
@@ -4883,6 +4899,12 @@ step
     .target Innkeeper Boorand Plainswind
     .isQuestAvailable 3281
 step
+    #label Kombi18
+    #completewith Kombi19
+    >>Kombiguide: Ab hier bis zum Farm-Stopp im Südbrachland jedes Tier kürschnern: Ebenenschreiter (Nieren für «Chen's Empty Keg»), Raptoren, Echeyakee. Ab Gegnerstufe 16 kommt auch Mittleres Leder.
+    .collect 2318,83,0,1,24 >>Leder-Ziel (Plan, Abschnitt E)
+    .skill skinning,<1,1
+step
     .goto 1413/1,-2639.32,-436.00
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Gazrog|r
     .turnin 869 >>Turn in Raptor Thieves
@@ -5186,6 +5208,14 @@ step
     >>|cRXP_WARN_Be careful as they cast|r |T132152:0|t[Thrash] |cRXP_WARN_(Charges 2 extra attacks every 10 seconds)|r
     .complete 905,2 --Visit Yellow Raptor Nest (1)
     .collect 5165,3,905,7,3
+    .mob Sunscale Scytheclaw
+step
+    #label Kombi19
+    .goto 1413/1,-2920.02,-1772.38--c:The Barrens,54.7,50.1 (Spielkoordinaten)
+    >>Kombiguide: Farm-Stopp S2 im Südbrachland (optional, etwa 20 Minuten): Sunscale Scytheclaws östlich der Raptorennester. Die ersten rund 10 zählen auch für «Raptor Horns» (5 Hörner), das Ziel rechnet das ein. Hier gibt es das erste Mittlere Leder. Überspringen oder früher aufhören: Häkchen setzen.
+    .collect 2318,96,0,1,24 >>Leder-Ziel Farm-Stopp S2 (Plan)
+    .skill skinning,<1,1
+    .collect 2319,4,0,1,24 >>Mittleres Leder (Plan)
     .mob Sunscale Scytheclaw
 step
     #optional
@@ -6062,6 +6092,13 @@ step
     .turnin 3261 >>Turn in Jorn Skyseer
     .accept 882 >>Accept Ishamuhale
     .target Jorn Skyseer
+step
+    #label Kombi20
+    #completewith Kombi21
+    >>Kombiguide: Südbrachland: jedes Tier kürschnern (Stormsnouts, Scytheclaws, Ebenenschreiter, Zhevra Charger, Löwen, Donnerechsen). Mittleres Leder kommt jetzt öfter.
+    .collect 2318,105,0,1,24 >>Leder-Ziel (Plan, Abschnitt G)
+    .skill skinning,<1,1
+    .collect 2319,7,0,1,24 >>Mittleres Leder (Plan)
 step
 	#completewith LakotaMani2
     >>Kill |cRXP_ENEMY_Stormsnouts|r. Loot them for a |cRXP_LOOT_Horn|r
@@ -7003,6 +7040,15 @@ step
     .accept 874 >>Accept Mahren Skyseer
     .accept 6382 >>Accept The Ashenvale Hunt << Hunter
     .target Jorn Skyseer
+step
+    #label Kombi21
+    .goto 1413/1,-2139.75,-2515.57--c:The Barrens,47.0,61.1 (Spielkoordinaten)
+    >>Kombiguide: Stand Stufe 20 und Farm-Stopp S3 bei Camp Taurajo (optional, etwa 20 Minuten): Donnerechsen und Stormsnouts südlich von Camp Taurajo. Laut Wowhead (Classic) gibt es südlich von Camp Taurajo mehr Mittleres Leder. Überspringen oder früher aufhören: Häkchen setzen.
+    .collect 2318,118,0,1,24 >>Leder-Ziel Farm-Stopp S3 (Plan)
+    .skill skinning,<1,1
+    .collect 2319,10,0,1,24 >>Mittleres Leder (Plan)
+    .mob Thunderhead
+    .mob Stormsnout
 step << !Tauren !Skyborne
     .goto 1413/1,-1891.48,-2391.93
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Mangletooth|r

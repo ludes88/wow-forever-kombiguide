@@ -2,17 +2,17 @@
 
 Ein RestedXP-Guide für Stufe 1–22 (Horde, Tauren-Druide), der RXPs Gratis-Route mit Berufsschritten verbindet: Kräuterkunde und Kürschnerei bis etwa Stufe 15, danach Lederverarbeitung und Verzauberkunst bis 150, dazu Fischen und Kochen.
 
-Stand 13.10.2026: Kombi-Guide v0.2 auf Basis RestedXP v4.11.23 (Berufsschritte bis Ende Mulgore), Testlog 3.3; im Spiel getestet (Forever-Beta). Testberichte in `docs/tests/`, Mengenmodell in `docs/plan/`.
+Stand 14.10.2026: Kombi-Guide v0.3 auf Basis RestedXP v4.11.23 (Berufsschritte bis Ende Mulgore, Leder-Zähler und Farm-Stopps im Brachland bis Stufe 20), Testlog 3.3; im Spiel getestet bis v0.2 (Forever-Beta). Testberichte in `docs/tests/`, Mengenmodell bis Stufe 20 in `docs/plan/mengen-leder.md`.
 
 ## Inhalt
 
 - `addons/KombiTestlog/`: Notizen und Testprotokoll im Spiel (`/tl hilfe`)
 - `addons/RXPGuides_Kombi/`: eigene RXP-Guides, zurzeit der Test «Vorquests Höhlen des Wehklagens»
-- `data/kombi/plan.csv`: Plan-Tabelle der Berufsschritte (lässt sich in Excel öffnen)
+- `data/kombi/plan.csv`: Plan-Tabelle der Berufsschritte (lässt sich in Excel öffnen); die übrigen Tabellen in `data/kombi/` sind die Eingaben des Mengenmodells
 - `data/karten/forever_karten.csv`: Kartenecken für die Koordinaten-Umrechnung
 - `docs/Weg-A_Best-Practice.md`: Aufbau, RXP-Syntax, Update-Ablauf, Risiken, Berufsdaten, Testplan
 - `docs/vorgehen.md`: Arbeitsweise, Datenkette, Versionen
-- `tools/`: Kombi-Guide bauen (`build_kombi.py`), Kartenecken aus dem Testlog übernehmen (`karte_aus_testlog.py`), Prüfen, Testlauf
+- `tools/`: Kombi-Guide bauen (`build_kombi.py`), Mengenmodell (`plan_mengen.py`), RXP-Schritte lesen und Stellen prüfen (`rxp_schritte.py`), Kartenecken aus dem Testlog übernehmen (`karte_aus_testlog.py`), Prüfen, Testlauf
 - `data/rechnung/`: Rechnung Lederverarbeitung und Verzauberkunst
 
 ## Einbau ins Spiel (Beta)

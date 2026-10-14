@@ -25,9 +25,9 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, bis, extra, Quelle, Status); `VERSION` |
-| `data/kombi/modell_leder.csv` | Mengenmodell Leder: Quests mit Tieren entlang der Route, Anteile mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md` |
+| `data/kombi/*.csv` (ausser plan.csv) | Mengenmodell Leder bis Stufe 20: `abschnitte`, `modell_leder` (Quests mit Tieren), `kuerschnern_anteile`, `farmstellen`, `farmstopps`, `bedarf_lw_vz` (LW/VZ 1–150), alle mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
-| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
+| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
 | `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
 | `testlogs/` | Testlog-Dateien aus dem Spiel (`KombiTestlog.lua`), nicht versioniert |
@@ -40,6 +40,8 @@ pip install -r tools/requirements.txt                     # lupa (Lua 5.1 für P
 tools/fetch_rxp.sh v4.11.23                               # RXP in der Version des Nutzers nach vendor/ (steht im Testlog: SITZUNG … RXP v…)
 python3 tools/plan_mengen.py                              # Mengenmodell -> docs/plan/mengen-leder.md (Ziele für plan.csv)
 python3 tools/build_kombi.py v4.11.23 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
+python3 tools/rxp_schritte.py vergleich git:HEAD:addons/RXPGuides_KombiGuide/Kombi_Guide.lua addons/RXPGuides_KombiGuide/Kombi_Guide.lua "6-12 Mulgore" --stelle 30   # Stelle eines Testcharakters bleibt? (Exit 1 sonst)
+python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/forever/Horde-12-22_Barrens.lua "12-17 The Barrens" --klasse druid   # Route lesen wie RXP sie zeigt
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
 python3 tools/karte_aus_testlog.py <Testlog> v4.11.23      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen
@@ -54,7 +56,7 @@ Vor jedem Commit an Guides oder Addons: `validate.py` (handgeschriebene Guides m
 - Guide-Kopf: `#forever`, `#name`, `#group`, `<< Horde` sind Pflicht. Eigene Gruppe `Kombiguide (H)`, kein `#defaultfor`.
 - In Guide-Text: `--` schneidet die Zeile ab, `[[`/`]]` beendet den Lua-String, `.subzone` braucht Text.
 - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen.
-- Während ein Testcharakter in einem Guide steht: neue Schritte nur nach seiner Stelle einfügen, sonst verschiebt sich die gespeicherte Stelle (RXP merkt sich Zeilennummer und Schrittnummer; Best Practice §6).
+- Während ein Testcharakter in einem Guide steht: neue Schritte nur nach seiner Stelle einfügen, sonst verschiebt sich die gespeicherte Stelle (RXP merkt sich Zeilennummer und Schrittnummer; Best Practice §6). Stand 14.10.: Tauren-Druide in «6-12 Mulgore» #30, zweiter Testcharakter (Stufe 15, Tauren) in «12-17 The Barrens» #77; vor dem Merge mit `tools/rxp_schritte.py vergleich` prüfen.
 - RXP überspringt leere Argumente (`,,`): `.collect 2318,19,0,1,24` statt `.collect 2318,19,,0,8`.
 - Quest- und NPC-Namen nicht übersetzen: RXP holt Quest-Namen vom Client und übersetzt `.target`/`.mob` selbst.
 - Testlog liest Chat-Text nicht aus (kann im modernen Client «secret» sein), sondern zählt den Taschenbestand. Beim Ausloggen meldet `GetMoney` 0, XP und Karte sind dann ebenfalls unzuverlässig.

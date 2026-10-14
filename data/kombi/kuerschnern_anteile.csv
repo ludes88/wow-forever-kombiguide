@@ -1,0 +1,5 @@
+band;stufe_von;stufe_bis;leder;fetzen;lhaut;mleder;mhaut;quelle
+1;1;10;0.38;0.62;0;0;0;Testlog 13.10. (Mulgore, Gegner Stufe 5–8: 8 Leichtes Leder und 13 Fetzen aus 21 Häuten) · passt zu MetaForge Kodo Calf (Stufe 7–8: 40 % Leder, 60 % Fetzen)
+2;11;15;0.60;0.35;0.05;0;0;MetaForge Zhevra Runner (Stufe 13–14: 60 % Leder, 35 % Fetzen, 5 % Light Hide · enthält VMaNGOS-Daten, also vermutlich Vanilla · Best Practice §9)
+3;16;20;0.74;0;0;0.20;0.02;MetaForge Zhevra Charger (Stufe 17–18: 74 % Leder, 20 % Mittleres Leder, 2 % Medium Hide · Rest 4 % unbekannt · Best Practice §9)
+4;21;30;0.74;0;0;0.20;0.02;keine Daten: wie Stufe 16–20 angenommen · Wowhead (Classic) nennt Stufe 21–30 als besten Bereich für Mittleres Leder, der wahre Anteil ist dort vermutlich höher
