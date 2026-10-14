@@ -21,14 +21,14 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | Ordner | Inhalt |
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
-| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3.3: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld; Liste im Dateikopf) |
+| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3.4: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld, Lehrerlisten `LEHRER`; Liste im Dateikopf) |
 | `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, bis, extra, Quelle, Status); `VERSION` |
 | `data/kombi/*.csv` (ausser plan.csv) | Mengenmodell Leder bis zum Wechsel in Orgrimmar: `abschnitte`, `modell_leder` (Quests mit Tieren), `kuerschnern_anteile`, `farmstellen`, `farmstopps`, `bedarf_lw_vz` (LW/VZ 1–150, Spalte `variante`), alle mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md`. Berufe-Plan: `rezepte` (Lernstufen laut AHledger), `items` (Item-IDs), `preise_zusatz` (Händlerpreise, Fisch); `tools/plan_berufe.py` macht daraus `docs/plan/berufe-plan.md` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
 | `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `plan_berufe.py` (Berufe-Plan: Sweetspot, Stufen A–D), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
-| `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe) |
+| `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe, Messplan Beta `messplan-beta.md`), `recherche/` (Quellen mit Datum), `plan/` (erzeugte Berichte) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
 | `testlogs/` | Testlog-Dateien aus dem Spiel (`KombiTestlog.lua`), nicht versioniert |
 | `vendor/`, `build/` | RXP-Klon und erzeugte Dateien, nicht versioniert |

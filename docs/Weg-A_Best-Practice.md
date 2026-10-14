@@ -1,6 +1,6 @@
 # Weg A: Kombi-Guide aus RXP-Route und Berufen – Best Practice
 
-Stand 14.10.2026. Gilt für die Forever-Beta: Client 1.60.1 (Build 70338), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 9c7aaaf (13.10.).
+Stand 14.10.2026. Gilt für die Forever-Beta: Client 1.60.1 (Build 70338), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 998caf30 (14.10.).
 Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link oder Code-Stelle) oder als **ungeprüft** markiert.
 
 ---
@@ -12,7 +12,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Pflicht im Kopf jedes Guides:** `#forever`, `#name`, `#group`, `<< Horde`. Ohne `#forever` lädt RXP den Guide in Forever nicht.
 - **Eigene Gruppe:** `#group Kombiguide (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
 - **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Pull Request und Merge → beim Nutzer `aktualisieren.bat` und `/reload` (AddOns sind mit dem Repo verknüpft, `docs/vorgehen.md`) → der Nutzer testet.
-- **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`). Version 3.2 beendet Fenster-Sitzungen auch ohne CLOSED-Ereignis (Risiko 19) und zählt beim Angeln die Würfe pro Fang; 3.3 nimmt beim Ausloggen den letzten bekannten Geldstand.
+- **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`). Version 3.2 beendet Fenster-Sitzungen auch ohne CLOSED-Ereignis (Risiko 19) und zählt beim Angeln die Würfe pro Fang; 3.3 nimmt beim Ausloggen den letzten bekannten Geldstand; 3.4 schreibt beim Öffnen eines Lehrerfensters die ganze Liste (LEHRER: Status, Lernstufe, Kosten; T13).
+- **Messplan Beta:** `docs/tests/messplan-beta.md` (M1–M10, was jede Messung im Plan ersetzt). Goldquellen mit Zahlen: `docs/recherche/2026-10-14_goldquellen.md`.
 - **Werkzeuge im Repo:** `tools/build_kombi.py` (Kombi-Guide aus `data/kombi/plan.csv` bauen und prüfen), `tools/validate.py` (Guide prüfen), `tools/testlog_harness.py` (Testlog-Probe), `tools/karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen und RXP dagegen prüfen), `tools/fetch_rxp.sh` (RXP in einer Version holen).
 - **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff, Orgrimmar und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff, Orgrimmar.
 - **Mengen:** `tools/plan_mengen.py` rechnet aus `data/kombi/*.csv`, wie viel Leder die RXP-Route bis Stufe 20 bringt (mit und ohne Farm-Stopps), was Lederverarbeitung 150 und Verzauberkunst 150 brauchen und wie gross die Lücke ist (Bericht `docs/plan/mengen-leder.md`). Die Ziele im Kombi-Guide kommen daher.
@@ -59,6 +60,20 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - Releases: v4.11.14 (03.10.) bis v4.11.23 (10.10.), also 10 Releases in 8 Tagen. Der Hauptzweig ist dem letzten Release voraus.
 - Umfang in den zwei Horde-Dateien: v4.11.14 → v4.11.23 +424/−181 Zeilen; v4.11.23 → Stand 13.10. +181/−48 Zeilen.
 - `#version` bleibt dabei bei 11. Taugt nicht als Änderungsmerkmal; massgebend ist die Addon-Version (Tag).
+
+**Stand 14.10. abends** (`git fetch` im RXP-Klon)
+- Neuester Release ist weiter v4.11.23. Der Hauptzweig steht bei 998caf30 (14.10. 20:15), 46 Commits weiter.
+- 4 dieser Commits ändern die zwei Horde-Dateien, zusammen +216/−69 Zeilen:
+  - 060d66a0 (11.10.) «Added Cat form chain / fixes + updates forever»
+  - 7b37767e (11.10.) «Typo / Parsing error fixes»
+  - aa016195 (12.10.) «1-22 minor improvements/fixes Forever»
+  - df745bd3 (13.10.) «Barrens minor fixes/improvements Forever»
+- Inhalt:
+  - In «1-6» und «6-12» fällt `#era/som--h` aus dem Kopf. In «6-12» kommen Hardcore- und Softcore-Varianten (Sparring Match, `.deathskip`), `.money <0.01` beim Kochlehrer und ein zweites Abgeben von «Camping 101: Cooking» bei Pyall dazu.
+  - Im Brachland: kleine Korrekturen, ein Schritt `.xp 20` vor Thunder Bluff und die Druiden-Questreihe «The Great Cat Spirit» (§5).
+- RXP baut seine Pakete weiter über `.github/workflows/package.yml` (BigWigs packager, bei jedem Push auf `main` und bei Tags). Am 12.10. entfernt: nur der FTP-Upload (Commits 598cf6d6, 96422b90).
+- Eine Alpha-Version, wie sie das Testlog als «v4.11.23-46-g998caf30» melden würde, löst git auf (`git rev-parse` ergibt 998caf30). `fetch_rxp.sh` und `build_kombi.py` nehmen sie also auch.
+- Probebau auf dem Hauptzweig: siehe §5 (Anker) und §6 (Stellen).
 
 ---
 
@@ -202,6 +217,20 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - Kombi-Guide v0.3 (14.10.): Leder-Zähler pro Abschnitt und drei optionale Farm-Stopps S1–S3 (Nordbrachland beim RXP-Grinden auf 16, Südbrachland bei den Scytheclaws, Camp Taurajo) mit Ziel aus dem Mengenmodell, ab Stufe 16 auch Mittleres Leder. Alle mit `.skill skinning,<1,1`, verschwinden also ohne Kürschnerei. In «12-17» erst nach Schritt #77 eingefügt (zweiter Testcharakter, §6).
 - Orgrimmar in «12-17» (v4.11.23, Tauren-Druide #92–#108): Eingang West, Erste Hilfe (nur mit dem Beruf), Kette «Meal Appeal» (Valley of Strength, The Drag, Valley of Honor), Flugpunkt, «The Spirits of Stonetalon» bei Zor Lonetree (#107), Label «SpiritsPickup» (#108), danach Ruhestein zu den Crossroads (#109). Thunder Bluff in «17-22» (#85–#97, um Stufe 20): Flug, Bank, Ruhestein, Spirit Rise, Label «DeathDUPpickup» (#92), Erste Hilfe, Elder Rise.
 - Kombi-Guide v0.4 (14.10.): Sweetspot-Zähler beim Farm-Stopp S1 (62 Leichtes Leder); Sitzung in Orgrimmar nach «SpiritsPickup» (AH, Kräuterkunde und Kürschnerei verlernen, LW 1–80, VZ 1–50, beide Gesellen, Stufe B optional); Sitzung in Thunder Bluff nach «DeathDUPpickup» (Stufen B–D, Verkauf). Einkauf mit Zählern (eigene Bestände zählen mit); Herstell-, Entzauberungs- und Verzauberungsschritte hängen an `.itemcount` und `.skill`: Sie entfallen, wenn das Material beim Erreichen des Schritts fehlt oder die Stufe schon erreicht ist; geht das Material mittendrin aus, setzt man das Häkchen. In Thunder Bluff zuerst der ganze Einkauf (Varianten «B und C», «C allein», «C und D»), «D allein» erst nach Stufe C. Alle Schritte nur mit dem jeweiligen Beruf (`.skill …,<1,1`). Die Leder-Zähler und Farm-Stopps nach Orgrimmar (S2, S3) sind entfallen.
+- Probebau auf dem RXP-Hauptzweig (14.10., 998caf30):
+  - Alle Anker passen ausser einem: «Camping 101: Cooking» (`turnin 96661`) kommt dort zweimal vor.
+  - Plan-Zeile 5 hängt deshalb seit 14.10. an `label Vision` (davor). Auf v4.11.23 ist der Bau damit bytegleich.
+  - Auf dem Hauptzweig fügt der Probebau alle 82 Zeilen ein, ohne Probleme.
+- Katzengestalt:
+  - RXP v4.11.23 lässt Druiden sie ab Stufe 20 bei Loganaar in Moonglade lernen («17-22» #29, `.train 768`, `.xp <20,1`).
+  - Der Hauptzweig hat dazu die Questreihe «The Great Cat Spirit»: 98340 bei Turak in Thunder Bluff, Moonglade, Stormrage Barrow Dens, zurück nach Thunder Bluff (98362).
+  - Sie beginnt gleich nach «DeathDUPpickup», also nach unserem Thunder-Bluff-Block. Was die Questreihe bringt, steht nicht im Guide-Text (ungeprüft).
+  - Ob die Berufssitzung davor oder danach kommt, ist offene Entscheidung 13.
+- Wo RXP selbst Berufe oder das AH berührt (v4.11.23, Brachland):
+  - Erste Hilfe nur mit dem Beruf (`.skill firstaid,<1,1`).
+  - `#ah` nur in Dungeon-Varianten (Flask of Oil für Deadmines) und bei Waffen für Krieger und Schamanen.
+  - Serpentbloom nur mit Wailing Caverns (`.dungeon WC`).
+  - Keine Überschneidung mit unseren Schritten.
 - Unterschied v4.11.13 → v4.11.23 in den zwei Horde-Dateien: +463/−181 Zeilen aus 8 Commits (03.–10.10.), gemessen am 13.10. mit `git diff` im RXP-Klon.
 
 ---
@@ -226,6 +255,11 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
   - Ausweg für Schritte davor, ungeprüft im Spiel: `#maxlevel 14` blendet einen Schritt für Charaktere ab Stufe 15 aus, dann zählt er für deren Nummer nicht mit (`LevelCheck`, wird beim Laden des Guides geprüft).
   - Ändert ein Neubau nur Koordinaten (gleiche Zeilen, z. B. v0.1.1 → v0.1.2), bleibt die Stelle genau.
   - Ändert sich die Route (andere Zeilen, z. B. Neubau auf einer neueren RXP-Version), kann RXP an einer anderen Stelle stehen. Erledigte Schritte überspringt RXP selbst (Testlauf 2); liegt die Stelle zu weit vorne, hilft die Schrittliste. Im Spiel **ungeprüft** (Test T6).
+  - Probebau auf dem RXP-Hauptzweig (14.10., 998caf30), verglichen mit dem Bau v0.4:
+    - Die Zeilen verschieben sich vor beiden Stellen: «6-12» #30 von Zeile 339 nach 347, «12-17» #77 um 2–3 Zeilen, je nach Klasse.
+    - Die alten Kennungen treffen im Neubau keinen anderen Schritt. RXP nimmt deshalb die Nummer.
+    - Unter dieser Nummer steht derselbe Schritt: «Well» bzw. derselbe Inhalt bei #77, geprüft für alle 9 Klassen.
+    - Ein Neubau auf dem nächsten Release dürfte die Stellen also halten, sofern RXP bis dahin vor den Stellen nichts mehr ändert. Im Spiel ungeprüft (T6).
 - **Wann aktualisieren?** Das entscheidet der Nutzer. Möglich sind:
   - (a) nur bei Bedarf, also wenn ein Routenfehler stört
   - (b) wöchentlich in der Beta
@@ -257,7 +291,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 17 | RXPs Kommentar-Koordinaten (`--c:Zone,x,y`) passen nicht überall zur Forever-Karte. Mulgore ist in Forever 6154 × 4102 Yards gross; 442 RXP-Punkte weichen im Median 3,5 % ab, höchstens 11,3 %. Thunder Bluff (26 Punkte) und Brachland (18 Punkte) passen genau (Messung 13.10., `docs/tests/messdaten-2026-10-13.md`) | Eigene Pfeile lagen bis 35 Yards daneben (v0.1) | Spielkoordinaten plus Kartenecken (`forever_karten.csv`); exakte Ecken aus Testlog-Eintrag `KARTE` (`C_Map.GetWorldPosFromMapPos`, `C_Map.GetMapWorldSize`, beide in der Forever-API 1.60.1), übernommen mit `tools/karte_aus_testlog.py`. Exakt: 1412 Mulgore, 1413 Brachland, 1454 Orgrimmar, 1456 Thunder Bluff; in Orgrimmar passen RXPs Kommentare genau (14 Punkte) |
 | 19 | CLOSED-Ereignisse kommen nicht immer: Am 13.10. blieb eine Post-Sitzung von etwa 22:26 bis zum Ausloggen offen (MAIL_SHOW ja, MAIL_CLOSED nein). Von fünf Post-Sitzungen an diesem Abend endeten vier erst beim Ausloggen (Testlauf 3, Nr. 15). Das Forever-UI öffnet und schliesst diese Fenster über den Interaktions-Manager (`PLAYER_INTERACTION_MANAGER_FRAME_SHOW`/`_HIDE`, `PlayerInteractionFrameManager.lua`, UI 1.60.1) | Beute, Quest-Abgaben und Geld landen in der falschen Zeile (POST statt BEUTE, TASCHE, GELD); Lehrer- und Flugkosten könnten falsch zugeordnet werden | Testlog 3.2: Ende auch über die Interaktions-Ereignisse, über die Prüfung «Blizzard-Fenster sichtbar oder Interaktion läuft» (`C_PlayerInteractionManager.IsInteractingWithNpcOfType`), bei mehr als 25 Yards Abstand, Gebietswechsel und Ladebildschirm; jede Zeile nennt Dauer und Grund |
 | 20 | AH-Angebot zum Start dünn oder teuer (Medium Hide, Mittleres Leder in Hunderten, Leichtes Leder) | Stufen B–D teurer oder nicht machbar; Beta-Preise taugen nur als Grössenordnung | Stufen nach Gold staffeln (Guide v0.4); `tools/plan_berufe.py` zum Start mit EU-Preisen neu rechnen (offene Entscheidung 4) |
-| 21 | Lernstufen der VZ-Rezepte widersprechen sich (AHledger gegen wow-professions, Widerspruch 17) | Schritt VZ 20–50 lässt sich vielleicht nicht wie geplant machen | Guide nennt den Ausweg (Bracer bis 25, Minor Wizard Oil bis 30); Befund mit `/tl` notieren, dann neu bauen |
+| 21 | Lernstufen der VZ-Rezepte widersprechen sich (AHledger gegen wow-professions, Widerspruch 17) | Schritt VZ 20–50 lässt sich vielleicht nicht wie geplant machen | Guide nennt den Ausweg (Bracer bis 25, Minor Wizard Oil bis 30); Befund mit `/tl` notieren, dann neu bauen. Seit Testlog 3.4: Lehrerliste (LEHRER) zeigt die Lernstufen direkt (Messplan M1) |
+| 22 | AHledger-Preise widersprechen sich innerhalb weniger Tage, je nach Seite: Light Hide 69c (Item-Seite 09.10.) gegen etwa 3s (aus den Reagenzienkosten der Rezeptseite Cured Light Hide, 14.10.); Heavy Leather 11s 98c (08.10.), 9s 40c (12.10.), etwa 7s 20c (Rezeptseite 14.10.) | Die Rangfolge der Optionen im Berufe-Plan kann kippen (Heavy Leather in Stufe C zeigt Gewinn, die Rezeptseite Verlust, `docs/recherche/2026-10-14_goldquellen.md` §1) | Beta-Preise nur als Grössenordnung; Preisregeln (berufe-plan §6) statt fester Wahl; zum Start mit den Preisen des eigenen Realms neu rechnen (offene Entscheidung 4) |
 
 ---
 
@@ -349,6 +384,13 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 - Peacebloom 1, Silverleaf 1, Earthroot 15, Mageroyal 50, Briarthorn 70, Stranglekelp 85, Bruiseweed 100, Wild Steelbloom 115.
 - **Widerspruch** bei Bruiseweed: warcraft.wiki.gg nennt 85.
 - Neu in Forever: Frilled Lichen als seltener Zusatz, unter anderem aus Briarthorn im südlichen Brachland (16 % von 51 Beute-Fenstern, AHledger).
+- Frilled Lichen, Stand 14.10. (Details und Quellen: `docs/recherche/2026-10-14_goldquellen.md` §2):
+  - Median NH 82s 80c (30 Tage 49s 34c), PH 2g 15s (79s 29c); Scan 14.10.
+  - Weitere Quellen laut AHledger: Earthroot in Durotar 15 % von 39, Kingsblood in Duskwood 15 % von 20; im Brachland auch aus Earthroot und Mageroyal.
+  - 16 % von 51 sind etwa 8 Funde, das 95-%-Intervall reicht von 8 % bis 28 %.
+  - Der Legacy-Bonus «Bountiful Harvest» gibt +20 % bis +100 % Scarce-Material (foreverchanges, 08.10.).
+  - Spielerbericht (mmonster, 13.10.): «mostly for low characters or low skill».
+  - Mit 16 % ist ein Briarthorn-Knoten netto etwa 14–15s wert (NH), rund 80–85 % davon aus Frilled Lichen. Kräuter sammeln schlägt Angeln ab etwa 14–15 Knoten pro Stunde (NH jetzt) bzw. 19–22 (30 Tage). Knoten pro Stunde: keine Quelle (Messplan M4).
 
 **Entzaubern** [Forever, wow-professions Disenchanting Guide]
 - Grüne Rüstung: 75 % Staub, 20 % Essenz. Grüne Waffen: 20 % Staub, 75 % Essenz. Splitter 3–5 %.
@@ -424,6 +466,23 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 - Lushwater Oasis: Longjaw 39 %, Deviate Fish 35 %, Catfish 12 %, Smallfish 8 % von 153 Fängen (Itemseiten). Deviate Fish (Item 6522): Median Normal Horde US 4s 50c, PvP Horde US 10s 99c; 30 Tage 4s 19c bzw. 7s 26c; «about 1,900 sold a day» (PvP Horde US).
 - Savory Deviate Delight: Kochen 85 (85/125/145/165), 1 Deviate Fish und 1 Mild Spices; Median Normal Horde US 4s 45c, PvP Horde US 7s 94c. Rezept 6661 fällt im Brachland, z. B. bei Witchwing Roguefeather und Zhevra Runner je 2 % (AHledger); method.gg: «drops from any mob in The Barrens».
 - Nötige Angelfertigkeit im Brachland: keine Forever-Quelle. [Classic] Wowhead: Deviate Fish ab 1, ohne Entkommen ab 75 (https://www.wowhead.com/classic/cn/guide/best-fishing-pools-farming-locations-classic-wow); Warcraft Tavern: 100 (https://warcrafttavern.com/wow-classic/guides/deviate-fish).
+  - realmfirst (24.09.): «The Forever client does not publish a fishing level per zone».
+  - classicwowforever (03.10.): «Zone skill levels live on the server, so they aren't confirmed for Forever yet».
+- Angelstellen auf der Forever-Karte, aus RXP v4.11.23 umgerechnet (Karte 1413, exakt), im Spiel ungeprüft:
+  - Lushwater Oasis etwa 46.8, 39.4: Mittelwert der Schleife um den See bei Hezrul, Zeilen 2855–2889
+  - Forgotten Pools 45.1, 22.5: Bubbling Fissure, Quest 870, Zeile 1550
+  - Stagnant Oasis 55.6, 42.8: Bubbling Fissure, Quest 877, Zeile 2540
+  - Die Classic-Werte von Warcraft Tavern (46, 40 / 45, 23 / 55, 43) liegen bis 1,6 Punkte daneben.
+  - warcraft.wiki.gg und wowpedia nennen Koordinaten der Karte nach Cataclysm; die passen nicht.
+- Roh verkaufen bringt mehr als kochen: Deviate Fish 4s 50c gegen Savory Deviate Delight 4s 45c (NH); PH 10s 99c gegen 7s 94c.
+- Angeln pro Stunde, gerechnet mit der Fangrate vom Stonebull Lake (144 Fänge, davon 35 % Deviate Fish): netto 2g 16s (NH) bzw. 5g 28s (PH). Die Rate im Brachland ist ungeprüft (Messplan M3).
+- Lederverarbeitung mit Gewinn laut AHledger (Liste mit Absatz und Musterquellen: `docs/recherche/2026-10-14_goldquellen.md` §4):
+  - Cured Light Hide NH +4s 53c
+  - Medium Armor Kit NH +1s 70c
+  - Mystic Medium Armor Kit NH +3s 24c, PH +13s 22c; Muster bei Tamar 4s 50c
+  - Light Leather Reagent Bag NH +9s 6c (Muster-Quelle unbekannt)
+  - Barbaric Bracers NH +15g 24s (Muster-Quelle in Forever unbekannt)
+- Heavy Leather auf der Rezeptseite ohne Gewinn: NH −2s 51c, PH −96c. Der Berufe-Plan rechnet mit dem älteren Preis (Risiko 22).
 
 **Widersprüche zwischen den Quellen** (Recherche 13.10. und 14.10., im Spiel zu prüfen)
 1. Koordinaten Yonn Deepcut (Kürschnerei, Bloodhoof)
@@ -446,6 +505,7 @@ Quellen: wow-professions (Trainer-Seiten Skinning, Herbalism, LW, VZ, Fishing, C
 18. Verlernen: Berufsfenster (Warcraft Tavern) oder Reiter Fertigkeiten (Zockify)
 19. Mote of Magic nur beim Händler (wow-professions) gegen Angebote im AH (AHledger)
 20. Lesser Magic Wand ab 35 (AHledger) oder ab 10 (kami-labs); Minor Mana Oil ab 120 oder 150; Minor Wizard Oil ab 1 oder 5 (AHledger Rezept- gegen Formelseite)
+21. Händlerpreis hergestellter Zauberstäbe: 1c laut Patch-Notiz zum Level-30-Update (Warcraft Tavern, 01.10.: https://www.warcrafttavern.com/forever/news/level-30-content-is-now-available-in-the-wow-forever-beta/) gegen 1s 10c (Lesser Magic Wand) und 2s (Greater Magic Wand) in Datenbanken auf Build 70374 (https://foreverchanges.pro/item/11287, https://foreverchanges.pro/item/11288, https://wowforever.wclbox.com/en/wupin/11287)
 
 ---
 
@@ -468,6 +528,9 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T10 | Farm-Stopp S1 (optional, seit v0.4 mit Sweetspot-Zähler) | Pfeil zur Farmstelle; Häute pro Stunde, Anteil Leichtes/Mittleres Leder und Stücke pro Haut ab Gegnerstufe 11 im Testlog (SAMMELN mit Kreatur-ID und Zeit) |
 | T11 | Sitzung in Orgrimmar (v0.4, Stufe A, optional B) | Verlernen per Kästchen; Rezepte lassen sich wie geplant lernen (VZ 20–40 prüfen, Widerspruch 17); Zähler und Material-Bedingungen schalten richtig; Testlog zeigt Dauer und Kosten (HERSTELLEN, ENTZAUBERN, GELERNT, GELD) |
 | T12 | Sitzung in Thunder Bluff (v0.4, Stufen B–D) | Schon erledigte Stufen verschwinden; Einkaufszähler stimmen für «B und C zusammen», «C allein» und «D» |
+| T13 | Lehrerfenster öffnen, Filter auf alle drei Arten (Testlog 3.4) | Eine Zeile LEHRER pro Lehrer mit Status, Lernstufe und Kosten jedes Eintrags; beim zweiten Öffnen keine neue Zeile; bei Berufslehrern der Rang (Geselle) mit «(Rang)» |
+
+Messungen mit mehreren Druiden (M1–M10, Stand 14.10.): `docs/tests/messplan-beta.md`.
 
 Stand 13.10.2026 (Testlauf 1 und 2, Messdaten, `docs/tests/`):
 - **T0** bestanden, auch mit Testlog 2 und den verknüpften AddOns (SITZUNG meldet «Kombiguide 0.1.1-v4.11.13»), und am 13.10. 22:08 mit RestedXP v4.11.23, Testlog 3 und «Kombiguide 0.1.2-v4.11.13» (der ältere Bau läuft mit dem neueren RXP).
@@ -519,4 +582,5 @@ Stand und Liste: `docs/entscheidungen.md`. Am 13.10. entschieden: Update-Rhythmu
 - 13.10.2026: Testlauf 3, zweiter Abschnitt: Messwerte Kürschnern, Kräuter, Angeln, Lehrer und Geld (§9); Lehrer-Koordinaten gemessen; Berufs-Quests 97933 und 97936 (§5); Risiko 19 und Testlog 3.2; T6-Erwartung neu gerechnet, T7.
 - 13.10.2026: Kombi-Guide v0.2 (6-12 Mulgore, Thunder Bluff) mit Mengenmodell; T6 bestanden; Regel «neue Schritte nach der Teststelle» (§6); Berufs-Quests mit Ziel, Abgabe und Belohnung (§5); Karte Orgrimmar exakt; Testlog 3.3; «Gathering Leather» und Simple Wood (§9).
 - 14.10.2026: Berufswechsel in Orgrimmar und Sweetspot (§1), Berufe-Plan mit Stufen A–D (§0, §5), Orgrimmar-Lehrer und -Händler, Verlernen, Lernstufen, VZ-Tabs, LW ab 130, Mote of Magic, Fischen im Brachland (§9), Widersprüche 15–20, RXP-Verhalten von `.skill …,<1`, `.itemcount`, Text-Schritten und `.money` (§4), Tests T11 und T12 (§10), Kombi-Guide v0.4 (§5).
+- 14.10.2026 (abends): RXP-Stand und Probebau auf dem Hauptzweig (§2, §5, §6), Anker der Plan-Zeile 5, Katzengestalt und neue Druiden-Questreihe (§5), Frilled Lichen, Angelstellen, Erzeugnisse mit Gewinn, Heavy Leather (§9), Risiko 22, Testlog 3.4 mit Lehrerliste und Test T13, Messplan Beta (§0, §10).
 - 14.10.2026: RXP-Route bis Stufe 20 gelesen (§5); Mengenmodell bis Stufe 20 mit Bedarf für LW 150 und VZ 150 (§1, §9); Geselle reicht bis 150 (§9); LW-Routen von wow-professions und kami-labs verglichen, Planungsgrundlage gewählt (§9); Gegnerstufen und Leder-Anteile im Brachland (§9); `.goto` ohne Radius, `.xp`, `#maxlevel` (§4); Kombi-Guide v0.3 mit Leder-Zählern und Farm-Stopps (§5); Stellen-Prüfung mit `tools/rxp_schritte.py` (§6); Tests T9 und T10 (§10).

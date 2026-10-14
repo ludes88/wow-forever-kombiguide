@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 13.10.2026, Version 3.3
+-- Stand 14.10.2026, Version 3.4
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -26,7 +26,11 @@
 --   GELD        übrige Geldänderungen: Lehrer, Flugmeister, sonst (Betrag und Bestand)
 --   GELERNT     neuer Zauber (z. B. beim Lehrer)
 --   REZEPT      neues Rezept
+--   LEHRER      Liste des Lehrers beim Öffnen: jeder Eintrag mit Status (lernbar, gesperrt, gelernt), Lernstufe
+--               (Stufe, Beruf und Fertigkeit) und Kosten; einmal pro Lehrer und Sitzung (Version 3.4)
 --
+-- Version 3.4: Lehrerliste. Damit alle Einträge erscheinen, im Lehrerfenster den Filter auf alle drei Arten stellen
+-- (verfügbar, nicht verfügbar, bereits bekannt); die Zeile nennt den Filter.
 -- Version 3.3: Bestand in Fenster-Zeilen beim Ausloggen aus dem letzten bekannten Wert (GetMoney meldet dann 0).
 -- Version 3.2: Ein Fenster (Händler, Post, Auktionshaus, Lehrer, Flugmeister, Beruf) gilt auch ohne
 -- CLOSED-Ereignis als zu, wenn das Blizzard-Fenster nicht mehr sichtbar ist und keine Interaktion läuft,
@@ -36,7 +40,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.3"
+local VERSION = "3.4"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -689,6 +693,96 @@ local function closeWindow(name)
     if name == "taxi" then windows.taxiClosed = now() end
 end
 
+-- Version 3.4: Lehrerliste. Pro Lehrer und Sitzung eine Zeile mit jedem Eintrag: Name, Status, Lernstufe, Kosten.
+-- Neu geschrieben nur, wenn sich Anzahl oder Filter ändern (Gelerntes steht in GELERNT).
+-- API wie im Forever-UI 1.60.1 (Blizzard_TrainerUI/Mainline/Blizzard_TrainerUI.lua): GetNumTrainerServices,
+-- GetTrainerServiceInfo, GetTrainerServiceSkillReq, GetTrainerServiceCost, GetTrainerServiceTypeFilter,
+-- GetTrainerServiceStepIndex (Rang des Berufs, z. B. Geselle), IsTradeskillTrainer; dazu, falls vorhanden,
+-- GetTrainerServiceItemLink (im Forever-UI nicht benutzt, darum ohne Gewähr).
+local trainerSeen = {}     -- Lehrer -> Kennung der zuletzt geschriebenen Liste
+local trainerToken = 0
+local TRAINER_STATUS = { available = "lernbar", unavailable = "gesperrt", used = "gelernt" }
+
+local function callApi(name, ...)
+    local f = rawget(_G, name)
+    if type(f) ~= "function" then return false end
+    return pcall(f, ...)
+end
+
+local function plain(v)
+    return (v ~= nil) and not isSecret(v)
+end
+
+local function npcInfo()
+    local okN, name = pcall(UnitName, "npc")
+    if not okN or type(name) ~= "string" or isSecret(name) then name = "?" end
+    local okG, guid = callApi("UnitGUID", "npc")
+    local id = (okG and type(guid) == "string" and not isSecret(guid)) and guid:match("^%a+%-%d+%-%d+%-%d+%-%d+%-(%d+)%-") or nil
+    return name, id
+end
+
+local function trainerEntry(i, stepIndex)
+    local ok, sName, sType, _, reqLevel, subText = callApi("GetTrainerServiceInfo", i)
+    if not ok or type(sName) ~= "string" or isSecret(sName) or sType == "header" then return nil end
+    local e = sName
+    if type(subText) == "string" and subText ~= "" and not isSecret(subText) then e = e .. " [" .. subText .. "]" end
+    if i == stepIndex then e = e .. " (Rang)" end
+    local okL, link = callApi("GetTrainerServiceItemLink", i)   -- Rezepte: hergestellter Gegenstand (Name ist deutsch)
+    local itemID = (okL and type(link) == "string" and not isSecret(link)) and link:match("item:(%d+)") or nil
+    if itemID then e = e .. " (Item " .. itemID .. ")" end
+    e = e .. " " .. (TRAINER_STATUS[sType] or tostring(sType))
+    local req = {}
+    if type(reqLevel) == "number" and plain(reqLevel) and reqLevel > 1 then table.insert(req, "Stufe " .. reqLevel) end
+    local okS, skill, rank = callApi("GetTrainerServiceSkillReq", i)
+    if okS and type(skill) == "string" and skill ~= "" and plain(skill) and type(rank) == "number" and plain(rank) then
+        table.insert(req, skill .. " " .. rank)
+    end
+    if #req > 0 then e = e .. ", ab " .. table.concat(req, " und ") end
+    local okC, cost = callApi("GetTrainerServiceCost", i)
+    if okC and type(cost) == "number" and plain(cost) then
+        e = e .. ", " .. ((cost > 0) and money(cost) or "kostenlos")
+    end
+    return e
+end
+
+local function trainerDump()
+    if not db or not db.auto or not ready or not windows.trainer then return end
+    local ok, n = callApi("GetNumTrainerServices")
+    if not ok or type(n) ~= "number" or isSecret(n) or n <= 0 then return end
+    local filters = {}
+    for _, f in ipairs({ "available", "unavailable", "used" }) do
+        local okF, on = callApi("GetTrainerServiceTypeFilter", f)
+        if okF and on and plain(on) then table.insert(filters, TRAINER_STATUS[f]) end
+    end
+    local name, id = npcInfo()
+    local sig = n .. "|" .. table.concat(filters, "+")
+    if trainerSeen[id or name] == sig then return end
+    local okI, stepIndex = callApi("GetTrainerServiceStepIndex")
+    if not okI or not plain(stepIndex) then stepIndex = nil end
+    local parts = {}
+    for i = 1, n do
+        local e = trainerEntry(i, stepIndex)
+        if e then table.insert(parts, e) end
+    end
+    if #parts == 0 then return end
+    trainerSeen[id or name] = sig
+    local okT, isTrade = callApi("IsTradeskillTrainer")
+    local kind = (okT and plain(isTrade)) and (isTrade and "Beruf" or "Klasse") or "?"
+    add("LEHRER", string.format("%s%s | %s | Filter %s | %s | %s", name, id and (" (Kreatur " .. id .. ")") or "",
+        kind, (#filters > 0) and table.concat(filters, "+") or "?",
+        (#parts == 1) and "1 Eintrag" or (#parts .. " Einträge"), table.concat(parts, "; ")))
+end
+
+local function scheduleTrainerDump()
+    trainerToken = trainerToken + 1
+    local token = trainerToken
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0.3, function() if token == trainerToken then trainerDump() end end)
+    else
+        trainerDump()
+    end
+end
+
 -- Geld (Version 3): Kontext aus offenen Fenstern
 local function moneyContext()
     local t = now()
@@ -1103,7 +1197,8 @@ function handlers.MAIL_SHOW() startSession("POST") end
 function handlers.MAIL_CLOSED() finishSession("MAIL_CLOSED") end
 function handlers.AUCTION_HOUSE_SHOW() startSession("AUKTIONSHAUS") end
 function handlers.AUCTION_HOUSE_CLOSED() finishSession("AUCTION_HOUSE_CLOSED") end
-function handlers.TRAINER_SHOW() openWindow("trainer") end
+function handlers.TRAINER_SHOW() openWindow("trainer"); scheduleTrainerDump() end
+function handlers.TRAINER_UPDATE() if windows.trainer then scheduleTrainerDump() end end
 function handlers.TRAINER_CLOSED() closeWindow("trainer") end
 function handlers.TAXIMAP_OPENED() openWindow("taxi") end
 function handlers.TAXIMAP_CLOSED() closeWindow("taxi") end
@@ -1127,6 +1222,7 @@ function handlers.PLAYER_INTERACTION_MANAGER_FRAME_SHOW(itype)
         finishSession("andere Interaktion")
     end
     if WINDOW_BY_ITYPE[itype] then openWindow(WINDOW_BY_ITYPE[itype]) end
+    if WINDOW_BY_ITYPE[itype] == "trainer" then scheduleTrainerDump() end
 end
 
 function handlers.PLAYER_INTERACTION_MANAGER_FRAME_HIDE(itype)
