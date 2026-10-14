@@ -19,7 +19,27 @@ UnitLevel = function(u) if u == "player" then return level end return 9 end
 logout = false
 UnitXP = function() if logout then return 0 end return 450 end
 UnitXPMax = function() return 1000 end
-UnitName = function(u) if u == "player" then return "Testheld" end return "Prairie Wolf" end
+npcName, npcGuid = "Kamari", "Creature-0-3110-0-12345-3365-00004A1B2C"
+UnitName = function(u) if u == "player" then return "Testheld" end if u == "npc" then return npcName end return "Prairie Wolf" end
+UnitGUID = function(u) if u == "npc" then return npcGuid end return nil end
+-- Lehrer-API wie im Forever-UI 1.60.1 (Blizzard_TrainerUI/Mainline): Name, Art, Symbol, Stufe, Untertext, Kategorie
+trainer = { trade = true, step = 2, filters = { available = true, unavailable = true, used = true }, services = {} }
+GetNumTrainerServices = function() return #trainer.services end
+GetTrainerServiceInfo = function(i)
+  local s = trainer.services[i]
+  if not s then return nil end
+  return s.name, s.type, nil, s.level or 0, s.sub or "", ""
+end
+GetTrainerServiceSkillReq = function(i) local s = trainer.services[i] if s and s.skill then return s.skill, s.rank, true end return nil end
+GetTrainerServiceCost = function(i) local s = trainer.services[i] return (s and s.cost) or 0, trainer.trade end
+GetTrainerServiceTypeFilter = function(f) if trainer.filters[f] then return 1 end return nil end
+GetTrainerServiceStepIndex = function() return trainer.step end
+IsTradeskillTrainer = function() return trainer.trade end
+GetTrainerServiceItemLink = function(i)
+  local s = trainer.services[i]
+  if not (s and s.item) then return nil end
+  return "|cffffffff|Hitem:" .. s.item .. "::::::::12:::::|h[" .. s.name .. "]|h|r"
+end
 UnitExists = function(u) return u == "target" end
 GetRealmName = function() return "Beta" end
 GetBuildInfo = function() return "1.60.1", "70338" end
@@ -316,15 +336,27 @@ L.execute("bags[0][8] = { id = 2319, n = 20, name = 'Mittleres Leder' }")
 g.fire("BAG_UPDATE_DELAYED")
 L.execute("MailFrame.shown = false")
 g.fire("MAIL_CLOSED")
-# Lehrer: Kosten und gelernter Zauber
+# Lehrer: Kosten und gelernter Zauber; Version 3.4: Lehrerliste (Berufslehrer, Rang an Stelle 2, Überschrift fällt weg)
+L.execute("""trainer.services = {
+  { name = "Lederverarbeitung", type = "header" },
+  { name = "Lederverarbeitung", sub = "Geselle", type = "available", level = 10, skill = "Lederverarbeitung", rank = 50, cost = 500 },
+  { name = "Leichtes Leder", type = "used", cost = 0 },
+  { name = "Geprägte Lederhandschuhe", type = "unavailable", skill = "Lederverarbeitung", rank = 30, cost = 150, item = 4239 },
+}""")
 L.execute("ClassTrainerFrame.shown = true")
 g.fire("TRAINER_SHOW")
 L.execute("money = money - 100")
 g.fire("PLAYER_MONEY")
 g.fire("LEARNED_SPELL_IN_SKILL_LINE", 5177, 1, False)
+g.fire("TRAINER_UPDATE")            # gleiche Liste: keine zweite LEHRER-Zeile
 L.execute("ClassTrainerFrame.shown = false")
 g.fire("TRAINER_CLOSED")
 g.fire("NEW_RECIPE_LEARNED", 2152)
+L.execute("ClassTrainerFrame.shown = true")
+g.fire("TRAINER_SHOW")              # derselbe Lehrer nochmals: keine neue Zeile
+L.execute("ClassTrainerFrame.shown = false")
+g.fire("TRAINER_CLOSED")
+g.fire("TRAINER_UPDATE")            # Fenster zu: nichts
 
 # --- Version 3.2: Fenster enden auch ohne CLOSED-Ereignis ---
 # A: Briefkasten zu, aber MAIL_CLOSED kommt nicht (Testlog 13.10. 22:26); danach Beute: gehört nicht zur Post
@@ -383,7 +415,12 @@ g.fire("LOOT_OPENED", True, False); g.fire("LOOT_CLOSED")
 L.execute("lootsrc = 'Creature-0-3299-1-12345-2958-0000ABCDEF'")
 g.fire("LOOT_OPENED", True, False); g.fire("LOOT_CLOSED")
 # G: Lehrerfenster zu, aber TRAINER_CLOSED fehlt: danach ist Geld wieder «sonst»
+# (Version 3.4: dabei ein Klassenlehrer mit Filter ohne «nicht verfügbar»)
 later(10)
+L.execute("""npcName, npcGuid = "Gennia Runetotem", "Creature-0-3110-0-12345-3060-00004A1B2D"
+trainer.trade, trainer.step = false, nil
+trainer.filters.unavailable = false
+trainer.services = { { name = "Zorn", sub = "Rang 3", type = "available", level = 14, cost = 900 } }""")
 L.execute("ClassTrainerFrame.shown = true")
 g.fire("TRAINER_SHOW")
 L.execute("money = money - 300")
@@ -501,6 +538,12 @@ one("GELD", "Lehrer -3s")
 one("GELD", "sonst +5c")
 one("GELD", "Flugmeister -95c")
 one("POST", "Einnahmen +4s 5c (1)", "Bestand 1g 99s 68c", "Ende Ausloggen")
+# Version 3.4: Lehrerliste
+check(sum(1 for l in lines if " | LEHRER | " in l) == 2, "zwei LEHRER-Zeilen (Berufslehrer einmal, Klassenlehrer einmal)")
+one("LEHRER", "Kamari (Kreatur 3365) | Beruf | Filter lernbar+gesperrt+gelernt | 3 Einträge",
+    "Lederverarbeitung [Geselle] (Rang) lernbar, ab Stufe 10 und Lederverarbeitung 50, 5s",
+    "Leichtes Leder gelernt, kostenlos", "Geprägte Lederhandschuhe (Item 4239) gesperrt, ab Lederverarbeitung 30, 1s 50c")
+one("LEHRER", "Gennia Runetotem (Kreatur 3060) | Klasse | Filter lernbar+gelernt | 1 Eintrag", "Zorn [Rang 3] lernbar, ab Stufe 14, 9s")
 # Ein Ereignis, das der Client nicht kennt: Das Addon lädt trotzdem und meldet es beim Start
 try:
     L2 = runtime(unknown=("AUCTION_HOUSE_CLOSED",))
