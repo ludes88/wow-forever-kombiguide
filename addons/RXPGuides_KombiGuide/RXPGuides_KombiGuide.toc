@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: RXP Guides Kombiguide
-## Notes: Kombi-Guide 0.3: RXP-Gratis-Route 1-22 (Basis v4.11.23) mit Berufsschritten. CC BY-NC-SA 4.0
+## Notes: Kombi-Guide 0.4: RXP-Gratis-Route 1-22 (Basis v4.11.23) mit Berufsschritten. CC BY-NC-SA 4.0
 ## Author: ludes88
-## Version: 0.3-v4.11.23
+## Version: 0.4-v4.11.23
 ## Dependencies: RXPGuides
 
 Kombi_Guide.lua

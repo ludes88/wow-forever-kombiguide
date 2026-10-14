@@ -1,0 +1,25 @@
+rezept;beruf;orange;gelb;gruen;grau;woher;quelle
+Light Leather;LW;1;20;30;40;Lehrer (SeeMeta);AHledger https://ahledger.com/wow-forever/recipes/2881-light-leather · SeeMeta Leatherworking (14.10.2026) · wow-professions: «It turns yellow at 20»
+Light Armor Kit;LW;1;30;45;60;Lehrer (SeeMeta);AHledger https://ahledger.com/wow-forever/recipes/2152-light-armor-kit · SeeMeta
+Cured Light Hide;LW;10;50;60;70;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/3816-cured-light-hide · SeeMeta 50/60/70
+Embossed Leather Gloves;LW;30;70;85;100;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/3756-embossed-leather-gloves
+Medium Leather;LW;35;75;80;85;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/20648-medium-leather
+Cured Medium Hide;LW;50;90;97;105;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/3817-cured-medium-hide
+Fine Leather Belt;LW;45;85;100;115;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/3763-fine-leather-belt
+Light Leather Pants;LW;60;100;115;130;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/9068-light-leather-pants
+Dark Leather Belt;LW;85;125;137;150;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/3766-dark-leather-belt
+Heavy Leather;LW;85;125;130;135;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/20649-heavy-leather
+Hillman's Leather Gloves;LW;105;;;;Lehrer;AHledger Übersicht https://ahledger.com/wow-forever/professions/leatherworking (nur «105», Farben nicht gefunden)
+Cured Heavy Hide;LW;;;;;;nicht recherchiert (wow-professions: 130-140)
+Runed Copper Rod;VZ;1;5;7;10;Lehrer (SeeMeta);AHledger https://ahledger.com/wow-forever/recipes/7421-runed-copper-rod · SeeMeta 5/8/10
+Enchant Bracer - Inferior Stamina;VZ;1;20;22;25;Lehrer (SeeMeta);AHledger Rezeptseite 7418 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 20/23/25
+Enchant Chest - Inferior Stamina;VZ;30;70;90;110;Lehrer;AHledger Rezeptseite 7420 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 70/90/110 · Widerspruch: wow-professions nutzt es ab 20 · kami-labs nennt 15
+Enchant Bracer - Minor Deflect;VZ;40;80;100;120;Lehrer (SeeMeta);AHledger Rezeptseite 7428 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 80/100/120 · Widerspruch: wow-professions nutzt es ab 20
+Enchant Chest - Minor Absorption;VZ;50;90;110;130;Lehrer;AHledger Rezeptseite 7426 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 90/110/130 · kami-labs: ab 40
+Enchant Bracer - Minor Stamina;VZ;60;100;120;140;Lehrer;AHledger Rezeptseite 7457 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 100/120/140
+Enchant Cloak - Minor Protection;VZ;70;110;130;150;Lehrer;AHledger Rezeptseite 7771 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · Widerspruch SeeMeta und RankedBoost: ab 90
+Runed Silver Rod;VZ;90;130;150;170;Lehrer;AHledger https://ahledger.com/wow-forever/recipes/7795-runed-silver-rod · SeeMeta 130/150/170
+Enchant 2H Weapon - Lesser Intellect;VZ;90;130;150;170;Formel 6349 (Kithas, Nata Dawnstrider, 5s, verlangt VZ 100) und Lehrer;AHledger Rezeptseite 7793 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · Item 6349
+Enchant Boots - Minor Stamina;VZ;110;150;170;190;Formel 6376 oder Lehrer;AHledger Rezeptseite 7863 (ahledger.com/wow-forever/recipes, Recherche 14.10.)
+Enchant Bracer - Lesser Stamina;VZ;;;;;;nicht recherchiert (wow-professions: Alternative für 130-150 mit Soul Dust)
+Minor Wizard Oil;VZ;1;30;47;65;Formel 20758 (Kithas 5s, verlangt VZ 5) und Lehrer;AHledger https://ahledger.com/wow-forever/recipes/25124-minor-wizard-oil · Formel https://ahledger.com/items/20758-formula-minor-wizard-oil · je 1 Empty Vial, 1 Maple Seed, 1 Strange Dust

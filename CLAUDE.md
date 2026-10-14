@@ -25,9 +25,9 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, bis, extra, Quelle, Status); `VERSION` |
-| `data/kombi/*.csv` (ausser plan.csv) | Mengenmodell Leder bis Stufe 20: `abschnitte`, `modell_leder` (Quests mit Tieren), `kuerschnern_anteile`, `farmstellen`, `farmstopps`, `bedarf_lw_vz` (LW/VZ 1–150), alle mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md` |
+| `data/kombi/*.csv` (ausser plan.csv) | Mengenmodell Leder bis zum Wechsel in Orgrimmar: `abschnitte`, `modell_leder` (Quests mit Tieren), `kuerschnern_anteile`, `farmstellen`, `farmstopps`, `bedarf_lw_vz` (LW/VZ 1–150, Spalte `variante`), alle mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md`. Berufe-Plan: `rezepte` (Lernstufen laut AHledger), `items` (Item-IDs), `preise_zusatz` (Händlerpreise, Fisch); `tools/plan_berufe.py` macht daraus `docs/plan/berufe-plan.md` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
-| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
+| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `plan_berufe.py` (Berufe-Plan: Sweetspot, Stufen A–D), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
 | `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
 | `testlogs/` | Testlog-Dateien aus dem Spiel (`KombiTestlog.lua`), nicht versioniert |
@@ -39,6 +39,7 @@ Vorgehen und Versionen: @docs/vorgehen.md
 pip install -r tools/requirements.txt                     # lupa (Lua 5.1 für Python)
 tools/fetch_rxp.sh v4.11.23                               # RXP in der Version des Nutzers nach vendor/ (steht im Testlog: SITZUNG … RXP v…)
 python3 tools/plan_mengen.py                              # Mengenmodell -> docs/plan/mengen-leder.md (Ziele für plan.csv)
+python3 tools/plan_berufe.py                              # Berufe-Plan -> docs/plan/berufe-plan.md (Sweetspot, Stufen A-D, Einkauf; Zahlen für plan.csv)
 python3 tools/build_kombi.py v4.11.23 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
 python3 tools/rxp_schritte.py vergleich git:HEAD:addons/RXPGuides_KombiGuide/Kombi_Guide.lua addons/RXPGuides_KombiGuide/Kombi_Guide.lua "6-12 Mulgore" --stelle 30   # Stelle eines Testcharakters bleibt? (Exit 1 sonst)
 python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/forever/Horde-12-22_Barrens.lua "12-17 The Barrens" --klasse druid   # Route lesen wie RXP sie zeigt
