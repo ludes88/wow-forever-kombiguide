@@ -63,8 +63,12 @@ def world(row, maps):
 #   maxfertigkeit .maxskill id,menge             (z. B. Geselle gelernt: Maximum 150)
 #   abgeben       .turnin id   ·   annehmen  .accept id
 #   hingehen      nur .goto mit radius           (erledigt beim Ankommen)
-#   hinweis       nur Text                       (braucht «bis», sonst bliebe der Schritt hängen)
-AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis")
+#   hinweis       Text und +kurz                 (braucht «bis»; bleibt sichtbar, bis der Ziel-Schritt erledigt ist. Ohne das Kästchen
+#                                                 wäre der Schritt nur Text, und RXP erledigt ihn sofort: GuideWindow.lua, UpdateStepCompletion)
+#   manuell       +kurz                          (Kästchen zum Abhaken. «.itemcount» in extra prüft RXP nur, wenn der Schritt aktiv wird:
+#                                                 fehlt das Material da schon, ist der Schritt erledigt; geht es mittendrin aus, Häkchen setzen)
+# «bedingung» und «extra» nehmen mehrere rohe RXP-Zeilen, getrennt mit « // ».
+AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis", "manuell")
 
 
 def make_step(row, maps):
@@ -106,8 +110,15 @@ def make_step(row, maps):
         lines.append(f"    .turnin {row['id']}{k}")
     elif akt == "annehmen":
         lines.append(f"    .accept {row['id']}{k}")
-    if row["bedingung"]:
-        lines.append("    " + row["bedingung"])
+    elif akt == "manuell":
+        if not kurz:
+            raise SystemExit(f"Plan-Zeile {row['nr']}: «manuell» braucht «kurz» (Text am Kästchen)")
+        lines.append(f"    +{kurz}")
+    elif akt == "hinweis":
+        lines.append(f"    +{kurz or 'Hinweis gelesen'}")
+    for cond in (row.get("bedingung") or "").split(" // "):
+        if cond.strip():
+            lines.append("    " + cond.strip())
     for extra in (row.get("extra") or "").split(" // "):
         if extra.strip():
             lines.append("    " + extra.strip())
@@ -222,7 +233,7 @@ for row in plan:
             problems.append(f"Plan-Zeile {row['nr']}: '--' in {field}")
         if "[[" in value or "]]" in value:
             problems.append(f"Plan-Zeile {row['nr']}: '[[' oder ']]' in {field}")
-    for value in [row.get("bedingung") or ""] + (row.get("extra") or "").split(" // "):
+    for value in (row.get("bedingung") or "").split(" // ") + (row.get("extra") or "").split(" // "):
         if re.search(r"^\s*\.\w+\s+[^>]*,,", value):
             problems.append(f"Plan-Zeile {row['nr']}: leeres Argument (',,') in '{value.strip()}': RXP überspringt es")
     bis = row.get("bis") or ""
