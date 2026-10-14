@@ -1,5 +1,7 @@
 # Mengenmodell Leder bis Stufe 20 (erzeugt von `tools/plan_mengen.py`)
 
+Seit 14.10. gilt: Berufswechsel in Orgrimmar (Abschnitt E1, Stufe 16, Entscheidung des Nutzers). Danach gibt es kein eigenes Leder mehr; die Zeilen nach E1 zeigen nur, was die Route brächte, wenn Kürschnerei bliebe. Was mit dem Leder geschieht, steht in `docs/plan/berufe-plan.md` (`tools/plan_berufe.py`).
+
 Eingaben: `data/kombi/abschnitte.csv`, `modell_leder.csv`, `kuerschnern_anteile.csv`, `farmstellen.csv`, `farmstopps.csv`, `bedarf_lw_vz.csv`, dazu `data/rechnung/Kreislauf.csv` und `Preise.csv`. Nicht von Hand ändern, sondern die Eingaben anpassen und neu erzeugen.
 
 ## Quellen
@@ -21,6 +23,7 @@ Eingaben: `data/kombi/abschnitte.csv`, `modell_leder.csv`, `kuerschnern_anteile.
 - Quest 768 «Gathering Leather» nimmt 12 Leichtes Leder (Abschnitt B2). Wer sie überspringt, hat 12 mehr.
 - «Basis» = Quest-Tiere, die die Route sicher tötet. «Option» = Kürschnerbarkeit ungeprüft oder optionale Grind-Schritte. Tiere, die nebenbei sterben, zählt das Modell nicht; das Testlog misst sie (SAMMELN mit Kreatur-ID).
 - Farm-Stopps: Minuten aus `farmstopps.csv` (Vorschlag zum Testen), 50–80 Häute pro Stunde (Annahme, keine Quelle für Stufe 12–20). Zum Vergleich gemessen: rund 97 Häute pro Stunde in Mulgore, Charakter Stufe 6–7 gegen Gegner der Stufe 5–8, neben Quest 748 (Testlog 13.10., 21 Häute in rund 13 Minuten). «Plan» = Basis plus Farm-Stopps mit der unteren Rate. Kills an Tieren, die eine Quest der Route ohnehin braucht, zählen beim Farm-Stopp nicht doppelt (Spalte «ueberschneidet» in `farmstopps.csv`).
+- Kürschnerei endet mit dem Wechsel in Orgrimmar (Ende E1). Die früheren Farm-Stopps S2 (Südbrachland) und S3 (Camp Taurajo) lagen danach und entfallen.
 - Kein Farm-Stopp gleich bei der Ankunft in den Crossroads: Die Route tötet dort sofort dieselben Tiere für «Plainstrider Menace» (844, 7 Schnäbel), «Raptor Thieves» (869, 12 Köpfe) und «The Zhevra» (845, 4 Hufe), zusammen rund 46 Kills. Ein Stopp davor würde diese Kills nur vorziehen und kein zusätzliches Leder bringen.
 
 ## Anteile beim Kürschnern nach Gegnerstufe
@@ -42,18 +45,20 @@ Leichtes Leder kumuliert: Basis · Plan mit Farm-Stopps (untere bis obere Rate) 
 | B1 | 6-12 Mulgore #84–#151 | vor «Gathering Leather» (zweiter Besuch in Thunder Bluff) | 11 | 16 (15) | – | 25 | 25–25 | 38 | 0 / 0 | 42 | 0.0 | ungefähr: zwischen RXP #96–#99 (Stufe 9) und #176 (Stufe 12) |
 | B2 | 6-12 Mulgore #152–#194 | Ankunft Crossroads (Ende «6-12 Mulgore») | 12 | 9 (0) | – | 17 | 17–17 | 30 | 0 / 0 | 47 | 0.0 | RXP #176: Druiden-Lehrer «.xp <12,1» vor dem Aufbruch ins Brachland |
 | C | 12-17 The Barrens #1–#42 | Abgaben in den Crossroads nach Ratchet | 14 | 34 (0) | – | 37 | 37–37 | 50 | 0 / 0 | 59 | 1.7 | RXP #34/#35: Druiden-Lehrer in Moonglade bei Stufe 14–15 bzw. ab 16 |
-| D | 12-17 The Barrens #43–#82 | Nordbrachland (Samophlange, Savannenkatzen) | 15 | 38 (0) | S1 25 min, 21–33 Häute | 60 | 73–80 | 73 | 0 / 0 | 80 | 4.6 | RXP #83: «Grinding to level 16 here is important» · Testcharakter Stufe 15 stand bei #77 (Testlog 13.10.) |
-| E | 12-17 The Barrens #83–#184 | Ende «12-17 The Barrens» (Aufbruch Steinkrallengebirge) | 17 | 17 (0) | S2 20 min, 17–27 Häute, davon bis 10 für Quest 865 | 71 | 96–111 | 84 | 1 / 5 | 83 | 5.1 | Guide-Name «12-17» · RXP #152: Lakota'mani erst ab Stufe 18 («.xp <18,1») |
-| F | 17-22 Stonetalon/Barrens/Ashenvale #1–#29 | Steinkrallengebirge, Druiden-Lehrer | 18 | 0 (17) | – | 71 | 96–111 | 97 | 1 / 5 | 83 | 5.1 | RXP #28/#29: Druiden-Lehrer bei Stufe 18–19 bzw. ab 20 |
-| G | 17-22 Stonetalon/Barrens/Ashenvale #30–#84 | Südbrachland bis Abgabe «Cry of the Thunderhawk» | 20 | 23 (16) | S3 20 min, 17–27 Häute | 88 | 118–140 | 123 | 6 / 11 | 83 | 5.1 | RXP #58: «Wolf Bracers» anlegen ab Stufe 20 («.xp <20,1», Ratchet) |
-| H | 17-22 Stonetalon/Barrens/Ashenvale #85–#175 | Thunder Bluff, Steinkrallen 2, Eschental bis Zoram'gar | 21 | 12 (0) | – | 97 | 127–149 | 132 | 8 / 13 | 83 | 5.1 | RXP #166 «Grind to level 21», #173 «21450/25200 xp» |
+| D | 12-17 The Barrens #43–#82 | Nordbrachland (Samophlange, Savannenkatzen) | 15 | 48 (0) | S1 25 min, 21–33 Häute | 66 | 79–86 | 79 | 0 / 0 | 83 | 5.1 | RXP #83: «Grinding to level 16 here is important» · Testcharakter Stufe 15 stand bei #77 (Testlog 13.10.) |
+| E1 | 12-17 The Barrens #83–#108 | Orgrimmar, Berufswechsel (Entscheidung 14.10.) | 16 | 0 (0) | – | 66 | 79–86 | 79 | 0 / 0 | 83 | 5.1 | RXP #83: «Grinding to level 16 here is important» («.xp 16») · Orgrimmar #92–#108 (v4.11.23, Tauren-Druide) |
+| E2 | 12-17 The Barrens #109–#184 | Ende «12-17 The Barrens» (Aufbruch Steinkrallengebirge) | 17 | 7 (0) | – | 71 | 84–91 | 84 | 1 / 1 | 83 | 5.1 | Guide-Name «12-17» · RXP #152: Lakota'mani erst ab Stufe 18 («.xp <18,1») |
+| F | 17-22 Stonetalon/Barrens/Ashenvale #1–#29 | Steinkrallengebirge, Druiden-Lehrer | 18 | 0 (17) | – | 71 | 84–91 | 97 | 1 / 1 | 83 | 5.1 | RXP #28/#29: Druiden-Lehrer bei Stufe 18–19 bzw. ab 20 |
+| G | 17-22 Stonetalon/Barrens/Ashenvale #30–#84 | Südbrachland bis Abgabe «Cry of the Thunderhawk» | 20 | 23 (16) | – | 88 | 101–108 | 123 | 6 / 6 | 83 | 5.1 | RXP #58: «Wolf Bracers» anlegen ab Stufe 20 («.xp <20,1», Ratchet) |
+| H | 17-22 Stonetalon/Barrens/Ashenvale #85–#175 | Thunder Bluff, Steinkrallen 2, Eschental bis Zoram'gar | 21 | 12 (0) | – | 97 | 110–117 | 132 | 8 / 8 | 83 | 5.1 | RXP #166 «Grind to level 21», #173 «21450/25200 xp» |
 
-**Stand bei Stufe 15** (Ende Abschnitt D): Basis 60 Leichtes Leder, Plan 73–80, dazu 80 Fetzen, 4.6 Light Hide.
-**Stand bei Stufe 20** (Ende Abschnitt G): Basis 88 Leichtes Leder, Plan 118–140, dazu 11 Mittleres Leder (Basis 6), 83 Fetzen, 5.1 Light Hide, 1.1 Medium Hide.
+**Stand beim Wechsel in Orgrimmar** (Ende Abschnitt E1, Stufe 16): Basis 66 Leichtes Leder, Plan 79–86, dazu 83–87 Fetzen, 5.1–5.8 Light Hide. Daraus rechnet `tools/plan_berufe.py` den Sweetspot.
+**Stand bei Stufe 15** (Ende Abschnitt D): Basis 66 Leichtes Leder, Plan 79–86, dazu 83 Fetzen, 5.1 Light Hide.
+**Stand bei Stufe 20, nur falls Kürschnerei bliebe** (Ende Abschnitt G): Basis 88 Leichtes Leder, Plan 101–108, dazu 6 Mittleres Leder (Basis 6), 83 Fetzen, 5.1 Light Hide, 0.6 Medium Hide.
 
 ## Ziele im Kombi-Guide
 
-Zähler (Bank zählt mit) = Plan vor dem Farm-Stopp des Abschnitts; Farm-Stopp = Plan danach. Abgerundet.
+Zähler (Bank zählt mit) = Plan vor dem Farm-Stopp des Abschnitts; Farm-Stopp = Plan danach. Abgerundet. Nur bis zum Wechsel (E1).
 
 | Abschnitt | Zähler bis Abschnittsende | Mittleres Leder bis dahin | Farm-Stopp | Ziel Farm-Stopp | Mittleres Leder nach dem Farm-Stopp |
 |---|---|---|---|---|---|
@@ -61,45 +66,45 @@ Zähler (Bank zählt mit) = Plan vor dem Farm-Stopp des Abschnitts; Farm-Stopp =
 | B1 | 25 | 0 | – | – | – |
 | B2 | 16 | 0 | – | – | – |
 | C | 37 | 0 | – | – | – |
-| D | 60 | 0 | S1 Raptoren im Nordbrachland (25 min) | 72 | 0 |
-| E | 83 | 1 | S2 Südbrachland Ost (Scytheclaws) (20 min) | 96 | 4 |
-| F | 96 | 4 | – | – | – |
-| G | 105 | 7 | S3 Donnerechsen bei Camp Taurajo (20 min) | 118 | 10 |
-| H | 126 | 13 | – | – | – |
+| D | 66 | 0 | S1 Raptoren im Nordbrachland (25 min) | 78 | 0 |
+| E1 | 78 | 0 | – | – | – |
+
+Seit v0.4 zeigt der Zähler beim Farm-Stopp S1 nicht den Modellwert, sondern den Sweetspot für Lederverarbeitung 1–80 (62 Leichtes Leder, `docs/plan/berufe-plan.md`).
 
 ## Bedarf für Lederverarbeitung 150 und Verzauberkunst 150
 
 Die zwei Forever-Routen für Lederverarbeitung widersprechen sich stark. Die letzte Stufe einer Route wird bis 150 anteilig gezählt. Netto heisst: was die Route selbst herstellt (z. B. Leichtes Leder aus Fetzen, Mittleres Leder aus Leichtem Leder), ist abgezogen.
 
-| Material | LW wow-professions | LW kami-labs | AH-Rechenpreis |
-|---|---|---|---|
-| Leichtes Leder | 416 | 240 | 50c |
-| Verdorbene Lederfetzen | 99 | 0 | 25c |
-| Mittleres Leder | 223 | 72 | 1s 91c |
-| Light Hide | 27 | 32 | 69c |
-| Medium Hide | 10 | 42 | 8s 88c |
-| Heavy Hide | 20 | 0 | 35s 40c |
-| Salt | 97 | 74 | 50c |
-| Coarse Thread | 80 | 96 | 10c |
-| Fine Thread | 100 | 22 | 1s |
-| Gray Dye | 10 | 2 | 3s 50c |
-| Heavy Armor Kit | 0 | 7 | kein Preis |
-| Soul Dust | 0 | 14 | 7s 21c |
-| Elixir of Giant Growth | 0 | 14 | kein Preis |
+| Material | LW wow-professions (Cured Heavy Hide) | LW wow-professions (ohne Heavy Hide) | LW kami-labs | AH-Rechenpreis |
+|---|---|---|---|---|
+| Leichtes Leder | 416 | 416 | 240 | 50c |
+| Verdorbene Lederfetzen | 99 | 99 | 0 | 25c |
+| Mittleres Leder | 223 | 363 | 72 | 1s 91c |
+| Light Hide | 27 | 27 | 32 | 69c |
+| Medium Hide | 10 | 10 | 42 | 8s 88c |
+| Heavy Hide | 20 | 0 | 0 | 35s 40c |
+| Salt | 97 | 37 | 74 | 50c |
+| Coarse Thread | 80 | 80 | 96 | 10c |
+| Fine Thread | 100 | 140 | 22 | 1s |
+| Gray Dye | 10 | 10 | 2 | 3s 50c |
+| Heavy Armor Kit | 0 | 0 | 7 | kein Preis |
+| Soul Dust | 0 | 0 | 14 | 7s 21c |
+| Elixir of Giant Growth | 0 | 0 | 14 | kein Preis |
 
 Was die Herstellung für Verzauberkunst liefert (Erwartungswert, Entzaubern der übrigen grünen Teile nach `Kreislauf.csv`):
 
-- LW wow-professions: übrig 3 Cured Light Hide, 21 Embossed Leather Gloves, 9 Fine Leather Belt, 24 Light Leather Pants, 10 Dark Leather Belt, 7 Heavy Leather, 20 Cured Heavy Hide, 14 Hillman's Leather Gloves. Entzaubern ergibt etwa 123.0 Strange Dust, 6.3 Lesser Magic Essence, 9.9 Greater Magic Essence, 3.0 Lesser Astral Essence, 15.8 Soul Dust, 4.2 Greater Astral Essence.
+- LW wow-professions (Cured Heavy Hide): übrig 3 Cured Light Hide, 21 Embossed Leather Gloves, 9 Fine Leather Belt, 24 Light Leather Pants, 10 Dark Leather Belt, 7 Heavy Leather, 20 Cured Heavy Hide, 14 Hillman's Leather Gloves. Entzaubern ergibt etwa 123.0 Strange Dust, 6.3 Lesser Magic Essence, 9.9 Greater Magic Essence, 3.0 Lesser Astral Essence, 15.8 Soul Dust, 4.2 Greater Astral Essence.
+- LW wow-professions (ohne Heavy Hide): übrig 3 Cured Light Hide, 21 Embossed Leather Gloves, 9 Fine Leather Belt, 24 Light Leather Pants, 10 Dark Leather Belt, 7 Heavy Leather, 24 Hillman's Leather Gloves. Entzaubern ergibt etwa 123.0 Strange Dust, 6.3 Lesser Magic Essence, 9.9 Greater Magic Essence, 3.0 Lesser Astral Essence, 27.0 Soul Dust, 7.2 Greater Astral Essence.
 - LW kami-labs: übrig 36 Light Armor Kit, 32 Cured Light Hide, 28 Embossed Leather Gloves, 18 Fine Leather Belt, 22 Cured Medium Hide, 2 Dark Leather Belt, 18 Hillman's Shoulders, 7 Forceful Heavy Armor Kit. Entzaubern ergibt etwa 72.8 Strange Dust, 8.4 Lesser Magic Essence, 5.4 Greater Magic Essence, 0.6 Lesser Astral Essence. Ohne Entzauberungswert in `Kreislauf.csv`: Hillman's Shoulders.
 
 Verzauberkunst 1–150 (wow-professions): Staub-Weg 275 Strange Dust und 4 Lesser Magic Essence, Essenz-Weg 313 Lesser Magic Essence und 3 Strange Dust, dazu Copper Rod, 19 Mote of Magic, Silver Rod, Shadowgem. Das Modell nimmt den Staub-Weg und setzt eigene Essenzen dort ein, wo eine Essenz am meisten Staub spart (1 Greater = 3 Lesser).
 
-| | mit LW wow-professions | mit LW kami-labs |
-|---|---|---|
-| Strange Dust, der nach dem eigenen Entzaubern fehlt | 94 | 165 |
-| dafür zusätzliche Embossed Leather Gloves (je 3 Leichtes Leder) | 66 | 109 |
-| = zusätzliches Leichtes Leder für Verzauberkunst | 198 | 327 |
-| oder Strange Dust im AH kaufen (Beta) | 78s 81c | 1g 38s 43c |
+| | mit LW wow-professions (Cured Heavy Hide) | mit LW wow-professions (ohne Heavy Hide) | mit LW kami-labs |
+|---|---|---|---|
+| Strange Dust, der nach dem eigenen Entzaubern fehlt | 94 | 94 | 165 |
+| dafür zusätzliche Embossed Leather Gloves (je 3 Leichtes Leder) | 66 | 66 | 109 |
+| = zusätzliches Leichtes Leder für Verzauberkunst | 198 | 198 | 327 |
+| oder Strange Dust im AH kaufen (Beta) | 78s 81c | 78s 81c | 1g 38s 43c |
 
 ## Lücke: Leichtes Leder
 
@@ -107,23 +112,27 @@ Bedarf = Lederverarbeitung netto, ohne oder mit dem Leder für Verzauberkunst. A
 
 | Sammeln bis | LW-Route | Bedarf | Angebot (Plan) | Lücke | weitere Farmzeit | oder AH (Beta) |
 |---|---|---|---|---|---|---|
-| Stufe 15 | wow-professions | 416 | 73 | 343 | 7.2–11.4 h | 1g 71s 70c |
-| Stufe 15 | wow-professions + VZ aus eigenem Entzaubern | 614 | 73 | 541 | 11.3–18.0 h | 2g 70s 70c |
-| Stufe 15 | kami-labs | 240 | 73 | 167 | 3.5–5.6 h | 83s 70c |
-| Stufe 15 | kami-labs + VZ aus eigenem Entzaubern | 567 | 73 | 494 | 10.3–16.5 h | 2g 47s 20c |
-| Stufe 20 | wow-professions | 416 | 118 | 298 | 5.0–8.1 h | 1g 48s 97c |
-| Stufe 20 | wow-professions + VZ aus eigenem Entzaubern | 614 | 118 | 496 | 8.4–13.4 h | 2g 47s 97c |
-| Stufe 20 | kami-labs | 240 | 118 | 122 | 2.1–3.3 h | 60s 97c |
-| Stufe 20 | kami-labs + VZ aus eigenem Entzaubern | 567 | 118 | 449 | 7.6–12.1 h | 2g 24s 47c |
+| Wechsel (E1, Stufe 16) | wow-professions (Cured Heavy Hide) | 416 | 79 | 337 | 7.0–11.2 h | 1g 68s 70c |
+| Wechsel (E1, Stufe 16) | wow-professions (Cured Heavy Hide) + VZ aus eigenem Entzaubern | 614 | 79 | 535 | 11.2–17.8 h | 2g 67s 70c |
+| Wechsel (E1, Stufe 16) | wow-professions (ohne Heavy Hide) | 416 | 79 | 337 | 7.0–11.2 h | 1g 68s 70c |
+| Wechsel (E1, Stufe 16) | wow-professions (ohne Heavy Hide) + VZ aus eigenem Entzaubern | 614 | 79 | 535 | 11.2–17.8 h | 2g 67s 70c |
+| Wechsel (E1, Stufe 16) | kami-labs | 240 | 79 | 161 | 3.4–5.4 h | 80s 70c |
+| Wechsel (E1, Stufe 16) | kami-labs + VZ aus eigenem Entzaubern | 567 | 79 | 488 | 10.2–16.3 h | 2g 44s 20c |
+| Stufe 20, falls Kürschnerei bliebe | wow-professions (Cured Heavy Hide) | 416 | 101 | 315 | 5.3–8.5 h | 1g 57s 60c |
+| Stufe 20, falls Kürschnerei bliebe | wow-professions (Cured Heavy Hide) + VZ aus eigenem Entzaubern | 614 | 101 | 513 | 8.7–13.9 h | 2g 56s 60c |
+| Stufe 20, falls Kürschnerei bliebe | wow-professions (ohne Heavy Hide) | 416 | 101 | 315 | 5.3–8.5 h | 1g 57s 60c |
+| Stufe 20, falls Kürschnerei bliebe | wow-professions (ohne Heavy Hide) + VZ aus eigenem Entzaubern | 614 | 101 | 513 | 8.7–13.9 h | 2g 56s 60c |
+| Stufe 20, falls Kürschnerei bliebe | kami-labs | 240 | 101 | 139 | 2.4–3.8 h | 69s 60c |
+| Stufe 20, falls Kürschnerei bliebe | kami-labs + VZ aus eigenem Entzaubern | 567 | 101 | 466 | 7.9–12.6 h | 2g 33s 10c |
 
-Mittleres Leder, Bälge und Fetzen (Plan bis Stufe 20 gegen Bedarf):
+Mittleres Leder, Bälge und Fetzen (Plan bis zum Wechsel gegen Bedarf):
 
-| Material | Plan bis Stufe 20 | Bedarf LW wow-professions | Bedarf LW kami-labs |
-|---|---|---|---|
-| Mittleres Leder | 11 | 223 (Lücke 212, AH 4g 5s 56c) | 72 (Lücke 61, AH 1g 17s 15c) |
-| Verdorbene Lederfetzen | 83 | 99 (Lücke 16, AH 3s 98c) | 0 (Lücke 0, AH 0c) |
-| Light Hide | 5 | 27 (Lücke 22, AH 15s 8c) | 32 (Lücke 27, AH 18s 53c) |
-| Medium Hide | 1 | 10 (Lücke 9, AH 79s 33c) | 42 (Lücke 41, AH 3g 63s 49c) |
+| Material | Plan bis zum Wechsel | Bedarf LW wow-professions (Cured Heavy Hide) | Bedarf LW wow-professions (ohne Heavy Hide) | Bedarf LW kami-labs |
+|---|---|---|---|---|
+| Mittleres Leder | 0 | 223 (Lücke 223, AH 4g 25s 93c) | 363 (Lücke 363, AH 6g 93s 33c) | 72 (Lücke 72, AH 1g 37s 52c) |
+| Verdorbene Lederfetzen | 83 | 99 (Lücke 16, AH 3s 98c) | 99 (Lücke 16, AH 3s 98c) | 0 (Lücke 0, AH 0c) |
+| Light Hide | 5 | 27 (Lücke 22, AH 15s 8c) | 27 (Lücke 22, AH 15s 8c) | 32 (Lücke 27, AH 18s 53c) |
+| Medium Hide | 0 | 10 (Lücke 10, AH 88s 80c) | 10 (Lücke 10, AH 88s 80c) | 42 (Lücke 42, AH 3g 72s 96c) |
 
 ## Farmstellen entlang der Route (Mitte der RXP-Schleifen, Brachland-Karte 1413 mit exakten Ecken)
 
@@ -146,8 +155,6 @@ Farm-Stopps im Kombi-Guide (`farmstopps.csv`):
 | Id | Abschnitt | Farmstelle | Minuten | überschneidet Quest | Wo im Guide | Quelle |
 |---|---|---|---|---|---|---|
 | S1 | D | FS5 Raptoren im Nordbrachland | 25 | – | «12-17 The Barrens» vor RXPs Schritt «Grind to level 16» (#83): das Grinden an Tieren statt an Venture Co. | Minuten: Vorschlag zum Testen (Annahme) · RXP #83 schlägt hier ohnehin Grinden auf Stufe 16 vor · Raptorenköpfe (869) und Krallen (903) sind dort schon fertig, die Kills sind also zusätzlich |
-| S2 | E | FS7 Südbrachland Ost (Scytheclaws) | 20 | 865 | «12-17 The Barrens» nach dem gelben Raptorennest (#148) | Minuten: Vorschlag zum Testen (Annahme) · die ersten Scytheclaw-Kills zählen für «Raptor Horns» (865, im Modell sonst in Abschnitt G) und sind deshalb nicht zusätzlich |
-| S3 | G | FS9 Donnerechsen bei Camp Taurajo | 20 | – | «17-22» nach der Abgabe «Cry of the Thunderhawk» (#84), Stand Stufe 20 | Minuten: Vorschlag zum Testen (Annahme) · Donnerechsen-Quests 907 und 913 sind dort schon fertig |
 
 ## Zeilen
 
@@ -169,12 +176,12 @@ Farm-Stopps im Kombi-Guide (`farmstopps.csv`):
 | C | #17, #32 | 845 | Zhevra Hooves (4) | Zhevra Runner | 13 | 2 | 8 | Quest | Anzahl: RXP · Stufe 13–14: Best Practice §9 · ID: AHledger |
 | D | #55, #80, #82 | 903, 821 | Prowler Claws (7) und Savannah Lion Tusk (5), gleiche Kreatur | Savannah Prowler | 14 | 2 | 14 | Quest | Anzahl: RXP · Stufe 14–15: Warcraft Tavern (Classic) · ID: AHledger |
 | D | #62 | 95494 | Savannah Lion Hide (6), neue Forever-Quest | Savannah Patriarch | 15 | 2 | 12 | Quest | Anzahl: RXP · Stufe 15–16: Warcraft Tavern (Classic) · ID: AHledger |
-| E | #43, #58, #79, #90, #137, #145, #180 (17-22: #42) | 821 | Plainstrider Kidney (5), im Modell ganz in Abschnitt E (Annahme) | Greater, Fleeting und Ornery Plainstrider | 13 | 2 | 10 | Quest | Anzahl: RXP · Stufe 11–17 gemischt (Ornery 17: MetaForge), angenommen 13 |
-| E | #138, #146–#148 | 905 | Sunscale Feather (3) | Sunscale Scytheclaw | 17 | 3 | 6 | Quest | Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) · ID: AHledger |
-| E | #120, #123 | 881 | Echeyakee's Hide (1) | Echeyakee | 16 | 3 | 1 | Quest | Anzahl: RXP · Stufe 16: MetaForge |
+| D | #43, #58, #79, #90, #137, #145, #180 (17-22: #42) | 821 | Plainstrider Kidney (5), im Modell ganz in Abschnitt D (Annahme: RXP lässt die Nieren ab #43 nebenbei sammeln, vor Orgrimmar) | Greater, Fleeting und Ornery Plainstrider | 13 | 2 | 10 | Quest | Anzahl: RXP · Stufe 11–17 gemischt (Ornery 17: MetaForge), angenommen 13 |
+| E2 | #138, #146–#148 | 905 | Sunscale Feather (3) | Sunscale Scytheclaw | 17 | 3 | 6 | Quest | Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) · ID: AHledger |
+| E2 | #120, #123 | 881 | Echeyakee's Hide (1) | Echeyakee | 16 | 3 | 1 | Quest | Anzahl: RXP · Stufe 16: MetaForge |
 | F | #9, #18, #26 | 6461 | Deepmoss Creeper (10), Deepmoss Venomspitter (7) | Deepmoss Creeper, Deepmoss Venomspitter | 18 | 3 | 17 | Option: kürschnerbar ungeprüft | Anzahl: RXP · Spinnen · Stufe und Kürschnerbarkeit ungeprüft |
 | G | 12-17 #151, #153 · 17-22 #33, #38, #40 | 821 | Thunder Lizard Horn (1) | Stormsnout | 19 | 3 | 2 | Quest | Anzahl: RXP · Stufe 18–19: Best Practice §9 · ID: AHledger |
-| G | 12-17 #138, #149 · 17-22 #41, #43 | 865 | Intact Raptor Horn (5), im Modell in G · Farm-Stopp S2 übernimmt diese Kills (farmstopps.csv) | Sunscale Scytheclaw | 17 | 3 | 10 | Quest | Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) |
+| G | 12-17 #138, #149 · 17-22 #41, #43 | 865 | Intact Raptor Horn (5), im Modell in G | Sunscale Scytheclaw | 17 | 3 | 10 | Quest | Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) |
 | G | #44, #47 | 882 | Fresh Zhevra Carcass (1) | Zhevra Charger | 18 | 3 | 2 | Quest | Anzahl: RXP · Stufe 18: MetaForge |
 | G | #48 | 882 | Ishamuhale's Fang (1) | Ishamuhale | 19 | 3 | 1 | Quest | Anzahl: RXP · Stufe 19: Warcraft Tavern (Classic) |
 | G | #75, #78 | 907 | Thunder Lizard Blood (3) | Thunderhead, Stormsnout | 20 | 3 | 6 | Quest | Anzahl: RXP · Stufe Thunderhead 20–21, Stormsnout 18–19: Best Practice §9 |

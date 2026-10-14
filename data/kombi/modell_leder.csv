@@ -15,12 +15,12 @@ D;#44, #54, #81;869;Raptor Head (12), zweite Hälfte (Annahme);Sunscale Lashtail
 C;#17, #32;845;Zhevra Hooves (4);Zhevra Runner;3242;13;4;2;Quest;Anzahl: RXP · Stufe 13–14: Best Practice §9 · ID: AHledger
 D;#55, #80, #82;903, 821;Prowler Claws (7) und Savannah Lion Tusk (5), gleiche Kreatur;Savannah Prowler;3425;14;7;2;Quest;Anzahl: RXP · Stufe 14–15: Warcraft Tavern (Classic) · ID: AHledger
 D;#62;95494;Savannah Lion Hide (6), neue Forever-Quest;Savannah Patriarch;3241;15;6;2;Quest;Anzahl: RXP · Stufe 15–16: Warcraft Tavern (Classic) · ID: AHledger
-E;#43, #58, #79, #90, #137, #145, #180 (17-22: #42);821;Plainstrider Kidney (5), im Modell ganz in Abschnitt E (Annahme);Greater, Fleeting und Ornery Plainstrider;3244, 3246, 3245;13;5;2;Quest;Anzahl: RXP · Stufe 11–17 gemischt (Ornery 17: MetaForge), angenommen 13
-E;#138, #146–#148;905;Sunscale Feather (3);Sunscale Scytheclaw;3256;17;3;2;Quest;Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) · ID: AHledger
-E;#120, #123;881;Echeyakee's Hide (1);Echeyakee;;16;1;1;Quest;Anzahl: RXP · Stufe 16: MetaForge
+D;#43, #58, #79, #90, #137, #145, #180 (17-22: #42);821;Plainstrider Kidney (5), im Modell ganz in Abschnitt D (Annahme: RXP lässt die Nieren ab #43 nebenbei sammeln, vor Orgrimmar);Greater, Fleeting und Ornery Plainstrider;3244, 3246, 3245;13;5;2;Quest;Anzahl: RXP · Stufe 11–17 gemischt (Ornery 17: MetaForge), angenommen 13
+E2;#138, #146–#148;905;Sunscale Feather (3);Sunscale Scytheclaw;3256;17;3;2;Quest;Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) · ID: AHledger
+E2;#120, #123;881;Echeyakee's Hide (1);Echeyakee;;16;1;1;Quest;Anzahl: RXP · Stufe 16: MetaForge
 F;#9, #18, #26;6461;Deepmoss Creeper (10), Deepmoss Venomspitter (7);Deepmoss Creeper, Deepmoss Venomspitter;;18;17;1;Option: kürschnerbar ungeprüft;Anzahl: RXP · Spinnen · Stufe und Kürschnerbarkeit ungeprüft
 G;12-17 #151, #153 · 17-22 #33, #38, #40;821;Thunder Lizard Horn (1);Stormsnout;3240;19;1;2;Quest;Anzahl: RXP · Stufe 18–19: Best Practice §9 · ID: AHledger
-G;12-17 #138, #149 · 17-22 #41, #43;865;Intact Raptor Horn (5), im Modell in G · Farm-Stopp S2 übernimmt diese Kills (farmstopps.csv);Sunscale Scytheclaw;3256;17;5;2;Quest;Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic)
+G;12-17 #138, #149 · 17-22 #41, #43;865;Intact Raptor Horn (5), im Modell in G;Sunscale Scytheclaw;3256;17;5;2;Quest;Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic)
 G;#44, #47;882;Fresh Zhevra Carcass (1);Zhevra Charger;;18;1;2;Quest;Anzahl: RXP · Stufe 18: MetaForge
 G;#48;882;Ishamuhale's Fang (1);Ishamuhale;;19;1;1;Quest;Anzahl: RXP · Stufe 19: Warcraft Tavern (Classic)
 G;#75, #78;907;Thunder Lizard Blood (3);Thunderhead, Stormsnout;3239, 3240;20;3;2;Quest;Anzahl: RXP · Stufe Thunderhead 20–21, Stormsnout 18–19: Best Practice §9

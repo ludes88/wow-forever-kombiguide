@@ -1,66 +1,69 @@
-route;beruf;von;bis;rezept;anzahl;ergebnis;ergebnis_je;material;menge_je;quelle
-wow-professions;LW;1;30;Light Leather;33;Light Leather;1;Ruined Leather Scraps;3;wow-professions, Leatherworking Leveling Guide (Forever-Beta), abgerufen 14.10.2026: 33 Herstellungen aus 100 Fetzen
-wow-professions;LW;30;55;Cured Light Hide;27;Cured Light Hide;1;Light Hide;1;wow-professions: 24 davon für Light Leather Pants aufheben
-wow-professions;LW;30;55;Cured Light Hide;27;Cured Light Hide;1;Salt;1;wow-professions
-wow-professions;LW;55;75;Embossed Leather Gloves;21;Embossed Leather Gloves;1;Light Leather;3;wow-professions
-wow-professions;LW;55;75;Embossed Leather Gloves;21;Embossed Leather Gloves;1;Coarse Thread;2;wow-professions
-wow-professions;LW;75;80;Medium Leather;8;Medium Leather;1;Light Leather;4;wow-professions
-wow-professions;LW;80;90;Cured Medium Hide;10;Cured Medium Hide;1;Medium Hide;1;wow-professions: für 115–125 aufheben
-wow-professions;LW;80;90;Cured Medium Hide;10;Cured Medium Hide;1;Salt;1;wow-professions
-wow-professions;LW;90;100;Fine Leather Belt;19;Fine Leather Belt;1;Light Leather;6;wow-professions: 10 für 115–125 aufheben
-wow-professions;LW;90;100;Fine Leather Belt;19;Fine Leather Belt;1;Coarse Thread;2;wow-professions
-wow-professions;LW;100;115;Light Leather Pants;24;Light Leather Pants;1;Light Leather;10;wow-professions
-wow-professions;LW;100;115;Light Leather Pants;24;Light Leather Pants;1;Cured Light Hide;1;wow-professions
-wow-professions;LW;100;115;Light Leather Pants;24;Light Leather Pants;1;Fine Thread;1;wow-professions
-wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Fine Leather Belt;1;wow-professions
-wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Cured Medium Hide;1;wow-professions
-wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Fine Thread;2;wow-professions
-wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Gray Dye;1;wow-professions
-wow-professions;LW;125;130;Heavy Leather;7;Heavy Leather;1;Medium Leather;5;wow-professions
-wow-professions;LW;130;140;Cured Heavy Hide;20;Cured Heavy Hide;1;Heavy Hide;1;wow-professions, Route A
-wow-professions;LW;130;140;Cured Heavy Hide;20;Cured Heavy Hide;1;Salt;3;wow-professions, Route A
-wow-professions;LW;140;155;Hillman's Leather Gloves;20;Hillman's Leather Gloves;1;Medium Leather;14;wow-professions, Route A (bis 155, für 150 anteilig)
-wow-professions;LW;140;155;Hillman's Leather Gloves;20;Hillman's Leather Gloves;1;Fine Thread;4;wow-professions, Route A
-kami-labs;LW;1;36;Light Armor Kit;36;Light Armor Kit;1;Light Leather;1;kami-labs, WoW Forever Leatherworking Guide (Stand 08.10.2026), abgerufen 14.10.2026
-kami-labs;LW;36;62;Cured Light Hide;32;Cured Light Hide;1;Light Hide;1;kami-labs
-kami-labs;LW;36;62;Cured Light Hide;32;Cured Light Hide;1;Salt;1;kami-labs
-kami-labs;LW;62;85;Embossed Leather Gloves;28;Embossed Leather Gloves;1;Light Leather;3;kami-labs
-kami-labs;LW;62;85;Embossed Leather Gloves;28;Embossed Leather Gloves;1;Coarse Thread;2;kami-labs
-kami-labs;LW;85;100;Fine Leather Belt;20;Fine Leather Belt;1;Light Leather;6;kami-labs
-kami-labs;LW;85;100;Fine Leather Belt;20;Fine Leather Belt;1;Coarse Thread;2;kami-labs
-kami-labs;LW;100;128;Cured Medium Hide;42;Cured Medium Hide;1;Medium Hide;1;kami-labs
-kami-labs;LW;100;128;Cured Medium Hide;42;Cured Medium Hide;1;Salt;1;kami-labs
-kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Fine Leather Belt;1;kami-labs
-kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Cured Medium Hide;1;kami-labs
-kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Fine Thread;2;kami-labs
-kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Gray Dye;1;kami-labs
-kami-labs;LW;130;143;Hillman's Shoulders;18;Hillman's Shoulders;1;Cured Medium Hide;1;kami-labs
-kami-labs;LW;130;143;Hillman's Shoulders;18;Hillman's Shoulders;1;Medium Leather;4;kami-labs
-kami-labs;LW;130;143;Hillman's Shoulders;18;Hillman's Shoulders;1;Fine Thread;1;kami-labs
-kami-labs;LW;143;150;Forceful Heavy Armor Kit;7;Forceful Heavy Armor Kit;1;Heavy Armor Kit;1;kami-labs: neues Forever-Rezept, Muster bei Saenorion (Darnassus) oder Nioma (Hinterland) · für Horde ungeprüft
-kami-labs;LW;143;150;Forceful Heavy Armor Kit;7;Forceful Heavy Armor Kit;1;Soul Dust;2;kami-labs
-kami-labs;LW;143;150;Forceful Heavy Armor Kit;7;Forceful Heavy Armor Kit;1;Elixir of Giant Growth;2;kami-labs
-wow-professions Staub;VZ;1;2;Runed Copper Rod;1;;;Copper Rod;1;wow-professions, Enchanting Leveling Guide (Forever-Beta), abgerufen 14.10.2026
-wow-professions Staub;VZ;1;2;Runed Copper Rod;1;;;Mote of Magic;1;wow-professions
-wow-professions Staub;VZ;2;20;Enchant Bracer - Inferior Stamina;18;;;Mote of Magic;1;wow-professions
-wow-professions Staub;VZ;20;70;Enchant Chest - Inferior Stamina;50;;;Strange Dust;1;wow-professions (Staub-Weg)
-wow-professions Staub;VZ;70;100;Enchant Bracer - Minor Stamina;30;;;Strange Dust;2;wow-professions (Staub-Weg)
-wow-professions Staub;VZ;100;109;Enchant Cloak - Minor Protection;9;;;Strange Dust;2;wow-professions (Staub-Weg)
-wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Silver Rod;1;wow-professions
-wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Strange Dust;3;wow-professions
-wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Lesser Magic Essence;4;wow-professions
-wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Shadowgem;1;wow-professions
-wow-professions Staub;VZ;110;130;Enchant Cloak - Minor Protection;32;;;Strange Dust;2;wow-professions (Staub-Weg)
-wow-professions Staub;VZ;130;150;Enchant Boots - Minor Stamina;20;;;Strange Dust;4;wow-professions (Staub-Weg)
-wow-professions Essenz;VZ;1;2;Runed Copper Rod;1;;;Copper Rod;1;wow-professions
-wow-professions Essenz;VZ;1;2;Runed Copper Rod;1;;;Mote of Magic;1;wow-professions
-wow-professions Essenz;VZ;2;20;Enchant Bracer - Inferior Stamina;18;;;Mote of Magic;1;wow-professions
-wow-professions Essenz;VZ;20;70;Enchant Bracer - Minor Deflect;50;;;Lesser Magic Essence;1;wow-professions (Essenz-Weg)
-wow-professions Essenz;VZ;70;100;Enchant Chest - Minor Absorption;33;;;Lesser Magic Essence;1;wow-professions (Essenz-Weg)
-wow-professions Essenz;VZ;100;109;Enchant Chest - Minor Absorption;18;;;Lesser Magic Essence;1;wow-professions (Essenz-Weg)
-wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Silver Rod;1;wow-professions
-wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Strange Dust;3;wow-professions
-wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Lesser Magic Essence;4;wow-professions
-wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Shadowgem;1;wow-professions
-wow-professions Essenz;VZ;110;130;Enchant 2H Weapon - Lesser Intellect;20;;;Lesser Magic Essence;4;wow-professions (Essenz-Weg)
-wow-professions Essenz;VZ;130;150;Enchant 2H Weapon - Lesser Intellect;32;;;Lesser Magic Essence;4;wow-professions (Essenz-Weg)
+route;beruf;von;bis;rezept;anzahl;ergebnis;ergebnis_je;material;menge_je;quelle;variante
+wow-professions;LW;1;30;Light Leather;33;Light Leather;1;Ruined Leather Scraps;3;wow-professions, Leatherworking Leveling Guide (Forever-Beta), abgerufen 14.10.2026: 33 Herstellungen aus 100 Fetzen;
+wow-professions;LW;30;55;Cured Light Hide;27;Cured Light Hide;1;Light Hide;1;wow-professions: 24 davon für Light Leather Pants aufheben;
+wow-professions;LW;30;55;Cured Light Hide;27;Cured Light Hide;1;Salt;1;wow-professions;
+wow-professions;LW;55;75;Embossed Leather Gloves;21;Embossed Leather Gloves;1;Light Leather;3;wow-professions;
+wow-professions;LW;55;75;Embossed Leather Gloves;21;Embossed Leather Gloves;1;Coarse Thread;2;wow-professions;
+wow-professions;LW;75;80;Medium Leather;8;Medium Leather;1;Light Leather;4;wow-professions;
+wow-professions;LW;80;90;Cured Medium Hide;10;Cured Medium Hide;1;Medium Hide;1;wow-professions: für 115–125 aufheben;
+wow-professions;LW;80;90;Cured Medium Hide;10;Cured Medium Hide;1;Salt;1;wow-professions;
+wow-professions;LW;90;100;Fine Leather Belt;19;Fine Leather Belt;1;Light Leather;6;wow-professions: 10 für 115–125 aufheben;
+wow-professions;LW;90;100;Fine Leather Belt;19;Fine Leather Belt;1;Coarse Thread;2;wow-professions;
+wow-professions;LW;100;115;Light Leather Pants;24;Light Leather Pants;1;Light Leather;10;wow-professions;
+wow-professions;LW;100;115;Light Leather Pants;24;Light Leather Pants;1;Cured Light Hide;1;wow-professions;
+wow-professions;LW;100;115;Light Leather Pants;24;Light Leather Pants;1;Fine Thread;1;wow-professions;
+wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Fine Leather Belt;1;wow-professions;
+wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Cured Medium Hide;1;wow-professions;
+wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Fine Thread;2;wow-professions;
+wow-professions;LW;115;125;Dark Leather Belt;10;Dark Leather Belt;1;Gray Dye;1;wow-professions;
+wow-professions;LW;125;130;Heavy Leather;7;Heavy Leather;1;Medium Leather;5;wow-professions;
+wow-professions;LW;130;140;Cured Heavy Hide;20;Cured Heavy Hide;1;Heavy Hide;1;wow-professions, Tab «Cured Heavy Hide»;Cured Heavy Hide
+wow-professions;LW;130;140;Cured Heavy Hide;20;Cured Heavy Hide;1;Salt;3;wow-professions, Tab «Cured Heavy Hide»;Cured Heavy Hide
+wow-professions;LW;140;155;Hillman's Leather Gloves;20;Hillman's Leather Gloves;1;Medium Leather;14;wow-professions, Tab «Cured Heavy Hide» (bis 155, für 150 anteilig);Cured Heavy Hide
+wow-professions;LW;140;155;Hillman's Leather Gloves;20;Hillman's Leather Gloves;1;Fine Thread;4;wow-professions, Tab «Cured Heavy Hide»;Cured Heavy Hide
+wow-professions;LW;130;155;Hillman's Leather Gloves;30;Hillman's Leather Gloves;1;Medium Leather;14;wow-professions, Tab «Leveling without Heavy Hide»: «130-155» «30x Hillman's Leather Gloves - 420 Medium Leather, 120 Fine Thread» (bis 155, für 150 anteilig) · Zuordnung der Zeilen zu den Tabs aus der Reihenfolge auf der Seite erschlossen, Einkaufsliste passt rechnerisch · Wahl laut Seite nach Preis;ohne Heavy Hide
+wow-professions;LW;130;155;Hillman's Leather Gloves;30;Hillman's Leather Gloves;1;Fine Thread;4;wow-professions, Tab «Leveling without Heavy Hide»;ohne Heavy Hide
+kami-labs;LW;1;36;Light Armor Kit;36;Light Armor Kit;1;Light Leather;1;kami-labs, WoW Forever Leatherworking Guide (Stand 08.10.2026), abgerufen 14.10.2026;
+kami-labs;LW;36;62;Cured Light Hide;32;Cured Light Hide;1;Light Hide;1;kami-labs;
+kami-labs;LW;36;62;Cured Light Hide;32;Cured Light Hide;1;Salt;1;kami-labs;
+kami-labs;LW;62;85;Embossed Leather Gloves;28;Embossed Leather Gloves;1;Light Leather;3;kami-labs;
+kami-labs;LW;62;85;Embossed Leather Gloves;28;Embossed Leather Gloves;1;Coarse Thread;2;kami-labs;
+kami-labs;LW;85;100;Fine Leather Belt;20;Fine Leather Belt;1;Light Leather;6;kami-labs;
+kami-labs;LW;85;100;Fine Leather Belt;20;Fine Leather Belt;1;Coarse Thread;2;kami-labs;
+kami-labs;LW;100;128;Cured Medium Hide;42;Cured Medium Hide;1;Medium Hide;1;kami-labs;
+kami-labs;LW;100;128;Cured Medium Hide;42;Cured Medium Hide;1;Salt;1;kami-labs;
+kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Fine Leather Belt;1;kami-labs;
+kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Cured Medium Hide;1;kami-labs;
+kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Fine Thread;2;kami-labs;
+kami-labs;LW;128;130;Dark Leather Belt;2;Dark Leather Belt;1;Gray Dye;1;kami-labs;
+kami-labs;LW;130;143;Hillman's Shoulders;18;Hillman's Shoulders;1;Cured Medium Hide;1;kami-labs;
+kami-labs;LW;130;143;Hillman's Shoulders;18;Hillman's Shoulders;1;Medium Leather;4;kami-labs;
+kami-labs;LW;130;143;Hillman's Shoulders;18;Hillman's Shoulders;1;Fine Thread;1;kami-labs;
+kami-labs;LW;143;150;Forceful Heavy Armor Kit;7;Forceful Heavy Armor Kit;1;Heavy Armor Kit;1;kami-labs: neues Forever-Rezept, Muster bei Saenorion (Darnassus) oder Nioma (Hinterland) · für Horde ungeprüft;
+kami-labs;LW;143;150;Forceful Heavy Armor Kit;7;Forceful Heavy Armor Kit;1;Soul Dust;2;kami-labs;
+kami-labs;LW;143;150;Forceful Heavy Armor Kit;7;Forceful Heavy Armor Kit;1;Elixir of Giant Growth;2;kami-labs;
+wow-professions Staub;VZ;1;2;Runed Copper Rod;1;;;Copper Rod;1;wow-professions, Enchanting Leveling Guide (Forever-Beta), abgerufen 14.10.2026;
+wow-professions Staub;VZ;1;2;Runed Copper Rod;1;;;Mote of Magic;1;wow-professions;
+wow-professions Staub;VZ;2;20;Enchant Bracer - Inferior Stamina;18;;;Mote of Magic;1;wow-professions;
+wow-professions Staub;VZ;20;70;Enchant Chest - Inferior Stamina;50;;;Strange Dust;1;wow-professions (Staub-Weg);
+wow-professions Staub;VZ;70;100;Enchant Bracer - Minor Stamina;30;;;Strange Dust;2;wow-professions (Staub-Weg);
+wow-professions Staub;VZ;100;109;Enchant Cloak - Minor Protection;9;;;Strange Dust;2;wow-professions (Staub-Weg);
+wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Silver Rod;1;wow-professions;
+wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Strange Dust;3;wow-professions;
+wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Lesser Magic Essence;4;wow-professions;
+wow-professions Staub;VZ;109;110;Runed Silver Rod;1;;;Shadowgem;1;wow-professions;
+wow-professions Staub;VZ;110;130;Enchant Cloak - Minor Protection;32;;;Strange Dust;2;wow-professions (Staub-Weg);
+wow-professions Staub;VZ;130;150;Enchant Boots - Minor Stamina;20;;;Strange Dust;4;wow-professions (Staub-Weg);
+wow-professions Essenz;VZ;1;2;Runed Copper Rod;1;;;Copper Rod;1;wow-professions;
+wow-professions Essenz;VZ;1;2;Runed Copper Rod;1;;;Mote of Magic;1;wow-professions;
+wow-professions Essenz;VZ;2;20;Enchant Bracer - Inferior Stamina;18;;;Mote of Magic;1;wow-professions;
+wow-professions Essenz;VZ;20;70;Enchant Bracer - Minor Deflect;50;;;Lesser Magic Essence;1;wow-professions (Essenz-Weg);
+wow-professions Essenz;VZ;70;100;Enchant Chest - Minor Absorption;33;;;Lesser Magic Essence;1;wow-professions (Essenz-Weg);
+wow-professions Essenz;VZ;100;109;Enchant Chest - Minor Absorption;18;;;Lesser Magic Essence;1;wow-professions (Essenz-Weg);
+wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Silver Rod;1;wow-professions;
+wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Strange Dust;3;wow-professions;
+wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Lesser Magic Essence;4;wow-professions;
+wow-professions Essenz;VZ;109;110;Runed Silver Rod;1;;;Shadowgem;1;wow-professions;
+wow-professions Essenz;VZ;110;130;Enchant 2H Weapon - Lesser Intellect;20;;;Lesser Magic Essence;4;wow-professions (Essenz-Weg);
+wow-professions Essenz;VZ;130;150;Enchant 2H Weapon - Lesser Intellect;32;;;Lesser Magic Essence;4;wow-professions (Essenz-Weg);
+wow-professions Alternative;VZ;130;150;Enchant Bracer - Lesser Stamina;20;;;Soul Dust;1;wow-professions, Enchanting Leveling Guide, Tab Strange Dust, 130-150: «20x Enchant Bracer - Lesser Stamina instead - 20 Soul Dust» (statt 20x Boots - Minor Stamina mit 80 Strange Dust), abgerufen 14.10.2026;
