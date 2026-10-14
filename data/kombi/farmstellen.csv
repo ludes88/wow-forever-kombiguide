@@ -1,0 +1,12 @@
+id;name;karte;x;y;tiere;stufen;rxp_bezug;hinweis;quelle
+FS1;Rund um die Crossroads;1413;51.9;29.6;Greater und Fleeting Plainstrider, Sunscale Lashtail und Screecher;11–15;12-17 #5 und #6 (Raptoren «Kill every Raptor you see», Ebenenschreiter-Schleife);kein eigener Farm-Stopp: die Route tötet hier gleich nach der Ankunft dieselben Tiere für 844 und 869;Ort: Mitte der RXP-Schleife #6 (v4.11.23), umgerechnet mit den exakten Ecken der Karte 1413
+FS2;Zhevra-Weg Crossroads–Ratchet;1413;51.8;37.6;Zhevra Runner, Raptoren;13–15;12-17 #32 (Zhevra-Schleife);auf dem Weg nach Ratchet;Ort: Mitte der RXP-Schleife #32
+FS3;Savannenkatzen bei den Forgotten Pools;1413;41.0;22.5;Savannah Prowler;14–15;12-17 #55;neben Barak Kodobane und den Kolkar;Ort: Mitte der RXP-Schleife #55
+FS4;Patriarchen bei Vrang;1413;44.3;15.5;Savannah Patriarch;15–16;12-17 #62 (neue Forever-Quest 95494);RXP: bei viel Andrang später machen;Ort: Mitte der RXP-Schleife #62
+FS5;Raptoren im Nordbrachland;1413;53.7;12.8;Sunscale Lashtail, Screecher und Scytheclaw;11–18;12-17 #81;nahe Samophlange und Sludge Fen;Ort: Mitte der RXP-Schleife #81
+FS6;Savannenkatzen im Nordbrachland;1413;54.6;15.2;Savannah Prowler;14–15;12-17 #82;gleich neben FS5;Ort: Mitte der RXP-Schleife #82
+FS7;Südbrachland Ost (Scytheclaws);1413;54.7;50.1;Sunscale Scytheclaw (dazu Greater Plainstrider für die Nieren von 821, ohne Mittleres Leder);16–18;17-22 #42 und #43;erste Stelle mit Mittlerem Leder;Ort: Mitte der RXP-Schleifen #42/#43
+FS8;Stormsnouts östlich von Camp Taurajo;1413;50.0;54.5;Stormsnout;18–19;17-22 #40;Mittleres Leder;Ort: Mitte der RXP-Schleife #40
+FS9;Donnerechsen bei Camp Taurajo;1413;47.0;61.1;Thunderhead, Stormsnout;18–21;17-22 #78;Wowhead (Classic): südlich von Camp Taurajo mehr Mittleres Leder;Ort: Mitte der RXP-Schleife #78 · Wowhead «Classic Leather Farming», RenataKane, Stand 09.06.2021
+FS10;Löwen östlich der Crossroads;1413;60.7;32.0;Savannah Matriarch und Patriarch;15–18;17-22 #49;Rest der Quest 95494;Ort: Mitte der RXP-Schleife #49
+FS11;Schildkröten an der Oase;1413;55.6;42.5;Oasis Snapjaw;15–16;17-22 #45 (Quest 880);Kürschnerbarkeit in Forever ungeprüft;Ort: Mitte der RXP-Schleife #45 · Wowhead (Classic) nennt Schildkröten als Lederquelle im Brachland

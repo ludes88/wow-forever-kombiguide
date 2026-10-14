@@ -1,15 +1,29 @@
-abschnitt;bis;quest;ziel;kreatur;kreatur_id;stueck;kills_je_stueck;art;leder_anteil;fetzen_anteil;haut_anteil;quelle
-A;Thunder Bluff, Ruhestein (RXP-Label TBHome);756;Stalker Claws (6);Prairie Stalker;2959;6;2;Quest;0.38;0.62;0;Anzahl: RXP v4.11.23 (Kommentar) · kürschnerbar: Testlog 13.10. · Anteile: Testlog 13.10. (Mulgore, 8 Leder und 13 Fetzen aus 21 Häuten)
-A;Thunder Bluff, Ruhestein (RXP-Label TBHome);756;Cougar Claws (6);Flatland Cougar;3035;6;2;Quest;0.38;0.62;0;wie oben
-A;Thunder Bluff, Ruhestein (RXP-Label TBHome);766;Prairie Wolf Heart, Flatland Cougar Femur, Plainstrider Scale (je 1);Prairie Wolf, Flatland Cougar, Adult Plainstrider;2958, 3035, 2956;3;2;Quest;0.38;0.62;0;wie oben
-A;Thunder Bluff, Ruhestein (RXP-Label TBHome);761;Trophy Swoop Quill (8), Swoop Gizzard (1);Wiry Swoop, Swoop;2969, 2970;9;2;Option: kürschnerbar ungeprüft;0.38;0.62;0;Anzahl: RXP · im Testlog 13.10. nie gekürschnert
-A;Thunder Bluff, Ruhestein (RXP-Label TBHome);96130;Chakuyak's Pelt (1);Chakuyak;268558;1;1;Option: kürschnerbar ungeprüft;0.38;0.62;0;Anzahl: RXP · Kreatur-ID: AHledger
-B;Ende Mulgore (RXP-Label WildManeTurnIn);861;Flatland Prowler Claw (4);Flatland Prowler;3566;4;2;Quest;0.40;0.60;0;Anzahl: RXP · Anteile: MetaForge Kodo Calf (Stufe 7–8: 40 % Leder, 60 % Fetzen), Näherung
-B;Ende Mulgore (RXP-Label WildManeTurnIn);759;Prairie Alpha Tooth (8);Prairie Wolf Alpha;2960;8;2;Quest;0.40;0.60;0;wie oben
-B;Ende Mulgore (RXP-Label WildManeTurnIn);776;Horn of Arra'chea (1);Arra'chea;;1;1;Quest;0.40;0.60;0;wie oben · kürschnerbar ungeprüft
-B;Ende Mulgore (RXP-Label WildManeTurnIn);Grind;optionale RXP-Schritte «Grind to …/6500xp» in Nord-Mulgore (Annahme 15 Kills);Prairie Wolf Alpha, Prairie Stalker, Flatland Cougar, Plainstrider;;15;1;Option: Grind;0.40;0.60;0;Kills: Annahme, keine Quelle
-C;Brachland bis etwa Stufe 15 (Ausblick v0.3);844;Plainstrider Beak (7);Greater Plainstrider, Fleeting Plainstrider;;7;2;Quest;0.60;0.35;0.05;Anzahl: RXP · Anteile: MetaForge Zhevra Runner (Stufe 13–14), Näherung
-C;Brachland bis etwa Stufe 15 (Ausblick v0.3);869;Raptor Head (12);Sunscale Lashtail, Sunscale Screecher;;12;2;Quest;0.60;0.35;0.05;wie oben
-C;Brachland bis etwa Stufe 15 (Ausblick v0.3);845;Zhevra Hooves (4);Zhevra Runner;;4;2;Quest;0.60;0.35;0.05;wie oben
-C;Brachland bis etwa Stufe 15 (Ausblick v0.3);821;Plainstrider Kidney (5);Greater Plainstrider, Fleeting Plainstrider;;5;2;Quest;0.60;0.35;0.05;wie oben · zum Teil erst nach Stufe 15
-C;Brachland bis etwa Stufe 15 (Ausblick v0.3);903, 821;Prowler Claws (7) und Savannah Lion Tusk (5), gleiche Kreatur;Savannah Prowler;;7;2;Quest;0.60;0.35;0.05;wie oben · zum Teil erst nach Stufe 15
+abschnitt;rxp_schritte;quest;ziel;kreatur;kreatur_id;kreatur_stufe;stueck;kills_je_stueck;art;quelle
+A;#46, #49;756;Stalker Claws (6);Prairie Stalker;2959;7;6;2;Quest;Anzahl: RXP v4.11.23 (Kommentar) · Stufe 7–8: Best Practice §9 · kürschnerbar: Testlog 13.10.
+A;#46, #49;756;Cougar Claws (6);Flatland Cougar;3035;8;6;2;Quest;Anzahl: RXP · Stufe: Mulgore, höchstens 10 (ungeprüft) · kürschnerbar: Testlog 13.10.
+A;#45, #95;766;Prairie Wolf Heart, Flatland Cougar Femur, Plainstrider Scale (je 1);Prairie Wolf, Flatland Cougar, Adult Plainstrider;2958, 3035, 2956;7;3;2;Quest;Anzahl: RXP · kürschnerbar: Testlog 13.10.
+A;#47, #74, #87, #94, #95;761, 766;Trophy Swoop Quill (8) aus 761 und Swoop Gizzard (1) aus 766;Wiry Swoop, Swoop, Taloned Swoop;2969, 2970;8;9;2;Option: kürschnerbar ungeprüft;Anzahl: RXP · im Testlog 13.10. nie gekürschnert · Stufe 7–9: Best Practice §9
+A;#50;96130;Chakuyak's Pelt (1);Chakuyak;268558;8;1;1;Option: kürschnerbar ungeprüft;Anzahl: RXP · Kreatur-ID: AHledger
+B1;#115, #119;759;Prairie Alpha Tooth (8);Prairie Wolf Alpha;2960;10;8;2;Quest;Anzahl: RXP · Stufe 9–10: Best Practice §9
+B1;#96–#99;Grind;optionale RXP-Schritte «Grind to 9+3020/6500 xp» in Nord-Mulgore (Annahme 15 Kills);Prairie Wolf Alpha, Prairie Stalker, Flatland Cougar, Plainstrider;;9;15;1;Option: Grind;Kills: Annahme, keine Quelle
+B2;#152–#154;768;Gathering Leather: 12 Leichtes Leder abgeben;;;;12;1;Verbrauch;Anzahl: RXP v4.11.23 · Menge: AHledger Quest 768 · nur mit Kürschnerei sichtbar (RXP «.skill skinning,<1,1»), überspringbar
+B2;#114, #157, #163;861;Flatland Prowler Claw (4);Flatland Prowler;3566;10;4;2;Quest;Anzahl: RXP · Stufe: Mulgore, höchstens 10 (ungeprüft)
+B2;#162;776;Horn of Arra'chea (1);Arra'chea;;10;1;1;Quest;Anzahl: RXP · Stufe und Kürschnerbarkeit ungeprüft
+C;#1, #6;844;Plainstrider Beak (7);Greater Plainstrider, Fleeting Plainstrider;3244, 3246;12;7;2;Quest;Anzahl: RXP · Stufe Greater Plainstrider 11–12: Warcraft Tavern (Classic), Fleeting Plainstrider ungeprüft · IDs: AHledger (3246 nur erschlossen)
+C;#5, #31;869;Raptor Head (12), erste Hälfte (Annahme);Sunscale Lashtail, Sunscale Screecher;3255;13;6;2;Quest;Anzahl: RXP · Aufteilung auf C und D: Annahme · Stufe Lashtail 11–13, Screecher 13–15: Warcraft Tavern (Classic) · ID Screecher: AHledger
+D;#44, #54, #81;869;Raptor Head (12), zweite Hälfte (Annahme);Sunscale Lashtail, Sunscale Screecher, Sunscale Scytheclaw;3255, 3256;14;6;2;Quest;wie oben · RXP #81 nennt zusätzlich Sunscale Scytheclaw (Stufe 16–18)
+C;#17, #32;845;Zhevra Hooves (4);Zhevra Runner;3242;13;4;2;Quest;Anzahl: RXP · Stufe 13–14: Best Practice §9 · ID: AHledger
+D;#55, #80, #82;903, 821;Prowler Claws (7) und Savannah Lion Tusk (5), gleiche Kreatur;Savannah Prowler;3425;14;7;2;Quest;Anzahl: RXP · Stufe 14–15: Warcraft Tavern (Classic) · ID: AHledger
+D;#62;95494;Savannah Lion Hide (6), neue Forever-Quest;Savannah Patriarch;3241;15;6;2;Quest;Anzahl: RXP · Stufe 15–16: Warcraft Tavern (Classic) · ID: AHledger
+E;#43, #58, #79, #90, #137, #145, #180 (17-22: #42);821;Plainstrider Kidney (5), im Modell ganz in Abschnitt E (Annahme);Greater, Fleeting und Ornery Plainstrider;3244, 3246, 3245;13;5;2;Quest;Anzahl: RXP · Stufe 11–17 gemischt (Ornery 17: MetaForge), angenommen 13
+E;#138, #146–#148;905;Sunscale Feather (3);Sunscale Scytheclaw;3256;17;3;2;Quest;Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic) · ID: AHledger
+E;#120, #123;881;Echeyakee's Hide (1);Echeyakee;;16;1;1;Quest;Anzahl: RXP · Stufe 16: MetaForge
+F;#9, #18, #26;6461;Deepmoss Creeper (10), Deepmoss Venomspitter (7);Deepmoss Creeper, Deepmoss Venomspitter;;18;17;1;Option: kürschnerbar ungeprüft;Anzahl: RXP · Spinnen · Stufe und Kürschnerbarkeit ungeprüft
+G;12-17 #151, #153 · 17-22 #33, #38, #40;821;Thunder Lizard Horn (1);Stormsnout;3240;19;1;2;Quest;Anzahl: RXP · Stufe 18–19: Best Practice §9 · ID: AHledger
+G;12-17 #138, #149 · 17-22 #41, #43;865;Intact Raptor Horn (5), im Modell in G · Farm-Stopp S2 übernimmt diese Kills (farmstopps.csv);Sunscale Scytheclaw;3256;17;5;2;Quest;Anzahl: RXP · Stufe 16–18: Warcraft Tavern (Classic)
+G;#44, #47;882;Fresh Zhevra Carcass (1);Zhevra Charger;;18;1;2;Quest;Anzahl: RXP · Stufe 18: MetaForge
+G;#48;882;Ishamuhale's Fang (1);Ishamuhale;;19;1;1;Quest;Anzahl: RXP · Stufe 19: Warcraft Tavern (Classic)
+G;#75, #78;907;Thunder Lizard Blood (3);Thunderhead, Stormsnout;3239, 3240;20;3;2;Quest;Anzahl: RXP · Stufe Thunderhead 20–21, Stormsnout 18–19: Best Practice §9
+G;#82;913;Thunderhawk Wings (1);Thunderhawk Hatchling, Thunderhawk Cloudscraper;;20;1;2;Quest;Anzahl: RXP · Stufe 20 bzw. 22: MetaForge
+G;#45 (12-17: #165);880;Altered Snapjaw Shell (8);Oasis Snapjaw;;15;8;2;Option: kürschnerbar ungeprüft;Anzahl: RXP · Stufe 15–16: Warcraft Tavern (Classic) · Wowhead (Classic) nennt Schildkröten als Lederquelle im Brachland
+H;#160–#162;98251;Ashenvale Bear (6), Shadowhorn Stag (6);Ashenvale Bear, Shadowhorn Stag;;22;12;1;Quest;Anzahl: RXP · Stufe 22 bzw. 23: MetaForge
