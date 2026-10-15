@@ -13,13 +13,15 @@ Grundlagen:
 
 Du willst in der Beta nur noch wenig spielen, damit die Lust zum Start bleibt (15.10.). Die Liste nimmt nur, was der Plan zum Start braucht und was sich beim Spielen zum Start nicht ohnehin nebenbei misst. Was du davon machst, entscheidest du.
 
-Vorher einmal: `aktualisieren.bat`, dann `/reload`. Die Zeile SITZUNG zeigt «Testlog 3.6».
+Vorher einmal: `aktualisieren.bat`, dann das Spiel neu starten (nicht nur `/reload`: den neuen Ordner `KombiDaten` lädt das Spiel erst nach einem Neustart). Die Zeile SITZUNG zeigt «Testlog 3.6» und «KombiDaten …».
 
-**Sitzung 1, etwa 2 Stunden (Schätzung aus den Dauern unten): ein Druide auf Stufe 15–16 mit Kürschnerei, Kräuterkunde und Angeln, der Kürschnerei und Kräuterkunde verlernen darf**
+**Sitzung 1, etwa 2 Stunden (Schätzung aus den Dauern unten): dein Stufe-15-Charakter**
+
+Stand 15.10. abends (`docs/tests/messdaten-2026-10-15.md`): Er hat schon Lederverarbeitung (109) und Verzauberkunst (100), laut Testlog vom 13.10. Den Berufswechsel selbst misst er darum nicht mehr: Verlernen, Lederverarbeitung 1–80 aus eigenem Leder, Sweetspot (M5, T11). Wer das misst, ist offener Punkt 22. Alles andere in Sitzung 1 geht mit ihm.
 1. Orgrimmar: das Auktionshaus öffnen. Der AH-Scan läuft von selbst. Offen lassen, bis «AH-Scan fertig» im Chat steht, und einmal vergleichen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis? Steht stattdessen «übersprungen» oder kommt nichts: `/tl ah`. (M11, T15)
 2. Orgrimmar, je ein paar Sekunden (neu in Testlog 3.6, M12): den Briefkasten öffnen (T16) und die Bank (T18). Wenn du magst, ein billiges Stück im Auktionshaus einstellen, z. B. 1 Leichtes Leder (T19); kommt es später verkauft oder abgelaufen zurück, misst der Briefkasten das mit.
-3. Orgrimmar: Berufswechsel mit dem Kombi-Guide («12-17 The Barrens», Block nach «SpiritsPickup», in der Schrittliste direkt wählbar) oder von Hand nach `docs/plan/berufe-plan.md` §2, Stufe A. So weit Material und Gold reichen, kein Leder extra farmen. Bei Kamari, Karolek, Jhag und Godan im Lehrerfenster den Filter einmal auf alle drei Arten stellen. Danach jedes Berufsfenster einmal öffnen, auch Angeln und Kochen (Rezepte, T17). (M5, M1, T11)
-4. Lushwater Oasis im Brachland (etwa 46.8, 39.4; aus RXP umgerechnet, im Spiel ungeprüft): 30 Minuten angeln. (M3)
+3. Orgrimmar: Bei Kamari, Karolek (Lederverarbeitung), Jhag und Godan (Verzauberkunst) im Lehrerfenster den Filter einmal auf alle drei Arten stellen (M1). Danach jedes Berufsfenster einmal öffnen, auch Angeln und Kochen, falls er sie hat (Rezepte mit Farben, T17). Lehrerlisten und Rezeptfarben prüfen die Lernstufen in `rezepte.csv` (Widersprüche 17 und 20). Ein Charakter, der noch Kürschnerei und Kräuterkunde hat, macht hier stattdessen den Berufswechsel mit dem Kombi-Guide («12-17 The Barrens», Block nach «SpiritsPickup») oder nach `docs/plan/berufe-plan.md` §2, Stufe A (M5, T11).
+4. Lushwater Oasis im Brachland (etwa 46.8, 39.4; aus RXP umgerechnet, im Spiel ungeprüft): 30 Minuten angeln, falls er Angeln hat (im Testlog nicht zu sehen). (M3)
 5. Bist du am Ende wieder an einem Auktionshaus (Orgrimmar und Thunder Bluff teilen eines): nochmals öffnen. Zwei Scans 15 Minuten bis 2 Stunden auseinander ergeben die erste Abnahme (T20).
 6. Danach jeden anderen Druiden einmal einloggen und wieder aus. (M2)
 
@@ -28,7 +30,7 @@ Vorher einmal: `aktualisieren.bat`, dann `/reload`. Die Zeile SITZUNG zeigt «Te
 8. Der Druide aus Sitzung 1 in Thunder Bluff: Lehrerfenster von Una (Lederverarbeitung, Experte) sowie Mot und Teg Dawnstrider (Verzauberkunst), Filter auf alle drei Arten; dort nochmals das Auktionshaus und den Briefkasten öffnen, als zweiter Scan an einem anderen Tag. (M1, M11, M12)
 9. Nur mit einem Druiden mit Kräuterkunde ab 70: 30 Minuten Kräuter im Südbrachland, dazu `/tl M4 Bountiful Harvest Rang <Zahl oder keiner>`. (M4)
 
-Ist der Ordner `KombiDaten` mit Empfehlungen schon da (schreibe ich, sobald ich Zugriff auf deinen WoW-Ordner habe): beim ersten Mal das Spiel neu starten, dann `/tl tipp` (T21).
+Den Ordner `KombiDaten` habe ich am 15.10. in deinen AddOns-Ordner geschrieben, noch ohne Tipps (es fehlen Preise). Nach dem Neustart: `/tl tipp` (T21). Nach jeder Auswertung schreibe ich ihn neu; dann reicht `/reload`.
 
 Weggelassen, weil es beim Spielen zum Start ohnehin mitläuft oder teuer ist: M6 (Farm-Stopp S1), M7 (Armor Kits), M8 (Orte), M10 (Sitzung in Thunder Bluff).
 

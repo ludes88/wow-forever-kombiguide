@@ -27,6 +27,11 @@
 #   Pfand          geht bei Nichtverkauf verloren; die Höhe kennt das Werkzeug nur aus eigenen Angeboten (AH-ANGEBOT).
 #   Abnahme        eine Schätzung (Testlog 3.6, data/preise/ah_abnahme.csv): zu hoch, wenn jemand zurückzieht und teurer
 #                  neu einstellt; zu tief, wenn neue Angebote dazukommen.
+#   Langzeit       Median der Tiefstpreise und Abnahme der letzten 30 Tage, nur als Vergleich (Beleg-Text, Spalte im
+#                  Bericht) und als Warnung, wenn der 7-Tage-Wert 20 % oder mehr darüber liegt. Preis, Beleg und Menge
+#                  bleiben bei 7 Tagen.
+#   Farmen         Wert pro Stunde aus ANGELN, SAMMELN und BEUTE; ein Tipp erst ab 15 Minuten und nur, wenn jede Beute
+#                  einen Preis hat (AH mit Verlauf oder Händlerpreis aus den Gegenstands-Infos, Testlog 3.6).
 import os, re, statistics, sys
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -42,9 +47,13 @@ MIN_VERGLEICHE = 2  # Abnahme aus Scans zählt als Beleg ab so vielen Vergleiche
 MIN_STUNDEN = 1.0   # … über mindestens so viele beobachtete Stunden
 MIN_SCANS = 3       # Verlauf gilt ab so vielen vollständigen Scans in 7 Tagen …
 MIN_TAGE = 2        # … an so vielen verschiedenen Tagen
+LANGZEIT_TAGE = 30  # Langzeit-Vergleich: Tiefstpreis und Abnahme der letzten 30 Tage (Anzeige und Warnung)
+LANGZEIT_WARNUNG = 0.20  # Warnung, wenn der 7-Tage-Tiefstpreis so weit über dem 30-Tage-Wert liegt (Wahl von Claude)
 MAX_TIPPS = 12
 BOUT_PAUSE = 600    # Sekunden ohne Fang oder Beute: neuer Durchgang (Farmen pro Stunde)
 MIN_EREIGNISSE = 5  # Durchgänge mit weniger Ereignissen zählen nicht
+MIN_FARM_STUNDEN = 0.25  # Farm-Tipp erst ab so vielen beobachteten Stunden und nur, wenn jede Beute einen Preis hat
+                         # (Wahl von Claude)
 FARBE = {0: "orange", 1: "gelb", 2: "grün", 3: "grau"}
 INTERFACE = "16001" # wie die anderen Addons (Forever-Client 1.60.1)
 USAGE = "Aufruf: python3 tools/markt.py <KombiTestlog.lua> [--marge 0.3] [--aus <Ordner>]"
@@ -174,6 +183,7 @@ class Markt:
         abn_rows, _ = at.zusammenfuehren_abnahme(at.zeilen_abnahme(scans))
         self.abn_rows = [r for r in abn_rows if r["markt"] == self.markt]
         self.abn = at.abnahme_summe(self.abn_rows, self.markt) if self.markt else {}
+        self.abn30 = at.abnahme_summe(self.abn_rows, self.markt, tage=LANGZEIT_TAGE) if self.markt else {}
         self.haendler = haendlerpreise(self.plan)
         self.name2id = {}
         for i, n in namen.items():
@@ -298,6 +308,10 @@ class Markt:
                 teile[-1] += ", zu wenig für einen Beleg"
         elif a:
             teile.append(f"in {a[2]:.1f} h kein Kauf geschätzt ({vgl(a[3])})")
+        # Langzeit: nur Anzeige, wenn es Vergleiche vor den letzten 7 Tagen gibt; Beleg und Menge bleiben bei 7 Tagen
+        a30 = self.abn30.get(i)
+        if a30 and a30[3] > (a[3] if a else 0):
+            teile.append(f"{LANGZEIT_TAGE} Tage: geschätzt {a30[0]} Stück in {a30[2]:.1f} h gekauft ({vgl(a30[3])})")
         e = self.eigen.get(i)
         if e and e["verkauft"]:
             quote = e["verkauft"] / (e["verkauft"] + e["abgelaufen"]) if e["abgelaufen"] else 1
@@ -375,10 +389,35 @@ def handel(m):
 
 
 def trend_text(k):
-    t = k.get("trend") if k else None
+    """Warnungen zum Preis: fällt in den letzten 3 Tagen; liegt deutlich über dem Wert der 30 Tage."""
+    if not k:
+        return ""
+    s = ""
+    t = k.get("trend")
     if t is not None and t <= -0.10:
-        return f" Achtung: Tiefstpreis fällt ({prozent(t)} in den letzten 3 Tagen)."
-    return ""
+        s += f" Achtung: Tiefstpreis fällt ({prozent(t)} in den letzten 3 Tagen)."
+    b7, b30 = k.get("boden7"), k.get("boden30")
+    if b7 and b30 and k.get("n30", 0) > k.get("n7", 0) and b7 >= b30 * (1 + LANGZEIT_WARNUNG):
+        s += (f" Achtung: Tiefstpreis 7 Tage {geld(round(b7))} liegt {prozent(b7 / b30 - 1)} über dem Wert der "
+              f"{LANGZEIT_TAGE} Tage ({geld(round(b30))}).")
+    return s
+
+
+def langzeit_text(k):
+    """Median der Tiefstpreise der letzten 30 Tage, nur wenn es Scans vor den letzten 7 Tagen gibt."""
+    if not k or k.get("boden30") is None or k.get("n30", 0) <= k.get("n7", 0):
+        return "–"
+    return f"{geld(round(k['boden30']))} ({k['n30']} Scans, {k['tage30']} Tage)"
+
+
+def mit_warnung(k):
+    """Warnungen als Fortsetzung eines Belegs in einer Tabellenzelle (mit Punkt davor)."""
+    w = trend_text(k)
+    return "." + w if w else ""
+
+
+def dauer(stunden):
+    return f"{round(stunden * 60)} Min" if stunden < 1 else f"{stunden:.1f} h"
 
 
 def bestand(m, mit_gebunden=False):
@@ -510,15 +549,18 @@ def farmen(m):
             continue
         gebiet = felder[1].split(" > ")[0]
         rest = " | ".join(felder[4:])
-        art = {"ANGELN": "Angeln", "BEUTE": "Gegner (Beute)"}.get(z.group(6))
+        art = {"ANGELN": "Angeln",
+               "BEUTE": "Gegner" if felder[4].startswith("Kreatur") else "Beute"}.get(z.group(6))
         if not art:
             art = felder[4] if not felder[4].startswith(("Kreatur", "Objekt", "Gegenstand")) else "Sammeln"
-        wert = 0.0
-        for n, _, i in POSTEN.findall(rest):
+        wert, ohne = 0.0, []
+        for n, name, i in POSTEN.findall(rest):
             i, n = int(i), int(n)
             _, _, belastbar = m.verkauf(i)
             # AH-Preis nur mit Verlauf (sonst Händler-Ankauf), gebundene Beute nur zum Händler
             netto = m.netto(i) if belastbar and (m.info.get(i) or {}).get("b") != 1 else None
+            if netto is None and i not in m.info:
+                ohne.append(name.strip())   # kein Preis bekannt (Gegenstands-Infos erst ab Testlog 3.6)
             ankauf = (m.info.get(i) or {}).get("s") or 0
             wert += n * max(netto or 0, ankauf)
         g = GELD.search(rest)
@@ -527,10 +569,10 @@ def farmen(m):
                 wert += at.kupfer(g.group(1))
             except ValueError:
                 pass
-        ereignisse[(art, gebiet)].append((t, wert))
+        ereignisse[(art, gebiet)].append((t, wert, ohne))
     out = []
     for (art, gebiet), ev in ereignisse.items():
-        ev.sort()
+        ev.sort(key=lambda x: x[0])
         laeufe, lauf = [], [ev[0]]
         for e in ev[1:]:
             if (e[0] - lauf[-1][0]).total_seconds() > BOUT_PAUSE:
@@ -539,17 +581,20 @@ def farmen(m):
             else:
                 lauf.append(e)
         laeufe.append(lauf)
-        sek, wert, n = 0.0, 0.0, 0
+        sek, wert, n, anzahl, ohne = 0.0, 0.0, 0, 0, set()
         for l in laeufe:
             if len(l) < MIN_EREIGNISSE:
                 continue
             abst = [(b[0] - a[0]).total_seconds() for a, b in zip(l, l[1:])]
             sek += (l[-1][0] - l[0][0]).total_seconds() + max(30.0, statistics.median(abst))
             wert += sum(x[1] for x in l)
+            anzahl += len(l)
+            for x in l:
+                ohne.update(x[2])
             n += 1
         if n and sek > 0:
             out.append({"art": art, "gebiet": gebiet, "laeufe": n, "stunden": sek / 3600, "wert": wert,
-                        "pro_stunde": wert / (sek / 3600), "ereignisse": sum(len(l) for l in laeufe)})
+                        "pro_stunde": wert / (sek / 3600), "ereignisse": anzahl, "ohne_preis": sorted(ohne)})
     out.sort(key=lambda e: -e["pro_stunde"])
     return out
 
@@ -574,10 +619,12 @@ def tipps(m, hdl, her, verk, haendler, farm):
     if haendler:
         summe = sum(e["summe"] for e in haendler)
         t.append(f"Händler: graue Gegenstände für {geld(round(summe))} verkaufen ({len(haendler)} Sorten).")
-    if farm:
-        f = farm[0]
+    # Farmen nur mit genug Zeit und mit einem Preis für jede Beute (sonst wäre der Wert zu tief)
+    belegt = [f for f in farm if f["stunden"] >= MIN_FARM_STUNDEN and not f["ohne_preis"]]
+    if belegt:
+        f = belegt[0]
         t.append(f"Farmen: {f['art']} ({f['gebiet']}) brachte {geld(round(f['pro_stunde']))} pro Stunde "
-                 f"({f['laeufe']} Durchgang{'' if f['laeufe'] == 1 else 'e'}, {f['stunden']:.1f} h).")
+                 f"({f['laeufe']} Durchgang{'' if f['laeufe'] == 1 else 'e'}, {dauer(f['stunden'])}).")
     return t[:MAX_TIPPS]
 
 
@@ -587,6 +634,9 @@ def hinweise(m):
         n_voll = sum(1 for s in m.scans if not s["unvollstaendig"])
         h.append(f"Preise: eigene AH-Scans, letzter {m.letzter['datum']}, {n_voll} vollständige in der Datei; "
                  f"Verlauf aus data/preise/ah_eigen.csv.")
+    else:
+        h.append("Noch kein AH-Scan in der Datei: Preise fehlen. Tipps zum Kaufen, Herstellen und Verkaufen kommen "
+                 "nach den ersten Scans (Auktionshaus öffnen, Testlog 3.5 oder neuer).")
     h.append("Abnahme = Schätzung aus dem Vergleich zweier Scans (verschwundene billigste Angebote minus neue); "
              "Mengen nie hochgerechnet.")
     h.append("Preise nach 5 % Gebühr; Pfand geht bei Nichtverkauf verloren.")
@@ -607,8 +657,9 @@ def kombidaten(ordner, m, t, h, stand, zeit):
            f"    stand = {lua_str(stand)},"]
     if zeit:
         lua.append(f"    zeit = {int(zeit)},")
-    lua += [f"    markt = {lua_str(m.markt or '-')},",
-            "    tipps = {"]
+    if m.markt:
+        lua.append(f"    markt = {lua_str(m.markt)},")
+    lua += ["    tipps = {"]
     lua += [f"        {lua_str(x)}," for x in t]
     lua += ["    },", "    hinweise = {"]
     lua += [f"        {lua_str(x)}," for x in h]
@@ -648,14 +699,19 @@ def bericht(pfad, m, t, hdl, ohne, her, verk, haendler, farm, stand):
           f"deine eigenen Verkäufe der letzten {ABSATZ_STUNDEN} Stunden. Wieder einstellen zum Tiefstpreis der 7 Tage, "
           f"ausser das nächste Angebot nach dem Kauf ist billiger (dann 1c darunter). Nur Gegenstände mit Verlauf "
           f"(mindestens {MIN_SCANS} Scans an {MIN_TAGE} Tagen). Trend = Tiefstpreis der letzten 3 Tage gegen die 4 Tage "
-          "davor.", ""]
+          f"davor. «{LANGZEIT_TAGE} Tage» = Median der Tiefstpreise der letzten {LANGZEIT_TAGE} Tage, nur wenn es ältere "
+          f"Scans gibt; Warnung, wenn der 7-Tage-Wert {LANGZEIT_WARNUNG * 100:.0f} % oder mehr darüber liegt (Schwelle: "
+          f"Wahl von Claude). Die Abnahme der {LANGZEIT_TAGE} Tage steht im Beleg; Preis und Menge richten sich nach den "
+          "7 Tagen.", ""]
     if hdl:
-        L += ["| Gegenstand | kaufen bis | Menge | kostet | einstellen um | Gewinn | Marge | Trend | Beleg |",
-              "|---|---|---|---|---|---|---|---|---|"]
+        L += [f"| Gegenstand | kaufen bis | Menge | kostet | einstellen um | Gewinn | Marge | Trend | {LANGZEIT_TAGE} Tage "
+              "| Beleg |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
         for e in hdl:
             tr = prozent(e["kz"]["trend"]) if e["kz"]["trend"] is not None else "–"
             L.append(f"| {e['name']} ({e['id']}) | {geld(round(e['grenze']))} | {e['menge']} | {geld(round(e['kosten']))} | "
-                     f"{geld(round(e['um']))} | {geld(round(e['gewinn']))} | {prozent(e['marge'])} | {tr} | {e['beleg']} |")
+                     f"{geld(round(e['um']))} | {geld(round(e['gewinn']))} | {prozent(e['marge'])} | {tr} | "
+                     f"{langzeit_text(e['kz'])} | {e['beleg']}{mit_warnung(e['kz'])} |")
     else:
         L.append("Keine Gelegenheit mit Abnahme-Beleg.")
     if ohne:
@@ -684,23 +740,28 @@ def bericht(pfad, m, t, hdl, ohne, her, verk, haendler, farm, stand):
           "bringt; gebundene Teile fehlen. «empfohlen» = höchstens so viel, wie mit Beleg abgeht (wie beim Kaufen). "
           "«Plan» = Material des Berufe-Plans (vorher mit dem Plan abgleichen).", ""]
     if verk:
-        L += ["| Gegenstand | Menge | empfohlen | wo | netto je Stück | zusammen | Preis | Plan | Beleg |",
-              "|---|---|---|---|---|---|---|---|---|"]
+        L += [f"| Gegenstand | Menge | empfohlen | wo | netto je Stück | zusammen | Preis | {LANGZEIT_TAGE} Tage | Plan | Beleg |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
         for e in verk[:40]:
+            kz = m.kz.get(e["id"])
             L.append(f"| {e['name']} ({e['id']}) | {e['menge']} | {e['empfohlen']} | {e['orte']} | {geld(round(e['netto']))} | "
                      f"{geld(round(e['summe']))} | {e['herkunft'] if e['belastbar'] else 'kurzer Verlauf'} | "
-                     f"{'ja' if e['plan'] else ''} | {e['beleg']} |")
+                     f"{langzeit_text(kz)} | {'ja' if e['plan'] else ''} | {e['beleg']}{mit_warnung(kz)} |")
     else:
         L.append("Kein Bestand mit AH-Preis in der Datei (Taschen beim Einloggen, Bank beim Öffnen, Testlog 3.6).")
     if haendler:
         L += ["", "Graue Gegenstände für den Händler: " + ", ".join(f"{e['menge']}x {e['name']}" for e in haendler[:20]) + "."]
     L += ["", "## Farmen und Angeln", "", f"Aus ANGELN, SAMMELN und BEUTE im Protokoll: Durchgänge mit Pausen unter "
           f"{BOUT_PAUSE // 60} Minuten und mindestens {MIN_EREIGNISSE} Ereignissen; Wert = AH netto (nur mit Verlauf) oder "
-          "Händler-Ankauf, der höhere, dazu Geld.", ""]
+          "Händler-Ankauf, der höhere, dazu Geld. «ohne Preis» = Beute ohne AH-Verlauf und ohne Händlerpreis (Gegenstands-"
+          f"Infos schreibt erst Testlog 3.6); der Wert ist dann zu tief. Ein Tipp erst ab {round(MIN_FARM_STUNDEN * 60)} "
+          "Minuten und ohne solche Beute (Wahl von Claude).", ""]
     if farm:
-        L += ["| Tätigkeit | Gebiet | pro Stunde | Durchgänge | Stunden | Ereignisse |", "|---|---|---|---|---|---|"]
-        L += [f"| {f['art']} | {f['gebiet']} | {geld(round(f['pro_stunde']))} | {f['laeufe']} | {f['stunden']:.1f} | "
-              f"{f['ereignisse']} |" for f in farm]
+        L += ["| Tätigkeit | Gebiet | pro Stunde | Durchgänge | Dauer | Ereignisse | ohne Preis |",
+              "|---|---|---|---|---|---|---|"]
+        L += [f"| {f['art']} | {f['gebiet']} | {geld(round(f['pro_stunde']))} | {f['laeufe']} | {dauer(f['stunden'])} | "
+              f"{f['ereignisse']} | {', '.join(f['ohne_preis'][:8]) + (' …' if len(f['ohne_preis']) > 8 else '') or '–'} |"
+              for f in farm]
     else:
         L.append("Noch keine Durchgänge im Protokoll.")
     L += ["", "## Grenzen", "",
@@ -730,7 +791,9 @@ def rechne(text, marge=MARGE, aus=AUS):
     if m.letzter:
         stand = datetime.strptime(m.letzter["datum"], "%Y-%m-%d %H:%M").strftime("%d.%m. %H:%M")
     else:
-        stand = "ohne AH-Scan"
+        # ohne Scan: Zeit der letzten Protokollzeile (Zeit des Spiels)
+        zeilen = [re.match(r"^(\d\d\.\d\d\. \d\d:\d\d)", str(z)) for z in (db.get("log") or [])]
+        stand = ([z.group(1) for z in zeilen if z] or ["ohne Daten"])[-1]
     kombidaten(os.path.join(aus, "KombiDaten"), m, t, h, stand, zeit)
     bericht(os.path.join(aus, "markt.md"), m, t, hdl, ohne, her, verk, haendler, farm, stand)
     return {"markt": m, "tipps": t, "handel": hdl, "ohne": ohne, "herstellen": her, "verkaufen": verk,
