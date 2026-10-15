@@ -65,7 +65,7 @@ Gleicher Charakter (Stufe 15 → 16), Kombiguide 0.4, Testlog 3.5. Der Repo-Klon
 - Stelle im Kombi-Guide um 20:58: «12-17 The Barrens» #103.
 
 **Messwerte**
-- Händler in Orgrimmar (20:10): 9 Posten für zusammen 24s 77c, darunter 5 Grauer Farbstoff (4340) und 7 Einfaches Holz (4470).
+- Händler in Orgrimmar (20:10): 9 Posten verkauft für zusammen +24s 77c (laut Testlog ein Verkauf, kein Kauf; Prüfbericht 15.10., C16), darunter 5 Grauer Farbstoff (4340, braucht Stufe C) und 7 Einfaches Holz (4470).
 - Post (20:19): ein Brief mit 7 Posten, 30 Leinenstoff sind darin 2 Stapel (Stapelgrösse 20, Risiko 16), also 8 Stapel. Porto 2s 40c; das passt zu 30c je Stapel (gerechnet, nicht gemessen).
 - Erster AH-Scan (20:12, Orgrimmar, Testlog 3.5, T15):
   - 65 411 Angebote, 3079 Gegenstände, 1 nur mit Gebot, 18 s

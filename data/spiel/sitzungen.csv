@@ -1,0 +1,13 @@
+kennung;datum;dauer_min;stufe_von;stufe_bis;stufen_pro_h;quests;quest_xp;tode;gebiete;rxp_von;rxp_bis;kombiguide;testlog
+4a938272;2026-10-13;8;15.70;15.70;0.00;0;0;0;Thunder Bluff 8, ? 0;12-17 The Barrens #77;WC Vorquests #8;;1
+1d9afbf4;2026-10-13;7;15.70;15.70;0.00;0;0;0;Thunder Bluff 7;WC Vorquests #8;12-17 The Barrens #52;;1
+0e6060d9;2026-10-13;17;5.87;6.00;0.46;0;0;1;Mulgore 17;06-12 Mulgore #13;06-12 Mulgore #13;;1
+36a6f2d3;2026-10-13;34;15.70;15.70;0.00;0;0;0;Thunder Bluff 32;12-17 The Barrens #52;12-17 The Barrens #58;;1
+4aea9e8a;2026-10-13;21;15.70;15.70;0.00;0;0;0;Thunder Bluff 15, Brachland 3, Mulgore 2;12-17 The Barrens #58;12-17 The Barrens #77;0.1.1-v4.11.13;2
+993d189d;2026-10-13;6;15.70;15.70;0.00;0;0;0;Brachland 3, Thunder Bluff 3, Mulgore 1;12-17 The Barrens #77;12-17 The Barrens #77;0.1.1-v4.11.13;2
+ae13bff3;2026-10-13;34;6.00;7.46;2.57;6;2715;1;Mulgore 34;06-12 Mulgore #13;06-12 Mulgore #28;0.1.2-v4.11.13;3
+7f2d865d;2026-10-14;9;7.46;7.74;1.92;2;820;0;Mulgore 9;06-12 Mulgore #30;06-12 Mulgore #45;0.3-v4.11.23;3.3
+63d49f7a;2026-10-15;15;15.70;15.97;1.07;1;750;0;Brachland 15;12-17 The Barrens #77;12-17 The Barrens #84;0.4-v4.11.23;3.5
+1b3b5262;2026-10-15;70;15.97;16.67;0.60;2;2150;2;Die Ruinen von Lordaeron 29, Brachland 20, Orgrimmar 12;12-17 The Barrens #84;12-17 The Barrens #103;0.4-v4.11.23;3.5
+57d7ef43;2026-10-15;60;16.68;18.56;1.89;17;31825;0;Orgrimmar 20, Brachland 14, Die Ruinen von Lordaeron 11;12-17 The Barrens #103;12-17 The Barrens #152;0.4-v4.11.23;3.5
+47b35d00;2026-10-15;12;18.56;18.56;0.00;0;0;0;Orgrimmar 12;12-17 The Barrens #152;12-17 The Barrens #152;0.5-v4.11.23;3.6
