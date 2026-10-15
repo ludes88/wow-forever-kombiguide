@@ -41,7 +41,7 @@ GetTrainerServiceItemLink = function(i)
   return "|cffffffff|Hitem:" .. s.item .. "::::::::12:::::|h[" .. s.name .. "]|h|r"
 end
 UnitExists = function(u) return u == "target" end
-GetRealmName = function() return "Beta" end
+GetRealmName = function() return "Testrealm" end
 GetBuildInfo = function() return "1.60.1", "70338" end
 -- nach einem Neustart meldet der Client die Zone erst nach einigen Sekunden (Testlog 13.10. 22:07)
 zoneEmpty = 2
@@ -150,6 +150,26 @@ C_AddOns = {
   IsAddOnLoaded = function(n) return n == "RXPGuides_KombiGuide" end,
 }
 C_QuestLog = { GetTitleForQuestID = function(id) if id == 870 then return "Die Vergessenen Teiche (Test)" end return nil end }
+-- Version 3.5: AH-Scan. Werte wie GetReplicateItemInfo im Forever-UI 1.60.1 (AuctionHouseDocumentation.lua):
+-- Name, Symbol, Anzahl, Qualität, nutzbar, Stufe, Stufenart, Mindestgebot, Erhöhung, Sofortkauf, Gebot, Höchstbieter,
+-- Bieter, Verkäufer, Verkäufer voll, Status, Item-ID, alle Infos. Index ab 0 (replicateBase = 0) oder ab 1.
+time = os.time
+server_t = 1792000000   -- Mitte Oktober 2026 (vor dem Start: Markt «Beta»)
+GetServerTime = function() return server_t end
+UnitFactionGroup = function() return "Horde", "Horde" end
+GetCurrentRegionName = function() return "EU" end
+auctions = {}
+replicateBase = 0
+replicateCalls = 0
+C_AuctionHouse = {
+  ReplicateItems = function() replicateCalls = replicateCalls + 1 end,
+  GetNumReplicateItems = function() return #auctions end,
+  GetReplicateItemInfo = function(i)
+    local a = auctions[i + 1 - replicateBase]
+    if not a then return nil end
+    return a.name, 0, a.n, 1, true, 1, "", 1, 1, a.buy, 0, nil, nil, "Verkaeufername", "Verkaeufername-Realm", 0, a.id, true
+  end,
+}
 ticker = nil
 C_Timer = { After = function(s, f) f() end, NewTicker = function(s, f) ticker = f return {} end }
 frames = {}
@@ -439,6 +459,50 @@ later(1)
 L.execute("money = money - 95")
 g.fire("PLAYER_MONEY")
 later(10); g.ticker()
+# J: AH-Scan (Version 3.5). Der Versuch aus C bekam keine Daten: Abbruch nach 120 s
+later(121); g.ticker()
+calls_c = g.replicateCalls
+L.execute("server_t = server_t + 1000")      # über 15 Minuten nach dem Versuch aus C
+L.execute("""auctions = {
+  { id = 2318, n = 20, buy = 960, name = 'Leichtes Leder' },
+  { id = 2318, n = 5, buy = 260, name = 'Leichtes Leder' },
+  { id = 2318, n = 20, buy = 1100, name = 'Leichtes Leder' },
+  { id = 2319, n = 10, buy = 0, name = 'Mittleres Leder' },
+  { id = 2319, n = 4, buy = 800, name = 'Mittleres Leder' },
+  { id = 4306, n = 10, buy = 5000, name = 'Seidenstoff' },
+}""")
+L.execute("interacting[21] = true")
+g.fire("AUCTION_HOUSE_SHOW")
+later(2); g.ticker()                         # startet von selbst
+calls_auto = g.replicateCalls
+g.fire("REPLICATE_ITEM_LIST_UPDATE")
+later(1); g.ticker()                         # noch keine 2 s Ruhe: wartet
+g.fire("REPLICATE_ITEM_LIST_UPDATE")         # kommt nochmals
+later(1); g.ticker()
+later(2); g.ticker()                         # jetzt lesen
+L.execute("interacting[21] = false")
+g.fire("AUCTION_HOUSE_CLOSED")
+later(5)
+L.execute("interacting[21] = true; server_t = server_t + 300")   # 5 Minuten später nochmals: kein neuer Scan
+g.fire("AUCTION_HOUSE_SHOW")
+later(2); g.ticker()
+calls_again = g.replicateCalls
+slash("ah")                                  # von Hand: versucht es trotzdem, der Server antwortet nicht
+later(121); g.ticker()
+calls_manual = g.replicateCalls
+L.execute("interacting[21] = false")
+g.fire("AUCTION_HOUSE_CLOSED")
+slash("ah aus")
+L.execute("interacting[21] = true; server_t = server_t + 2000")
+g.fire("AUCTION_HOUSE_SHOW")
+later(2); g.ticker()
+calls_off = g.replicateCalls
+L.execute("interacting[21] = false")
+g.fire("AUCTION_HOUSE_CLOSED")
+slash("ah an")
+later(3); g.ticker()
+slash("ah")                                  # Auktionshaus zu: nur Hinweis
+slash("status")
 # I: Briefkasten offen beim Ausloggen: Bestand aus dem letzten bekannten Wert, nicht 0
 L.execute("MailFrame.shown = true")
 g.fire("MAIL_SHOW")
@@ -462,6 +526,29 @@ for i in range(1, len(msgs) + 1):
 exp = [f for f in g.frames.values() if f.text]
 print("=== Exportfenster: %d Zeichen, %d Zeilen ===" % (len(exp[0].text), exp[0].text.count("\n") + 1) if exp else "kein Export")
 lines = [log[i] for i in range(1, len(log) + 1)]
+# Version 3.5: SavedVariables-Datei nachbauen, so wie der Client sie schreibt (für tools/ah_aus_testlog.py)
+SERIALIZE = r'''
+return function(name, v)
+  local out = {}
+  local function key(k)
+    if type(k) == "number" then return "[" .. k .. "]" end
+    return "[" .. string.format("%q", k) .. "]"
+  end
+  local function ser(x, ind)
+    if type(x) == "table" then
+      local ks = {}
+      for k in pairs(x) do ks[#ks + 1] = k end
+      table.sort(ks, function(a, b) return tostring(a) < tostring(b) end)
+      local s = "{\n"
+      for _, k in ipairs(ks) do s = s .. ind .. "\t" .. key(k) .. " = " .. ser(x[k], ind .. "\t") .. ",\n" end
+      return s .. ind .. "}"
+    elseif type(x) == "string" then return string.format("%q", x)
+    else return tostring(x) end
+  end
+  return name .. " = " .. ser(v, "") .. "\n"
+end
+'''
+sv_text = L.execute(SERIALIZE)("KombiTestlogDB", db)
 before = len(db.log)
 slash("leeren ja")
 print("nach 'leeren ja':", len(db.log), "vorher", before)
@@ -544,6 +631,111 @@ one("LEHRER", "Kamari (Kreatur 3365) | Beruf | Filter lernbar+gesperrt+gelernt |
     "Lederverarbeitung [Geselle] (Rang) lernbar, ab Stufe 10 und Lederverarbeitung 50, 5s",
     "Leichtes Leder gelernt, kostenlos", "Geprägte Lederhandschuhe (Item 4239) gesperrt, ab Lederverarbeitung 30, 1s 50c")
 one("LEHRER", "Gennia Runetotem (Kreatur 3060) | Klasse | Filter lernbar+gelernt | 1 Eintrag", "Zorn [Rang 3] lernbar, ab Stufe 14, 9s")
+# Version 3.5: AH-Scan
+ah = [l for l in lines if " | AH-SCAN | " in l]
+check(len(ah) == 3, "drei AH-SCAN-Zeilen: Abbruch aus C, Scan, Abbruch von Hand (%d)" % len(ah))
+check(sum(1 for l in ah if "abgebrochen: kein Ergebnis nach 120 s" in l) == 2, "zwei Abbrüche ohne Ergebnis nach 120 s")
+check(calls_auto == calls_c + 1, "AH-Scan startet beim Öffnen des Auktionshauses von selbst")
+check(calls_again == calls_auto, "kein zweiter automatischer Scan innerhalb von 15 Minuten")
+check(calls_manual == calls_again + 1, "/tl ah versucht es auch innerhalb von 15 Minuten")
+check(calls_off == calls_manual, "/tl ah aus: kein automatischer Scan")
+one("AH-SCAN", "| EU Horde | Realm Testrealm | 6 Angebote, 3 Gegenstände, 1 nur mit Gebot, 4 s |",
+    "Tiefstpreis / Median / Stück: Leichtes Leder (2318) 48c / 52c / 45; 2319 2s / 2s / 4")
+check(not any(" | AH-SCAN | " in l and "4306" in l for l in lines), "AH-SCAN-Zeile nur mit Plan-Gegenständen")
+scans = db.ahScans
+check(scans is not None and len(scans) == 1, "ein Scan gespeichert")
+s1 = scans[1] if scans is not None and len(scans) >= 1 else None
+if s1 is not None:
+    check(s1.stufen[2318] == "48*20,52*5,55*20", "Preisstufen Leichtes Leder (%s)" % s1.stufen[2318])
+    check(s1.stufen[2319] == "200*4", "Preisstufen Mittleres Leder ohne Angebot nur mit Gebot (%s)" % s1.stufen[2319])
+    check(s1.stufen[4306] is None, "keine Preisstufen für Gegenstände ausserhalb des Plans")
+    check(s1.alle == "2318:48:52:45:3;2319:200:200:4:1;4306:500:500:10:1", "alle Gegenstände kompakt (%s)" % s1.alle)
+    check(s1.plan == "2318:48:52:45:3;2319:200:200:4:1", "Plan-Gegenstände kompakt (%s)" % s1.plan)
+    check((s1.realm, s1.fraktion, s1.region, s1.angebote, s1.nurGebot) == ("Testrealm", "Horde", "EU", 6, 1), "Kopf des Scans")
+check(len(g.KombiTestlogDB.ahScans) == 1, "/tl leeren ja lässt die AH-Scans stehen")
+check("Verkaeufername" not in sv_text, "keine Verkäufernamen gespeichert")
+check(any("Leichtes Leder: Tiefstpreis 48c, Median 52c, 45 Stück" in m for m in [msgs[i] for i in range(1, len(msgs) + 1)]),
+      "Chatmeldung nach dem Scan")
+check(any("Bitte zuerst das Auktionshaus öffnen" in m for m in [msgs[i] for i in range(1, len(msgs) + 1)]),
+      "/tl ah bei geschlossenem Auktionshaus: Hinweis")
+check(any("AH-Scan übersprungen: letzter Versuch vor 5 Min" in m for m in [msgs[i] for i in range(1, len(msgs) + 1)]),
+      "übersprungener automatischer Scan wird gemeldet")
+# Index ab 1 statt ab 0: wird erkannt
+L3 = runtime()
+g3 = L3.globals()
+g3.fire("ADDON_LOADED", "KombiTestlog")
+g3.fire("PLAYER_ENTERING_WORLD", True, False)
+L3.execute("replicateBase = 1; interacting[21] = true; auctions = { { id = 2318, n = 2, buy = 100, name = 'x' }, { id = 2318, n = 1, buy = 70, name = 'x' } }")
+g3.fire("AUCTION_HOUSE_SHOW")
+L3.execute("now_t = now_t + 2"); g3.ticker()
+g3.fire("REPLICATE_ITEM_LIST_UPDATE")
+L3.execute("now_t = now_t + 3"); g3.ticker()
+sc3 = g3.KombiTestlogDB.ahScans
+check(sc3 is not None and sc3[1].alle == "2318:50:50:3:2", "Index ab 1 erkannt (%s)" % (sc3 and sc3[1].alle))
+# Viele Scans: höchstens 60, nur die 10 neuesten mit allen Gegenständen und Preisstufen
+for _ in range(64):
+    L3.execute("server_t = server_t + 1000; interacting[21] = false")
+    g3.fire("AUCTION_HOUSE_CLOSED")
+    L3.execute("interacting[21] = true")
+    g3.fire("AUCTION_HOUSE_SHOW")
+    L3.execute("now_t = now_t + 2"); g3.ticker()
+    g3.fire("REPLICATE_ITEM_LIST_UPDATE")
+    L3.execute("now_t = now_t + 3"); g3.ticker()
+sc3 = g3.KombiTestlogDB.ahScans
+voll = [i for i in range(1, len(sc3) + 1) if sc3[i].alle is not None]
+check(len(sc3) == 60 and voll == list(range(51, 61)) and sc3[1].plan == "2318:50:50:3:2" and sc3[1].stufen is None,
+      "höchstens 60 Scans, die 10 neuesten vollständig (%d Scans, vollständig %s)" % (len(sc3), voll[:3]))
+# Das Ereignis wird nie ruhig: nach 120 s wird trotzdem gelesen
+L3.execute("server_t = server_t + 1000; interacting[21] = false")
+g3.fire("AUCTION_HOUSE_CLOSED")
+L3.execute("interacting[21] = true; auctions = { { id = 2318, n = 1, buy = 77, name = 'x' } }")
+g3.fire("AUCTION_HOUSE_SHOW")
+L3.execute("now_t = now_t + 2"); g3.ticker()
+for _ in range(90):
+    g3.fire("REPLICATE_ITEM_LIST_UPDATE")
+    L3.execute("now_t = now_t + 1.5"); g3.ticker()
+sc3 = g3.KombiTestlogDB.ahScans
+check(sc3[len(sc3)].alle == "2318:77:77:1:1", "liest nach 120 s auch ohne ruhiges Ereignis (%s)" % sc3[len(sc3)].alle)
+# Format-Kopplung: tools/ah_aus_testlog.py liest die SavedVariables-Datei und den Text von /tl zeigen
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ah_aus_testlog as at
+aus_sv = at.lese(sv_text)
+check(len(aus_sv) == 1 and s1 is not None and aus_sv[0]["datum"] == s1.datum and aus_sv[0]["markt"] == "EU Horde " + at.kennung("Testrealm"),
+      "ah_aus_testlog liest den Scan aus der Lua-Datei (%s)" % [(x["datum"], x["markt"]) for x in aus_sv])
+if aus_sv:
+    p = aus_sv[0]["preise"]
+    check(p.get(2318, {}).get("stufen") == [(48, 20), (52, 5), (55, 20)] and p[2318]["median"] == 52 and p[4306]["menge"] == 10,
+          "ah_aus_testlog: Preise und Stufen aus der Lua-Datei (%s)" % p.get(2318))
+    check("realm" not in aus_sv[0] and "Testrealm" not in str(aus_sv[0]) and "Testheld" not in str(aus_sv[0]),
+          "ah_aus_testlog gibt keinen Realm- und keinen Charakternamen weiter")
+    check(aus_sv[0]["phase"] == "Beta", "Scan vor dem 04.11.2026 zählt als Beta")
+aus_txt = at.lese("\n".join(lines))
+check(len(aus_txt) == 1 and aus_txt[0]["preise"].get(2318, {}).get("tiefst") == 48 and aus_txt[0]["preise"].get(2319, {}).get("median") == 200,
+      "ah_aus_testlog liest die AH-SCAN-Zeile aus dem Text (%s)" % [x["preise"] for x in aus_txt])
+check(at.kosten([(48, 20), (52, 5), (55, 20)], 30) == (20 * 48 + 5 * 52 + 5 * 55, 30), "Kosten der billigsten 30 Stück")
+check(at.kosten([(48, 20)], 30) == (960, 20), "Kosten, wenn das Angebot nicht reicht")
+check(len(aus_txt) == 1 and aus_txt[0]["markt"] == aus_sv[0]["markt"], "Text und Datei ergeben denselben Markt")
+check(at.kosten_text({"stufen": [(48, 20)], "menge": 200}, 100) == "mind. 48.00", "Untergrenze, wenn die Preisstufen nicht reichen")
+check(at.kosten_text({"stufen": [(48, 20)], "menge": 20}, 100) == "nur 20 Stück", "nur so viel im Angebot")
+try:
+    at._lua_tabelle("\x1bLuaQ")
+    check(False, "Bytecode wird abgewiesen")
+except SystemExit as e:
+    check("Bytecode" in str(e), "Bytecode wird abgewiesen (%s)" % e)
+# Zusammenführen: der Text von /tl zeigen löscht die Kosten aus der Datei nicht; unvollständige Scans zählen nicht
+import tempfile
+with tempfile.TemporaryDirectory() as tmp:
+    at.EIGEN = os.path.join(tmp, "ah_eigen.csv")
+    at._write(at.EIGEN, at.F_EIGEN, at.zusammenfuehren(at.zeilen_eigen(aus_sv, {}))[0])
+    rows2, neu2 = at.zusammenfuehren(at.zeilen_eigen(aus_txt, {}))
+    r2318 = [r for r in rows2 if str(r["item_id"]) == "2318"]
+    check(neu2 == 0 and len(r2318) == 1 and r2318[0]["kosten_20_s"] == "9.60" and r2318[0]["angebote"] == "3" and "Testlog-Datei" in r2318[0]["quelle"],
+          "Zusammenführen behält Kosten und Angebote (%s)" % r2318)
+m = aus_sv[0]["markt"] + " Beta"
+w, _ = at.wochen_median([{"datum": "2026-10-14 10:00", "markt": m, "item_id": "2318", "median_s": "0.50", "menge": "60", "hinweis": ""},
+                         {"datum": "2026-10-15 10:00", "markt": m, "item_id": "2318", "median_s": "9.00", "menge": "60", "hinweis": "unvollständig"},
+                         {"datum": "2026-10-16 10:00", "markt": m, "item_id": "2318", "median_s": "0.60", "menge": "40", "hinweis": ""}], m)
+check(w.get(2318) == (0.55, 2, 50.0), "7-Tage-Median ohne unvollständige Scans, mit Menge (%s)" % (w.get(2318),))
 # Ein Ereignis, das der Client nicht kennt: Das Addon lädt trotzdem und meldet es beim Start
 try:
     L2 = runtime(unknown=("AUCTION_HOUSE_CLOSED",))
