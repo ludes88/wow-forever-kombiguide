@@ -59,6 +59,14 @@ def prices():
     return now, d30, vendor
 
 
+def eigene_preise():
+    """Materialien, für die tools/ah_aus_testlog.py --eintragen einen eigenen Preis gesetzt hat (Spalte «Eigener Preis (s)»)."""
+    out = [r["Material"] for r in read(os.path.join(D, "rechnung", "Preise.csv"), skip=1)
+           if r.get("Material") and (r.get("Eigener Preis (s)") or "").strip()]
+    out += [r["material"] for r in read(os.path.join(D, "kombi", "preise_zusatz.csv")) if "eigener Scan" in (r.get("quelle") or "")]
+    return out
+
+
 def de_table():
     """Entzaubern pro Teil (Erwartungswert) aus Kreislauf.csv: {Teil: {Material: Menge}}."""
     lines = open(os.path.join(D, "rechnung", "Kreislauf.csv"), encoding="utf-8-sig").read().splitlines()
@@ -395,6 +403,10 @@ def main(OUT):
          "- Entzaubern (Erwartungswert pro Teil): `data/rechnung/Kreislauf.csv` nach der Tabelle von wow-professions.",
          "- Eigener Bestand beim Wechsel: Mengenmodell `docs/plan/mengen-leder.md` (`tools/plan_mengen.py`).",
          "- Fischen: AHledger, Item 6522 Deviate Fish (Lushwater Oasis 35 % von 153 Fängen; Median Normal Horde US 4s 50c, PvP Horde US 10s 99c) https://ahledger.com/items/6522-deviate-fish · Fangrate: Testlog 13.10. (Stonebull Lake).", ""]
+    own = eigene_preise()
+    if own:   # seit Testlog 3.5: eigene AH-Scans ersetzen den Preis «jetzt» (die 30-Tage-Werte bleiben AHledger)
+        L.insert(-1, f"- Eigene AH-Scans (`tools/ah_aus_testlog.py --eintragen`, Bericht `docs/plan/ah-preise.md`) für {len(own)} Materialien: "
+                     "«jetzt» = 7-Tage-Median der eigenen Scans; die 30-Tage-Werte bleiben AHledger. " + ", ".join(sorted(own)) + ".")
 
     # Ergebnis kurz
     t = {s: c for s, _, c in tier_costs(lw, vz, de_out, P)}
