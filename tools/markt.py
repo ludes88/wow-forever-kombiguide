@@ -32,7 +32,20 @@
 #                  bleiben bei 7 Tagen.
 #   Farmen         Wert pro Stunde aus ANGELN, SAMMELN und BEUTE; ein Tipp erst ab 15 Minuten und nur, wenn jede Beute
 #                  einen Preis hat (AH mit Verlauf oder Händlerpreis aus den Gegenstands-Infos, Testlog 3.6).
-import os, re, statistics, sys
+#   Für den Händler herstellen (seit 15.10.)
+#                  Rezepte, deren Ergebnis der Händler höher bezahlt (Forever-Client: Gegenstands-Infos, AH-Scan 3.7,
+#                  data/preise/haendler_ankauf.csv), als das Material im letzten Scan kostet (Preisstufen, Händlerware zum
+#                  Händlerpreis). Menge: bis die nächste Herstellung mehr kostet, als der Händler zahlt. Ohne AH-Gebühr und
+#                  ohne Absatz-Risiko; der Preis gilt aber nur, solange die Angebote liegen (Grenzpreis im Tipp).
+#   Unter Händlerpreis
+#                  Angebote, die weniger kosten, als der Händler zahlt (Testlog 3.7 zählt sie beim Scan; ältere Scans: nur
+#                  Gegenstände mit Preisstufen und bekanntem Händlerpreis).
+#   Nächster Schritt (pro Charakter, im Spiel /tl tipp)
+#                  Berufe: der Abschnitt des Berufe-Plans (tools/plan_berufe.py) für die jetzige Fertigkeit, was dafür fehlt
+#                  und was es im AH kostet, ob das Rezept noch zu lernen ist (data/kombi/lehrer.csv); Verzauberkunst: das
+#                  billigste Rezept, das schon geht, mit dem Zauberstab-Weg als Vergleich; Material des Plans, das der
+#                  Charakter nicht mehr braucht (Überschuss).
+import math, os, re, statistics, sys
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -55,6 +68,10 @@ MIN_EREIGNISSE = 5  # Durchgänge mit weniger Ereignissen zählen nicht
 MIN_FARM_STUNDEN = 0.25  # Farm-Tipp erst ab so vielen beobachteten Stunden und nur, wenn jede Beute einen Preis hat
                          # (Wahl von Claude)
 FARBE = {0: "orange", 1: "gelb", 2: "grün", 3: "grau"}
+HAENDLER_MIN_GEWINN = 20   # Kupfer: kleinere Gewinne beim Herstellen für den Händler sind kein Tipp (Wahl von Claude)
+ANKAUF_CSV = os.path.join(at.D, "preise", "haendler_ankauf.csv")
+LEHRER_CSV = os.path.join(at.D, "kombi", "lehrer.csv")
+BERUF_KURZ = {"Lederverarbeitung": "LW", "Verzauberkunst": "VZ"}
 INTERFACE = "16001" # wie die anderen Addons (Forever-Client 1.60.1)
 USAGE = "Aufruf: python3 tools/markt.py <KombiTestlog.lua> [--marge 0.3] [--aus <Ordner>]"
 
@@ -160,6 +177,23 @@ def haendlerpreise(plan):
     return out
 
 
+def ankaufpreise(db, jetzt):
+    """Item-ID -> Kupfer, was der Händler im Forever-Client zahlt: Händlerpreis im letzten AH-Scan (Testlog 3.7), sonst
+    die Gegenstands-Infos dieser Datei (Testlog 3.6), sonst data/preise/haendler_ankauf.csv (frühere Testlogs)."""
+    out = {}
+    if os.path.exists(ANKAUF_CSV):
+        for r in at._read(ANKAUF_CSV):
+            if r["item_id"].isdigit() and (r.get("ankauf_kupfer") or "").strip():
+                out[int(r["item_id"])] = int(float(r["ankauf_kupfer"]))
+    for k, v in als_dict(db.get("info")).items():
+        if str(k).isdigit() and isinstance(v, dict) and v.get("s") is not None:
+            out[int(k)] = int(v["s"])
+    for i, p in (jetzt or {}).items():
+        if p.get("haendler") is not None:
+            out[i] = p["haendler"]
+    return out
+
+
 def als_dict(x):
     """Lua-Tabelle aus at._py: Listen (Schlüssel 1..n) wieder als dict."""
     if isinstance(x, list):
@@ -189,9 +223,11 @@ class Markt:
         for i, n in namen.items():
             self.name2id.setdefault(n, i)
         self.eigen, self.gebuehr_eigen = self._eigene_verkaeufe()
+        self.ankauf = ankaufpreise(db, self.jetzt)
 
     def name(self, i):
-        return self.namen.get(i) or (self.info.get(i) or {}).get("n") or self.plan.get(i, {}).get("material") or f"Item {i}"
+        p = self.plan.get(i, {})
+        return self.namen.get(i) or (self.info.get(i) or {}).get("n") or p.get("deutsch") or p.get("material") or f"Item {i}"
 
     # Preise
     def verkauf(self, i):
@@ -625,9 +661,268 @@ def farmen(m):
     return out
 
 
+# --- Händler: herstellen für den Händler, Angebote unter dem Händlerpreis -----------------------------------------------
+def fuer_haendler(m, n_max=200):
+    """Gelernte Rezepte, deren Ergebnis der Händler höher bezahlt, als das Material im letzten Scan kostet. Pro Charakter und
+    Rezept: wie oft es sich lohnt (bis die nächste Herstellung mehr kostet, als der Händler zahlt), Gewinn, Farbe (gibt es noch
+    Punkte?) und der Grenzpreis des teuersten Reagenz für die erste Herstellung."""
+    out = []
+    rezeptnamen = als_dict(m.db.get("rezeptNamen"))
+    for key, c in als_dict(m.db.get("chars")).items():
+        if not isinstance(c, dict):
+            continue
+        char = str(key).split("-")[0]
+        for beruf, b in als_dict(c.get("rezepte")).items():
+            if not isinstance(b, dict):
+                continue
+            for r in rezepte(b.get("liste")):
+                v = m.ankauf.get(r["out"]) if r["out"] else None
+                reag = [(i, n) for i, n in r["reag"] if n > 0]
+                if not v or not reag:
+                    continue
+                wert = v * (r["qmin"] + r["qmax"]) / 2
+                n_ok, kosten, geschaetzt = 0, 0, False
+                for k in range(1, n_max + 1):
+                    tot, ok = 0, True
+                    for i, n in reag:
+                        kk, wo = m.einkauf(i, n * k)
+                        if kk is None or wo.startswith(("AH, nur", "Tiefstpreis 7 Tage", "AH-Tiefstpreis")):
+                            ok = False   # nicht genug im Angebot oder ohne Preisstufen: Menge unbekannt
+                            break
+                        geschaetzt = geschaetzt or "geschätzt" in wo
+                        tot += kk
+                    if not ok or tot - kosten > wert:
+                        break
+                    n_ok, kosten = k, tot
+                if not n_ok:
+                    continue
+                einzel = [(i, n, m.einkauf(i, n)[0] or 0) for i, n in reag]
+                haupt = max(einzel, key=lambda x: x[2])
+                grenz = (wert - sum(x[2] for x in einzel if x is not haupt)) / haupt[1]
+                out.append({"char": char, "beruf": beruf, "stufe": b.get("stufe"), "id": r["id"], "out": r["out"],
+                            "rezept": rezeptnamen.get(r["id"]) or rezeptnamen.get(str(r["id"])) or m.name(r["out"]),
+                            "farbe": FARBE.get(r["farbe"], "?"), "n": n_ok, "kosten": kosten, "wert_je": wert,
+                            "gewinn": wert * n_ok - kosten, "haupt": m.name(haupt[0]), "grenz": grenz, "geschaetzt": geschaetzt})
+    out.sort(key=lambda e: -e["gewinn"])
+    return out
+
+
+def unter_haendler(m):
+    """Angebote im letzten Scan unter dem Händlerpreis: kaufen und beim Händler verkaufen (keine AH-Gebühr)."""
+    out = []
+    for i, p in m.jetzt.items():
+        v = p.get("haendler") if p.get("haendler") is not None else m.ankauf.get(i)
+        if not v:
+            continue
+        if p.get("unter") is not None:                      # Testlog 3.7 zählt alle Angebote unter dem Händlerpreis
+            n, k = p["unter"], p["unter_kosten"]
+        elif p.get("stufen"):
+            n = sum(c for u, c in p["stufen"] if u < v)
+            k = sum(u * c for u, c in p["stufen"] if u < v)
+        elif p["tiefst"] < v:
+            n, k = None, p["tiefst"]                         # mindestens ein Angebot, Menge unbekannt
+        else:
+            continue
+        if n == 0:
+            continue
+        out.append({"id": i, "name": m.name(i), "haendler": v, "n": n, "kosten": k,
+                    "gewinn": (v * n - k) if n else (v - k)})
+    out.sort(key=lambda e: -e["gewinn"])
+    return out
+
+
+# --- Lage und nächster Schritt pro Charakter -----------------------------------------------------------------------------
+def _route():
+    """Berufe-Plan (tools/plan_berufe.py): LW-Abschnitte der gewählten Variante, VZ-Möglichkeiten mit und ohne Zauberstäbe."""
+    import plan_berufe as pb
+    return pb
+
+
+def _mengen_text(m, bedarf, mein):
+    """[(Item-ID, Stück)] -> (Text «braucht», Text «kaufen», Kosten, alles da?)."""
+    braucht, kaufen, summe, fehlt_preis = [], [], 0, False
+    for i, n in bedarf:
+        hast = mein.get(i, 0)
+        braucht.append(f"{n} {m.name(i)}" + (f" (hast {hast})" if hast else ""))
+        if n > hast:
+            k, wo = m.einkauf(i, n - hast)
+            if k is None:
+                fehlt_preis = True
+                kaufen.append(f"{n - hast} {m.name(i)} (kein Preis)")
+            else:
+                summe += k
+                kaufen.append(f"{n - hast} {m.name(i)} ({'Händler' if wo == 'Händler' else 'AH'} {geld(round(k))})")
+    return ", ".join(braucht), ", ".join(kaufen), summe, fehlt_preis
+
+
+def lage(m):
+    """Pro Charakter (Schlüssel «Name-Realm» wie im Testlog): kurze Zeilen für /tl tipp. Nur Berufe aus dem Plan."""
+    pb = _route()
+    lehrer = at._read(LEHRER_CSV) if os.path.exists(LEHRER_CSV) else []
+    de = {r["rezept_en"]: r for r in at._read(os.path.join(at.D, "kombi", "rezepte_de.csv"))}
+    en_id = {n: int(r["item_id"]) for n, r in pb.IT.items() if (r.get("item_id") or "").isdigit()}
+    inv, konto = bestand(m, mit_gebunden=True)
+    rezeptnamen = als_dict(m.db.get("rezeptNamen"))
+    lw_segs = pb.segments(pb.wp[pb.CHOICE])
+    seg_by_erg = {sg[5]: sg for sg in lw_segs if sg[5]}
+    # Wie lange der Plan ein Material braucht, auch über Zwischenprodukte (Salz -> Geschmeidiger Balg -> Lederhose)
+    letzte = {}
+    for _ in range(4):
+        for von, bis, rez, n, mats, erg, _q in lw_segs:
+            for mt in mats:
+                letzte[("LW", mt)] = max(letzte.get(("LW", mt), 0), bis, letzte.get(("LW", erg), 0) if erg else 0)
+    for (a, b_), opts in pb.vz_options().items():
+        for o in opts:
+            for mt in o["mats"]:
+                letzte[("VZ", mt)] = max(letzte.get(("VZ", mt), 0), b_)
+    out = {}
+    for key, c in als_dict(m.db.get("chars")).items():
+        if not isinstance(c, dict):
+            continue
+        char = str(key).split("-")[0]
+        mein = defaultdict(int, inv.get(char, {}))
+        for i, n in konto.items():
+            mein[i] += n
+        zeilen = []
+        for beruf, b in als_dict(c.get("rezepte")).items():
+            kurz = BERUF_KURZ.get(beruf)
+            if not kurz or not isinstance(b, dict) or not str(b.get("stufe") or "").isdigit():
+                continue
+            stufe = int(b["stufe"])
+            gelernt = rezepte(b.get("liste"))
+            namen = {str(rezeptnamen.get(r["id"]) or rezeptnamen.get(str(r["id"])) or ""): r for r in gelernt}
+            by_out = {r["out"]: r for r in gelernt if r["out"]}
+            if stufe >= 150:
+                zeilen.append(f"{kurz} {stufe}: Ziel des Plans erreicht.")
+                continue
+            if kurz == "LW":
+                seg = next((sg for sg in lw_segs if sg[0] <= stufe < sg[1]), None)
+                if not seg:
+                    continue
+                von, bis, rez, n, mats, _, _ = seg
+                rest = max(1, math.ceil(n * (bis - stufe) / (bis - von)))
+                item = en_id.get(rez)
+                g = by_out.get(item)
+                name = (de.get(rez) or {}).get("deutsch") or rez
+                lern = ""
+                if not g:
+                    lr = next((x for x in lehrer if x["item_id"] and item and int(x["item_id"]) == item), None)
+                    lern = (f" Erst lernen bei {lr['lehrer']} (ab {kurz} {lr['ab_fertigkeit']}, {lr['kosten']})." if lr
+                            else " Rezept noch nicht gelernt.")
+                bedarf = [(en_id[mt], math.ceil(je * rest)) for mt, je in mats.items() if mt in en_id]
+                # Zwischenprodukte (z. B. Geschmeidiger leichter Balg): selbst herstellen, wenn das Rezept da ist und es
+                # billiger ist als im AH; dann kommen dessen Materialien auf die Liste
+                selbst = []
+                for mt, je in mats.items():
+                    zw = seg_by_erg.get(mt)
+                    i = en_id.get(mt)
+                    if not zw or not i or i not in by_out:
+                        continue
+                    fehlt_n = max(0, math.ceil(je * rest) - mein.get(i, 0))
+                    if not fehlt_n:
+                        continue
+                    k_ah = m.einkauf(i, fehlt_n)[0]
+                    teile = [(en_id[x], math.ceil(q * fehlt_n)) for x, q in zw[4].items() if x in en_id]
+                    k_selbst = sum((m.einkauf(j, max(0, n_ - mein.get(j, 0)))[0] or 0) if n_ > mein.get(j, 0) else 0
+                                   for j, n_ in teile)
+                    if k_ah is None or k_selbst < k_ah:
+                        bedarf = [(j, n_ - (fehlt_n if j == i else 0)) for j, n_ in bedarf] + teile
+                        rz = by_out[i]
+                        selbst.append(f"{fehlt_n}× {m.name(i)} selbst herstellen ({FARBE.get(rz['farbe'], '?')}; "
+                                      f"{geld(round(k_selbst))} statt {geld(round(k_ah)) if k_ah is not None else 'kein Angebot'} im AH)")
+                zusammen = defaultdict(int)
+                for j, n_ in bedarf:
+                    zusammen[j] += n_
+                bedarf = [(j, n_) for j, n_ in zusammen.items() if n_ > 0]
+                braucht, kaufen, summe, _ = _mengen_text(m, bedarf, mein)
+                farbe = f", {FARBE.get(g['farbe'], '?')}" if g else ""
+                t = f"{kurz} {stufe}: weiter bis {bis:.0f} mit etwa {rest}× {name}{farbe}.{lern} Braucht {braucht}."
+                if selbst:
+                    t += " Vorher " + "; ".join(selbst) + "."
+                if kaufen:
+                    t += f" Kaufen: {kaufen} = {geld(round(summe))}."
+                v = m.ankauf.get(item) if item else None
+                if v and rez in pb.VERKAUFEN:
+                    t += f" Danach beim Händler verkaufen: {geld(v)} je Stück."
+                zeilen.append(t)
+            else:
+                rng = next(((a, b_) for (a, b_) in pb.vz_options() if a <= stufe < b_), None)
+                if not rng:
+                    continue
+                kands = []
+                for staebe in (False, True):
+                    for o in pb.vz_options(staebe)[rng]:
+                        if staebe and "Zauberstab" not in o["routes"]:
+                            continue
+                        lo, hi = o.get("nur", rng)
+                        if not (lo <= stufe < hi):
+                            continue
+                        de_name = (de.get(o["rezept"]) or {}).get("deutsch") or o["rezept"]
+                        kann = de_name in namen
+                        lr = next((x for x in lehrer if x["eintrag"] == de_name), None)
+                        ab = int(lr["ab_fertigkeit"]) if lr and lr["ab_fertigkeit"] else int(pb.learn_at(o["rezept"]) or 0)
+                        if not kann and ab > stufe:
+                            continue
+                        pts = rng[1] - rng[0]
+                        punkte = min(hi, rng[1]) - stufe
+                        anzahl = max(1, math.ceil(o["n"] * punkte / pts))
+                        bedarf = [(en_id[mt], math.ceil(je * anzahl)) for mt, je in o["mats"].items() if mt in en_id]
+                        braucht, kaufen, summe, fehlt = _mengen_text(m, bedarf, mein)
+                        zur = o.get("zurueck", 0.0) * 100 * anzahl
+                        lern = "" if de_name in namen else (f" Erst lernen bei {lr['lehrer']} ({lr['kosten']})." if lr else "")
+                        kands.append(((summe - zur) / max(1, punkte) if not fehlt else 1e9, de_name, anzahl, braucht, kaufen,
+                                      summe, zur, lern, staebe, min(hi, rng[1])))
+                if not kands:
+                    continue
+                kands.sort(key=lambda x: x[0])
+                best = next((k for k in kands if not k[8]), kands[0])
+                t = (f"{kurz} {stufe}: weiter bis {best[9]:.0f} mit etwa {best[2]}× {best[1]}.{best[7]} Braucht {best[3]}."
+                     + (f" Kaufen: {best[4]} = {geld(round(best[5]))}." if best[4] else ""))
+                stab = next((k for k in kands if k[8]), None)
+                if stab and stab[0] < best[0] - 1:
+                    t += (f" Günstiger wäre {stab[1]} (Vorschlag, berufe-plan.md §9): netto etwa {geld(round(stab[0]))} "
+                          f"statt {geld(round(best[0]))} je Punkt, der Händler kauft die Stäbe zurück.")
+                zeilen.append(t)
+        # Überschuss: Material des Plans, das bei der jetzigen Fertigkeit nicht mehr gebraucht wird
+        stufen = {BERUF_KURZ.get(bf): int(b["stufe"]) for bf, b in als_dict(c.get("rezepte")).items()
+                  if BERUF_KURZ.get(bf) and isinstance(b, dict) and str(b.get("stufe") or "").isdigit()}
+        ueber = []
+        for mt, i in en_id.items():
+            n = mein.get(i, 0)
+            if not n:
+                continue
+            noch = [k for (k, x), bis in letzte.items() if x == mt and (k not in stufen or stufen[k] < bis)]
+            if noch or not any(x == mt for (_, x) in letzte):
+                continue
+            netto = m.netto(i)
+            v = m.ankauf.get(i) or 0
+            wo = (f"im AH etwa {geld(round(netto))} je Stück nach Gebühr" if netto and netto > v
+                  else f"beim Händler {geld(v)} je Stück" if v else "")
+            if wo:
+                ueber.append(f"{n} {m.name(i)} ({wo})")
+        if ueber:
+            zeilen.append("Überschuss (braucht dein Plan nicht mehr): " + ", ".join(ueber)
+                          + ". Ob es im AH abgeht, zeigt erst die Abnahme aus mehreren Scans.")
+        if zeilen:
+            out[str(key)] = zeilen
+    return out
+
+
 # --- Ausgabe -------------------------------------------------------------------------------------------------------------
-def tipps(m, hdl, her, verk, haendler, farm):
+def tipps(m, hdl, her, verk, haendler, farm, fh=(), uh=()):
     t = []
+    scan = datetime.strptime(m.letzter["datum"], "%Y-%m-%d %H:%M").strftime("%d.%m. %H:%M") if m.letzter else "?"
+    for e in uh[:2]:
+        menge = f"{e['n']}x" if e["n"] else "mindestens 1x"
+        t.append(f"Unter Händlerpreis: {menge} {e['name']} im AH für zusammen {geld(round(e['kosten']))}, der Händler zahlt "
+                 f"{geld(e['haendler'])} je Stück: etwa {geld(round(e['gewinn']))} Gewinn (Scan {scan}; liegt das Angebot noch?).")
+    gute = [e for e in fh if e["gewinn"] >= HAENDLER_MIN_GEWINN and (e["farbe"] in ("orange", "gelb", "grün") or e["gewinn"] >= 100)]
+    for e in gute[:3]:
+        punkte = ", gibt noch Punkte" if e["farbe"] in ("orange", "gelb", "grün") else ""
+        t.append(f"Für den Händler herstellen ({e['char']}, {e['beruf']} {e['stufe']}): {e['n']}× {e['rezept']} ({e['farbe']}{punkte}). "
+                 f"Material im AH für {geld(round(e['kosten']))}, der Händler zahlt {geld(round(e['wert_je']))} je Stück: etwa "
+                 f"{geld(round(e['gewinn']))} Gewinn. Lohnt, solange {e['haupt']} höchstens {geld(math.floor(e['grenz']))} kostet "
+                 f"(Scan {scan}).")
     for e in hdl[:3]:
         t.append(f"Kaufen: {e['menge']}x {e['name']} bis {geld(round(e['grenze']))} (zusammen {geld(round(e['kosten']))}), "
                  f"wieder einstellen um {geld(round(e['um']))}: etwa {geld(round(e['gewinn']))} Gewinn ({prozent(e['marge'])}). "
@@ -675,10 +970,10 @@ def lua_str(s):
     return '"' + "".join(ch for ch in s if ch >= " " or ch == "\\") + '"'
 
 
-def kombidaten(ordner, m, t, h, stand, zeit):
+def kombidaten(ordner, m, t, h, stand, zeit, schritte=None):
     os.makedirs(ordner, exist_ok=True)
     lua = ["-- KombiDaten: Empfehlungen von Claude, erzeugt von tools/markt.py. Nur Daten, kein Code.",
-           "-- Wird bei jedem Lauf ersetzt. Anzeige im Spiel: /tl tipp (KombiTestlog 3.6).",
+           "-- Wird bei jedem Lauf ersetzt. Anzeige im Spiel: /tl tipp (KombiTestlog 3.6; «schritte» ab 3.7).",
            "KombiDaten = {",
            f"    stand = {lua_str(stand)},"]
     if zeit:
@@ -689,7 +984,15 @@ def kombidaten(ordner, m, t, h, stand, zeit):
     lua += [f"        {lua_str(x)}," for x in t]
     lua += ["    },", "    hinweise = {"]
     lua += [f"        {lua_str(x)}," for x in h]
-    lua += ["    },", "}", ""]
+    lua += ["    },"]
+    if schritte:   # pro Charakter («Name-Realm» wie im Testlog); nur in diesem Addon beim Spieler, nie im Repo
+        lua.append("    schritte = {")
+        for key, zeilen in sorted(schritte.items()):
+            lua.append(f"        [{lua_str(key)}] = {{")
+            lua += [f"            {lua_str(z)}," for z in zeilen]
+            lua.append("        },")
+        lua.append("    },")
+    lua += ["}", ""]
     open(os.path.join(ordner, "Daten.lua"), "w", encoding="utf-8").write("\n".join(lua))
     toc = [f"## Interface: {INTERFACE}", "## Title: KombiDaten",
            "## Notes: Empfehlungen von Claude für /tl tipp (erzeugt von tools/markt.py)",
@@ -697,7 +1000,7 @@ def kombidaten(ordner, m, t, h, stand, zeit):
     open(os.path.join(ordner, "KombiDaten.toc"), "w", encoding="utf-8").write("\n".join(toc))
 
 
-def bericht(pfad, m, t, hdl, ohne, her, verk, haendler, farm, stand):
+def bericht(pfad, m, t, hdl, ohne, her, verk, haendler, farm, stand, fh=(), uh=(), schritte=None):
     L = ["# Markt-Empfehlungen (erzeugt von `tools/markt.py`)", "",
          f"Stand {stand}, Markt {m.markt or '–'}. Nur für dich: enthält deinen Bestand und deine Verkäufe, liegt in "
          "`build/` und kommt nie ins Repo.", "", "## Quellen", ""]
@@ -718,6 +1021,38 @@ def bericht(pfad, m, t, hdl, ohne, her, verk, haendler, farm, stand):
     L.append("- Rezepte und Bestand: Testlog 3.6 (Berufsfenster, Taschen, Bank, Kontobank).")
     L += ["", "## Kurz (wie /tl tipp)", ""]
     L += [f"{n}. {x}" for n, x in enumerate(t, 1)] or ["Noch keine Empfehlung mit Beleg."]
+    L += ["", "## Nächster Schritt pro Charakter (wie /tl tipp)", "",
+          "Abschnitt des Berufe-Plans für die jetzige Fertigkeit (`tools/plan_berufe.py`), was fehlt und was es im letzten Scan "
+          "kostet, ob das Rezept noch zu lernen ist (`data/kombi/lehrer.csv`), bei Verzauberkunst der Zauberstab-Weg als Vergleich "
+          "(Vorschlag, berufe-plan.md §9). Überschuss = Material des Plans, das die Fertigkeit nicht mehr braucht.", ""]
+    if schritte:
+        for key, zeilen in sorted(schritte.items()):
+            L.append(f"**{str(key).split('-')[0]}**")
+            L += [f"- {z}" for z in zeilen]
+            L.append("")
+    else:
+        L.append("Keine Berufe des Plans in der Datei (Berufsfenster einmal öffnen, Testlog 3.6).")
+    L += ["", "## Für den Händler herstellen", "",
+          "Rezepte, deren Ergebnis der Händler höher bezahlt, als das Material im letzten Scan kostet (Händlerpreis aus dem "
+          "Forever-Client). Menge: bis die nächste Herstellung mehr kostet, als der Händler zahlt. Keine Gebühr, kein "
+          "Absatz-Risiko; gilt, solange die Angebote liegen. «Grenzpreis» = so viel darf das teuerste Material höchstens kosten.", ""]
+    if fh:
+        L += ["| Charakter | Beruf | Rezept | Farbe | Menge | Material | Händler je Stück | Gewinn | Grenzpreis |",
+              "|---|---|---|---|---|---|---|---|---|"]
+        for e in fh[:25]:
+            L.append(f"| {e['char']} | {e['beruf']} {e['stufe']} | {e['rezept']} | {e['farbe']} | {e['n']} | {geld(round(e['kosten']))} | "
+                     f"{geld(round(e['wert_je']))} | {geld(round(e['gewinn']))} | {e['haupt']} bis {geld(math.floor(e['grenz']))} |")
+    else:
+        L.append("Kein Rezept, bei dem der Händler mehr zahlt, als das Material kostet.")
+    L += ["", "## Unter dem Händlerpreis im AH", ""]
+    if uh:
+        L += ["| Gegenstand | Stück | kosten | Händler zahlt | Gewinn |", "|---|---|---|---|---|"]
+        for e in uh[:25]:
+            L.append(f"| {e['name']} ({e['id']}) | {e['n'] if e['n'] else 'mind. 1'} | {geld(round(e['kosten']))} | "
+                     f"{geld(e['haendler'])} | {geld(round(e['gewinn']))} |")
+    else:
+        L.append("Keine Angebote unter dem Händlerpreis gefunden (seit Testlog 3.7 prüft der Scan alle Gegenstände, deren "
+                 "Daten der Client hat).")
     L += ["", "## Kaufen und wieder verkaufen", "",
           f"Angebote des letzten Scans unter (Tiefstpreis 7 Tage × 0,95) / (1 + {m.marge:.2f}). Menge höchstens: was in "
           f"den beobachteten Stunden geschätzt gekauft wurde (nie hochgerechnet, bei mehr als {ABSATZ_STUNDEN} Stunden auf "
@@ -813,7 +1148,9 @@ def rechne(text, marge=MARGE, aus=AUS):
     her = herstellen(m)
     verk, haendler = verkaufen(m)
     farm = farmen(m)
-    t = tipps(m, hdl, her, verk, haendler, farm)
+    fh, uh = fuer_haendler(m), unter_haendler(m)
+    schritte = lage(m)
+    t = tipps(m, hdl, her, verk, haendler, farm, fh, uh)
     h = hinweise(m)
     # Stand = letzter Scan (Datum in der Zeit des Spiels); ohne Scan kein Alter im Spiel
     zeit = m.letzter["zeit"] if m.letzter and m.letzter["zeit"] else None
@@ -823,10 +1160,10 @@ def rechne(text, marge=MARGE, aus=AUS):
         # ohne Scan: Zeit der letzten Protokollzeile (Zeit des Spiels)
         zeilen = [re.match(r"^(\d\d\.\d\d\. \d\d:\d\d)", str(z)) for z in (db.get("log") or [])]
         stand = ([z.group(1) for z in zeilen if z] or ["ohne Daten"])[-1]
-    kombidaten(os.path.join(aus, "KombiDaten"), m, t, h, stand, zeit)
-    bericht(os.path.join(aus, "markt.md"), m, t, hdl, ohne, her, verk, haendler, farm, stand)
+    kombidaten(os.path.join(aus, "KombiDaten"), m, t, h, stand, zeit, schritte)
+    bericht(os.path.join(aus, "markt.md"), m, t, hdl, ohne, her, verk, haendler, farm, stand, fh, uh, schritte)
     return {"markt": m, "tipps": t, "handel": hdl, "ohne": ohne, "herstellen": her, "verkaufen": verk,
-            "haendler": haendler, "farmen": farm}
+            "haendler": haendler, "farmen": farm, "fuer_haendler": fh, "unter_haendler": uh, "schritte": schritte}
 
 
 def main():
@@ -841,7 +1178,8 @@ def main():
     m = r["markt"]
     print(f"Markt {m.markt or '–'}, letzter Scan {m.letzter['datum'] if m.letzter else '–'}: {len(r['tipps'])} Tipps, "
           f"{len(r['handel'])} Käufe mit Beleg, {len(r['herstellen'])} Rezepte, {len(r['verkaufen'])} Posten im Bestand, "
-          f"{len(r['farmen'])} Tätigkeiten")
+          f"{len(r['farmen'])} Tätigkeiten, {len(r['fuer_haendler'])} Rezepte für den Händler, {len(r['unter_haendler'])} "
+          f"Angebote unter dem Händlerpreis, nächster Schritt für {len(r['schritte'])} Charakter(e)")
     print("Bericht:", os.path.relpath(os.path.join(aus, "markt.md"), at.ROOT))
     print("Addon:", os.path.relpath(os.path.join(aus, "KombiDaten"), at.ROOT), "(nach Interface\\AddOns\\KombiDaten kopieren)")
 

@@ -1,4 +1,4 @@
-# Eigene AH-Preise aus dem Testlog übernehmen (Testlog 3.5, AH-Scan).
+# Eigene AH-Preise aus dem Testlog übernehmen (Testlog 3.5 oder neuer, AH-Scan).
 #
 # Aufruf:  python3 tools/ah_aus_testlog.py <KombiTestlog.lua oder Text von /tl zeigen> [--eintragen]
 #
@@ -9,12 +9,16 @@
 #   data/preise/ah_alle.csv    der letzte Scan mit allen Gegenständen (Tiefstpreis, Median, Menge, Angebote)
 #   data/preise/ah_abnahme.csv Testlog 3.6: pro Scan und beobachtetem Gegenstand, was seit dem Scan davor von den billigsten
 #                              Angeboten fehlt (weg) und die Schätzung der Käufe (gekauft); sammelt sich wie ah_eigen
-#   docs/plan/ah-preise.md     Bericht: Scans und Plan-Gegenstände mit AHledger-Preis, Median und 7-Tage-Median, Abnahme
+#   data/preise/haendler_ankauf.csv  was der Händler im Forever-Client für einen Gegenstand zahlt (C_Item.GetItemInfo,
+#                              «sellPrice»): aus den Gegenstands-Infos (Testlog 3.6) und den AH-Scans (Testlog 3.7);
+#                              sammelt sich, ein geänderter Wert ersetzt den alten mit neuem Datum
+#   docs/plan/ah-preise.md     Bericht: Scans und Plan-Gegenstände mit AHledger-Preis, Median und 7-Tage-Median, Abnahme,
+#                              Angebote unter dem Händlerpreis (Testlog 3.7)
 # «Plan-Gegenstände» sind seit Testlog 3.6 alle beobachteten: Plan (AH_WATCH), /tl item und Reagenzien und Ergebnisse
 # der gelernten Rezepte.
 # --eintragen  schreibt den 7-Tage-Median der eigenen Scans (Markt des letzten Scans) als «Eigener Preis (s)» und
 #              «Rechenpreis (s)» in data/rechnung/Preise.csv und als preis_s in die AH-Zeilen von data/kombi/preise_zusatz.csv.
-#              Nur aus vollständigen Scans und nur, wenn im Mittel mindestens MIN_MENGE Stück im Angebot waren.
+#              Nur aus vollständigen Scans und nur, wenn im Median der Scans mindestens MIN_MENGE Stück im Angebot waren.
 #              Danach tools/plan_berufe.py laufen lassen. Händlerware bleibt beim Händlerpreis, die 30-Tage-Spalte und
 #              die xlsx bleiben bei AHledger.
 #
@@ -31,6 +35,7 @@ D = os.path.join(ROOT, "data")
 EIGEN = os.path.join(D, "preise", "ah_eigen.csv")
 ALLE = os.path.join(D, "preise", "ah_alle.csv")
 ABNAHME = os.path.join(D, "preise", "ah_abnahme.csv")
+ANKAUF = os.path.join(D, "preise", "haendler_ankauf.csv")
 BERICHT = os.path.join(ROOT, "docs", "plan", "ah-preise.md")
 PREISE = os.path.join(D, "rechnung", "Preise.csv")
 ZUSATZ = os.path.join(D, "kombi", "preise_zusatz.csv")
@@ -39,7 +44,10 @@ UNVOLLSTAENDIG = 0.10   # mehr als 10 % der Angebote ohne Daten: Scan zählt nic
 MIN_MENGE = 50          # «Schwelle dünner Markt» aus data/rechnung/Uebersicht.csv (Wahl von Claude vom 12.10., änderbar)
 F_EIGEN = ["datum", "markt", "item_id", "material", "deutsch", "tiefstpreis_s", "median_s", "menge", "angebote",
            "kosten_20_s", "kosten_100_s", "hinweis", "quelle"]
-F_ALLE = ["datum", "markt", "item_id", "material", "tiefstpreis_s", "median_s", "menge", "angebote"]
+F_ALLE = ["datum", "markt", "item_id", "material", "tiefstpreis_s", "median_s", "menge", "angebote", "haendler_s",
+          "unter_haendler", "unter_kosten_s"]
+F_ANKAUF = ["item_id", "deutsch", "ankauf_kupfer", "qualitaet", "klasse", "unterklasse", "gegenstandsstufe", "bindung",
+            "gemessen", "quelle"]
 F_ABNAHME = ["datum", "markt", "item_id", "deutsch", "stunden", "weg", "gekauft", "quelle"]
 USAGE = "Aufruf: python3 tools/ah_aus_testlog.py <KombiTestlog.lua oder Text von /tl zeigen> [--eintragen]"
 
@@ -110,13 +118,16 @@ def _abnahme(s):
 
 
 def _kompakt(s, plan):
-    """«ID:Tiefstpreis:Median:Menge:Angebote;…» (Kupfer) -> {ID: Preise}."""
+    """«ID:Tiefstpreis:Median:Menge:Angebote[:Händlerpreis:Stück darunter:Kosten];…» (Kupfer) -> {ID: Preise}.
+    Die drei letzten Werte schreibt Testlog 3.7, wenn der Client den Händlerpreis kennt."""
     out = {}
     for teil in (s or "").split(";"):
         f = teil.split(":")
-        if len(f) == 5:
-            i, lo, med, menge, ang = (int(float(x)) for x in f)
+        if len(f) in (5, 8):
+            i, lo, med, menge, ang = (int(float(x)) for x in f[:5])
             out[i] = {"tiefst": lo, "median": med, "menge": menge, "angebote": ang, "stufen": None, "plan": plan}
+            if len(f) == 8:
+                out[i]["haendler"], out[i]["unter"], out[i]["unter_kosten"] = (int(float(x)) for x in f[5:])
     return out
 
 
@@ -136,6 +147,7 @@ def _aus_lua(db):
                       "gegenstaende": r.get("gegenstaende"), "nur_gebot": r.get("nurGebot"), "fehlend": fehlend,
                       "unvollstaendig": n > 0 and fehlend > n * UNVOLLSTAENDIG,
                       "dauer": r.get("dauer"), "quelle": "Testlog-Datei", "preise": preise,
+                      "testlog": str(r.get("testlog") or "3.5/3.6"),
                       "abnahme": _abnahme(r.get("abnahme")), "abstand": int(r.get("abstand") or 0)})
     return scans
 
@@ -311,7 +323,7 @@ def zeilen_eigen(scans, plan):
                          "tiefstpreis_s": s2(p["tiefst"]), "median_s": s2(p["median"]), "menge": p["menge"],
                          "angebote": p["angebote"], "kosten_20_s": kosten_text(p, 20), "kosten_100_s": kosten_text(p, 100),
                          "hinweis": "unvollständig" if s["unvollstaendig"] else "",
-                         "quelle": f"Testlog 3.5, eigener AH-Scan ({s['quelle']})"})
+                         "quelle": f"Testlog {s.get('testlog', '3.5/3.6')}, eigener AH-Scan ({s['quelle']})"})
     return rows
 
 
@@ -356,6 +368,53 @@ def zusammenfuehren_abnahme(neu):
     return sorted(merged.values(), key=lambda r: (r["datum"], r["markt"], int(r["item_id"]))), len(merged) - len(alt)
 
 
+def _datum_db(db, scans):
+    """Datum (JJJJ-MM-TT) des Testlogs: letzter Scan, sonst die letzte Protokollzeile (Jahr des letzten Scans oder 2026)."""
+    jahr = max((s["datum"][:4] for s in scans if s["datum"][:4].isdigit()), default="2026")
+    for zeile in reversed(db.get("log") or []):
+        m = re.match(r"^(\d\d)\.(\d\d)\. ", str(zeile))
+        if m:
+            return f"{jahr}-{m.group(2)}-{m.group(1)}"
+    return max((s["datum"][:10] for s in scans), default="")
+
+
+def ankauf_zeilen(db, scans):
+    """Händler-Ankauf (Kupfer pro Stück) laut Forever-Client: Gegenstands-Infos (Testlog 3.6, Feld s) und Händlerpreise
+    aus den AH-Scans (Testlog 3.7). Ohne Namen von Charakteren oder Realms."""
+    out = {}
+    for s in sorted(scans, key=lambda s: (s["datum"], s["zeit"])):
+        for i, p in s["preise"].items():
+            if p.get("haendler") is not None:
+                out[i] = {"item_id": i, "deutsch": s.get("namen", {}).get(i, ""), "ankauf_kupfer": p["haendler"],
+                          "gemessen": s["datum"][:10], "quelle": "Testlog 3.7, AH-Scan (C_Item.GetItemInfo)"}
+    datum = _datum_db(db, scans)
+    for i, e in (db.get("info") or {}).items():
+        if not (isinstance(e, dict) and str(i).isdigit() and e.get("s") is not None):
+            continue
+        r = out.setdefault(int(i), {"item_id": int(i), "ankauf_kupfer": int(e["s"]), "gemessen": datum,
+                                    "quelle": "Testlog 3.6, Gegenstands-Infos (C_Item.GetItemInfo)"})
+        r.update({"deutsch": e.get("n") or r.get("deutsch", ""), "qualitaet": e.get("q"), "klasse": e.get("k"),
+                  "unterklasse": e.get("u"), "gegenstandsstufe": e.get("l"), "bindung": e.get("b")})
+    return list(out.values())
+
+
+def zusammenfuehren_ankauf(neu):
+    """Neue Händlerpreise übernehmen: gleicher Wert -> altes Datum bleibt (erste Messung), fehlende Felder werden ergänzt;
+    anderer Wert -> neue Zeile ersetzt die alte (der Client zählt, z. B. nach einem Patch)."""
+    alt = {int(r["item_id"]): r for r in _read(ANKAUF)} if os.path.exists(ANKAUF) else {}
+    n = 0
+    for r in neu:
+        a = alt.get(int(r["item_id"]))
+        if a and str(a["ankauf_kupfer"]) == str(r["ankauf_kupfer"]):
+            for f in F_ANKAUF:
+                if a.get(f) in (None, "") and r.get(f) not in (None, ""):
+                    a[f] = r[f]
+            continue
+        alt[int(r["item_id"])] = r
+        n += 1
+    return [alt[i] for i in sorted(alt)], n
+
+
 def abnahme_summe(rows, markt, tage=7):
     """Pro Item-ID in den letzten «tage» Tagen bis zur letzten Zeile dieses Markts:
     (geschätzt gekauft, weg, beobachtete Stunden, Anzahl Vergleiche)."""
@@ -396,14 +455,14 @@ def bericht(scans, rows, plan, eingetragen, abn_rows=()):
     L = ["# Eigene AH-Preise (erzeugt von `tools/ah_aus_testlog.py`)", "",
          "Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen.", "",
          "## Quellen", "",
-         "- Eigene Scans mit Testlog 3.5: `C_AuctionHouse.ReplicateItems` laut Forever-UI 1.60.1 (70374), "
+         "- Eigene Scans mit Testlog 3.5 oder neuer: `C_AuctionHouse.ReplicateItems` laut Forever-UI 1.60.1 (70374), "
          "`Blizzard_APIDocumentationGenerated/AuctionHouseDocumentation.lua` (https://github.com/Gethe/wow-ui-source/tree/forever). "
          "Werte: `data/preise/ah_eigen.csv` (Plan-Gegenstände, alle Scans), `data/preise/ah_alle.csv` (letzter Scan, alle Gegenstände).",
          "- Vergleich: AHledger, Forever-Beta, Median Normal Horde US (`data/rechnung/Preise.csv`, Spalte «NH Median (s)»).",
          "- Grenze Beta/Live: Start am 04.11.2026 (https://www.warcrafttavern.com/forever/guides/beta/, geprüft am 13.10.2026).",
          "- Median = Preis pro Stück, bei dem die Hälfte der angebotenen Stückzahl erreicht ist (nach Stückzahl gewichtet). "
          "7 Tage = Median der Scan-Mediane der letzten 7 Tage bis zum letzten Scan, gleicher Markt, nur vollständige Scans. "
-         f"«dünn» = im Mittel weniger als {MIN_MENGE} Stück im Angebot (Schwelle aus `data/rechnung/Uebersicht.csv`).",
+         f"«dünn» = im Median der Scans weniger als {MIN_MENGE} Stück im Angebot (Schwelle aus `data/rechnung/Uebersicht.csv`).",
          "- Markt = Region, Fraktion, Kurzzeichen des Realms (statt des Namens), Beta oder Live.", "",
          "## Scans", "", "| Datum | Markt | Angebote | Gegenstände | nur mit Gebot | Dauer | gelesen aus | Hinweis |",
          "|---|---|---|---|---|---|---|---|"]
@@ -450,6 +509,21 @@ def bericht(scans, rows, plan, eingetragen, abn_rows=()):
             name = plan.get(i, {}).get("material") or namen.get(i) or str(i)
             L.append(f"| {name} | {i} | {mind} | {weg} | {h:.1f} h | {n} | {mind / h:.1f} |" if h > 0 else
                      f"| {name} | {i} | {mind} | {weg} | – | {n} | – |")
+    unter = [(i, p) for i, p in letzter["preise"].items() if p.get("unter")]
+    if unter:
+        namen = letzter.get("namen", {})
+        unter.sort(key=lambda ip: -(ip[1]["haendler"] * ip[1]["unter"] - ip[1]["unter_kosten"]))
+        L += ["", f"## Unter dem Händlerpreis (Testlog 3.7, Scan {letzter['datum']})", "",
+              "Angebote, deren Preis pro Stück unter dem liegt, was der Händler zahlt (`C_Item.GetItemInfo`, «sellPrice», "
+              "nur Gegenstände, deren Daten der Client schon hatte). Kaufen und beim Händler verkaufen; keine AH-Gebühr. "
+              "Gewinn = Händlerpreis × Stück − Kaufpreis.", "",
+              "| Gegenstand | ID | Händler zahlt | Stück darunter | kosten | Gewinn |", "|---|---|---|---|---|---|"]
+        for i, p in unter[:40]:
+            L.append(f"| {namen.get(i) or plan.get(i, {}).get('material') or i} | {i} | {silber(p['haendler'] / 100)} | "
+                     f"{p['unter']} | {silber(p['unter_kosten'] / 100)} | "
+                     f"{silber((p['haendler'] * p['unter'] - p['unter_kosten']) / 100)} |")
+        if len(unter) > 40:
+            L.append(f"| … {len(unter) - 40} weitere in `data/preise/ah_alle.csv` | | | | | |")
     L += ["", "Spalte «Plan»: «ja» = mit `--eintragen` übernehmbar, «dünn» = bleibt beim AHledger-Preis.", "",
           "## Im Plan", "",
           (f"Eingetragen: {eingetragen} Preise (7-Tage-Median dieses Markts) als «Eigener Preis (s)» und «Rechenpreis (s)» in "
@@ -508,6 +582,7 @@ def main():
     if not args:
         raise SystemExit(USAGE)
     text = open(args[0], encoding="utf-8", errors="replace").read()
+    db = _py(_lua_tabelle(text)) if ist_datei(text) else None
     scans = lese(text)
     if not scans:
         print("Keine AH-Scans gefunden (Testlog 3.5: Auktionshaus öffnen oder /tl ah, danach /reload).")
@@ -519,7 +594,9 @@ def main():
     markt = f"{letzter['markt']} {letzter['phase']}"
     if letzter["quelle"] == "Testlog-Datei" and any(not p["plan"] for p in letzter["preise"].values()):
         alle = [{"datum": letzter["datum"], "markt": markt, "item_id": i, "material": plan.get(i, {}).get("material", ""),
-                 "tiefstpreis_s": s2(p["tiefst"]), "median_s": s2(p["median"]), "menge": p["menge"], "angebote": p["angebote"]}
+                 "tiefstpreis_s": s2(p["tiefst"]), "median_s": s2(p["median"]), "menge": p["menge"], "angebote": p["angebote"],
+                 "haendler_s": s2(p.get("haendler")), "unter_haendler": p.get("unter"),
+                 "unter_kosten_s": s2(p.get("unter_kosten"))}
                 for i, p in sorted(letzter["preise"].items())]
         _write(ALLE, F_ALLE, alle)
     n = eintragen(rows, markt) if "--eintragen" in sys.argv else 0
@@ -527,6 +604,11 @@ def main():
     abn_rows, abn_n = zusammenfuehren_abnahme(abn_neu)
     if abn_neu:
         _write(ABNAHME, F_ABNAHME, abn_rows)
+    ank_n = None
+    if db is not None:
+        ank_rows, ank_n = zusammenfuehren_ankauf(ankauf_zeilen(db, scans))
+        if ank_rows:
+            _write(ANKAUF, F_ANKAUF, ank_rows)
     bericht(scans, rows, plan, n, abn_rows)
     unv = sum(1 for s in scans if s["unvollstaendig"])
     print(f"{len(scans)} Scans gelesen ({letzter['quelle']}{f', {unv} unvollständig' if unv else ''}), letzter {letzter['datum']} "
@@ -534,6 +616,8 @@ def main():
     print(f"{os.path.relpath(EIGEN, ROOT)}: {len(rows)} Zeilen ({neu} neu)")
     if abn_rows:
         print(f"{os.path.relpath(ABNAHME, ROOT)}: {len(abn_rows)} Zeilen ({abn_n} neu)")
+    if ank_n is not None:
+        print(f"{os.path.relpath(ANKAUF, ROOT)}: {ank_n} neu oder geändert")
     if "--eintragen" in sys.argv:
         print(f"eingetragen: {n} Preise (7 Tage, {markt}, nur mit mindestens {MIN_MENGE} Stück); jetzt python3 tools/plan_berufe.py")
     print("Bericht:", os.path.relpath(BERICHT, ROOT))

@@ -10,6 +10,9 @@
 #   data/kombi/preise_zusatz.csv       Händlerpreise und AH-Preise, die in Preise.csv fehlen
 #   data/rechnung/Preise.csv           AH-Rechenpreise (AHledger, Beta, Normal Horde US): «jetzt» und Median 30 Tage
 #   data/rechnung/Kreislauf.csv        Entzaubern: Staub, Essenz und Splitter pro grünem LW-Teil (Erwartungswert)
+#   data/kombi/lehrer.csv              Lernstufen und Kosten der Lehrer in Orgrimmar (Testlog 15.10., tools/lehrer_aus_testlog.py)
+#   data/kombi/rezepte_de.csv          englischer und deutscher Rezeptname, Zauber-ID (Zuordnung zu den Lehrerlisten)
+#   data/preise/haendler_ankauf.csv    was der Händler im Forever-Client zahlt (Testlog 3.6/3.7, tools/ah_aus_testlog.py)
 #
 # Begriffe: «eigen» = Bestand beim Wechsel (untere Rate des Modells, also vorsichtig gerechnet); alles andere wird gekauft.
 # Stufe A = Kern der Sitzung in Orgrimmar (billig, nutzt das eigene Leder); B in Orgrimmar oder Thunder Bluff, C und D in Thunder Bluff, je nach Gold.
@@ -27,10 +30,18 @@ STUFEN = [("A", 80, 50, "Kern in Orgrimmar: eigenes Leder verarbeiten"),        
           ("C", 130, 130, "in Thunder Bluff, Stufe 20"),
           ("D", 150, 150, "in Thunder Bluff, der teure Rest bis 150")]
 FLB_BEHALTEN = 10        # wow-professions: «Keep 10 of the belts for the Dark Leather Belts at 115.»
-ANGELN_FAENGE_H = 3600 / (349 / 14)   # Testlog 13.10.: 14 Fänge in 349 s am Stonebull Lake (Angeln 1-15, Mulgore)
+ANGELN_FAENGE_H = 3600 / (349 / 13)   # Testlog 13.10.: 14 Fänge, vom ersten bis zum letzten 349 s = 13 Abstände (Stonebull Lake,
+                                      # Angeln 1-15); bis 15.10. stand hier 349/14 (7,7 % zu hoch, Prüfbericht 15.10.)
 DEVIATE_ANTEIL = 0.35                 # AHledger, Item 6522: Lushwater Oasis «35% of 153 looted»
 DEVIATE_PH = 10.99                    # AHledger, Item 6522: Median PvP Horde US (Scan 13.10.2026); Normal Horde US steht in preise_zusatz.csv
 SCHLEIFEN = {"Light Leather": "Ruined Leather Scraps"}   # Rezept, das ein Material herstellt, das die Route später braucht
+# Zauberstäbe als Weg für VZ (Vorschlag von Claude vom 15.10., nicht im Plan, Abschnitt 9 des Berichts): orange bis «gelb ab»
+# laut SeeMeta, Enchanting (Stand 14.10.2026, https://seemeta.com/en/wow-forever/professions/enchanting: Lesser Magic Wand
+# gelb 75, grün 95, grau 115; Greater Magic Wand gelb 110, grün 130, grau 150). Bei VZ 100 im Testlog 15.10. bestätigt:
+# Lesser grün, Greater orange. Reagenzien aus dem Testlog (REZEPTE), Händlerpreis aus haendler_ankauf.csv, Lernstufe und
+# Kosten aus lehrer.csv. Orange = jede Herstellung gibt einen Punkt.
+STAEBE = [("Lesser Magic Wand", 10, 75, {"Simple Wood": 1, "Lesser Magic Essence": 1}),
+          ("Greater Magic Wand", 70, 110, {"Simple Wood": 1, "Lesser Magic Essence": 2})]
 
 
 def items():
@@ -86,6 +97,49 @@ def recipes():
     return {r["rezept"]: r for r in read(os.path.join(D, "kombi", "rezepte.csv"))}
 
 
+def lehrer():
+    """Rezept (englisch) -> {kosten (Silber), ab (Fertigkeit), lehrer, deutsch}; dazu die Ränge («LW Lehrling» usw.).
+    Zuordnung über die Item-ID (LW) oder den deutschen Namen aus rezepte_de.csv (VZ)."""
+    rows = read(os.path.join(D, "kombi", "lehrer.csv"))
+    de = {r["rezept_en"]: r for r in read(os.path.join(D, "kombi", "rezepte_de.csv"))}
+    item_en = {r["item_id"]: n for n, r in IT.items() if r.get("item_id")}
+    out = {}
+    for r in rows:
+        kosten = num(r["kosten_kupfer"]) / 100 if r["kosten_kupfer"] else 0.0
+        e = {"kosten": kosten, "ab": num(r["ab_fertigkeit"]) if r["ab_fertigkeit"] else 0, "lehrer": r["lehrer"],
+             "deutsch": r["eintrag"], "quelle": r["quelle"]}
+        kurz = {"Lederverarbeitung": "LW", "Verzauberkunst": "VZ"}.get(r["beruf"])
+        if r["rang"] == "ja" and kurz:
+            rang = "Lehrling" if "lehrling" in r["eintrag"].lower() else "Geselle" if "geselle" in r["eintrag"].lower() else r["eintrag"]
+            out.setdefault(f"{kurz} {rang}", e)
+            continue
+        en = item_en.get(r["item_id"]) or next((k for k, v in de.items() if v["deutsch"] == r["eintrag"]), None) or r["rezept_en"]
+        if en:
+            out.setdefault(en, e)
+    return out, de
+
+
+def ankauf():
+    """Rezept/Material (englisch) -> (Silber pro Stück, Quelle), was der Händler zahlt: Forever-Client (Testlog), sonst
+    die Spalte «Händlerpreis (s)» aus Kreislauf.csv (AHledger) für die grünen LW-Teile."""
+    out = {}
+    lines = open(os.path.join(D, "rechnung", "Kreislauf.csv"), encoding="utf-8-sig").read().splitlines()
+    start = next(i for i, l in enumerate(lines) if l.startswith("Grünes LW-Teil;"))
+    for r in csv.DictReader(lines[start:], delimiter=";"):
+        if not r.get("Staub/Teil"):
+            break
+        if r.get("Händlerpreis (s)"):
+            out[r["Grünes LW-Teil"]] = (num(r["Händlerpreis (s)"]), "AHledger (Kreislauf.csv), im Spiel ungeprüft")
+    pfad = os.path.join(D, "preise", "haendler_ankauf.csv")
+    if os.path.exists(pfad):
+        by_id = {r["item_id"]: r for r in read(pfad)}
+        for n, r in IT.items():
+            a = by_id.get(r.get("item_id"))
+            if a and a["ankauf_kupfer"]:
+                out[n] = (num(a["ankauf_kupfer"]) / 100, f"Forever-Client ({a['quelle'].split(',')[0]}, {a['gemessen']})")
+    return out
+
+
 def segments(rows):
     """Route-Zeilen zu Abschnitten: [(von, bis, rezept, herstellungen, {material: je}, ergebnis, quelle)] bis pm.ZIEL."""
     seg = {}
@@ -110,6 +164,11 @@ IT = items()
 P, P30, VENDOR = prices()
 DE = de_table()
 REZ = recipes()
+LEHRER, REZ_DE = lehrer()
+ANKAUF = ankauf()
+# Grüne Teile, die der Händler höher bezahlt, als ihr Entzauberungs-Ertrag im AH kostet: verkaufen statt entzaubern
+# (Preisregel, Abschnitt 6; die Verzauberkunst kauft das fehlende Material dann im AH)
+VERKAUFEN = {t for t in DE if t in ANKAUF and ANKAUF[t][0] > cost(DE[t], P)}
 low, high = pm.state[pm.WECHSEL][2], pm.state[pm.WECHSEL][3]          # Plan beim Wechsel: untere und obere Rate
 base = pm.state[pm.WECHSEL][0]
 before_s1 = pm.before_stop["D"]                                         # Bestand vor dem Farm-Stopp S1 (Abschnitt D)
@@ -149,25 +208,29 @@ def lw_plan(rows, own):
 
 
 def de_after(plan_stage, inv, keep_flb):
-    """Was nach einer Stufe entzaubert wird (Teile, die die Route nicht mehr braucht) und was es ergibt."""
-    out, parts = {}, {}
+    """Was nach einer Stufe entzaubert wird (Teile, die die Route nicht mehr braucht) und was es ergibt; Teile aus
+    VERKAUFEN gehen stattdessen an den Händler (dritter Rückgabewert)."""
+    out, parts, sold = {}, {}, {}
     for item in DE:
         have = inv.get(item, 0.0)
         if item == "Fine Leather Belt":
             have = max(0.0, have - keep_flb)
         if have > 1e-9:
-            parts[item] = have
             inv[item] = inv.get(item, 0.0) - have
+            if item in VERKAUFEN:
+                sold[item] = have
+                continue
+            parts[item] = have
             for m, q in DE[item].items():
                 add(out, m, have * q)
-    return parts, out
+    return parts, out, sold
 
 
 def run(variant):
     plan = lw_plan(wp[variant], OWN)
     # Entzaubern nach jeder Stufe; Fine Leather Belts für Dark Leather Belt aufheben, solange Stufe C noch kommt
     inv = {}
-    de_parts, de_out = [], []
+    de_parts, de_out, de_sold = [], [], []
     for st in plan:
         for k, v in st["made"].items():
             add(inv, k, v)
@@ -176,31 +239,54 @@ def run(variant):
                 if m in DE or m in ("Fine Leather Belt",):
                     inv[m] = inv.get(m, 0.0) - need
         keep = FLB_BEHALTEN if st["stufe"] in ("A", "B") else 0.0
-        parts, out = de_after(st, inv, keep)
+        parts, out, sold = de_after(st, inv, keep)
         de_parts.append(parts)
         de_out.append(out)
-    return plan, de_parts, de_out
+        de_sold.append(sold)
+    return plan, de_parts, de_out, de_sold
 
 
 # --- Verzauberkunst: pro Fertigkeitspunkt die billigste Möglichkeit, eigenes Material zuerst --------------------------
-def vz_options():
-    """{(von, bis): [{rezept, n, mats}]} aus den wow-professions-Wegen (Staub, Essenz, Alternative)."""
+def vz_options(staebe=False):
+    """{(von, bis): [{rezept, n, mats, zurueck}]} aus den wow-professions-Wegen (Staub, Essenz, Alternative); mit staebe
+    zusätzlich die Zauberstäbe aus STAEBE (je Herstellung ein Punkt, zurück = Händlerpreis), geteilt an den Grenzen der Route."""
     seg = {}
     for r in vz_rows:
         k = (num(r["von"]), num(r["bis"]))
-        opt = seg.setdefault(k, {}).setdefault(r["rezept"], {"rezept": r["rezept"], "n": num(r["anzahl"]), "mats": {}, "routes": set()})
+        opt = seg.setdefault(k, {}).setdefault(r["rezept"], {"rezept": r["rezept"], "n": num(r["anzahl"]), "mats": {},
+                                                               "routes": set(), "zurueck": 0.0})
         opt["mats"][r["material"]] = num(r["menge_je"])
         opt["routes"].add(r["route"])
+    if staebe:
+        for rez, von, bis, mats in STAEBE:
+            back = ANKAUF.get(rez, (0.0, ""))[0]
+            for (a, b), opts in seg.items():
+                lo, hi = max(a, von), min(b, bis)
+                if any("Rod" in r for r in opts):
+                    continue   # Runenverzierte Ruten sind Pflicht (Werkzeug), kein Zauberstab statt ihrer
+                if lo < hi:
+                    opts[rez] = {"rezept": rez, "n": float(b - a), "mats": dict(mats), "routes": {"Zauberstab"},
+                                 "zurueck": back, "nur": (lo, hi)}
     return {k: list(v.values()) for k, v in sorted(seg.items())}
+
+
+def learn_at(rezept):
+    """Ab welcher Fertigkeit das Rezept geht: Lehrerliste (gemessen), sonst «orange» laut AHledger (rezepte.csv), sonst 0."""
+    e = LEHRER.get(rezept)
+    if e and e["ab"]:
+        return e["ab"]
+    z = REZ.get(rezept)
+    return num(z["orange"]) if z and z.get("orange") else 0
 
 
 FORMEL = {"Enchant 2H Weapon - Lesser Intellect": "Formula: Enchant 2H Weapon - Lesser Intellect"}
 
 
-def vz_plan(de_out, prices_now):
-    """Geht VZ 1-150 Punkt für Punkt durch; nimmt pro Punkt das Rezept mit den geringsten Kaufkosten (eigenes Material kostet 0).
+def vz_plan(de_out, prices_now, staebe=False):
+    """Geht VZ 1-150 Punkt für Punkt durch; nimmt pro Punkt das Rezept mit den geringsten Kaufkosten (eigenes Material kostet 0;
+    was der Händler für das Ergebnis zahlt, zählt ab). Nur Rezepte, die bei diesem Punkt schon gehen (learn_at).
     Greater Magic Essence zählt als 3 Lesser (wow-professions: Rechtsklick teilt sie)."""
-    opts = vz_options()
+    opts = vz_options(staebe)
     stock = {}
     plan, formel_gekauft = [], set()
     for i, (stufe, _, vz_bis, _) in enumerate(STUFEN):
@@ -211,15 +297,17 @@ def vz_plan(de_out, prices_now):
                 add(stock, m, q)
         lo = 0 if not plan else plan[-1]["bis"]
         lo = max(lo, 1)
-        buy, used = {}, {}
+        buy, used, zur = {}, {}, 0.0
         for (von, bis), olist in opts.items():
             a, b = max(von, lo), min(bis, vz_bis)
             if a >= b:
                 continue
             pts = bis - von
-            for _ in range(int(round(b - a))):
+            for k_pt in range(int(round(b - a))):
+                punkt = a + k_pt
                 best, best_key = None, None
-                for o in olist:
+                frei = [o for o in olist if learn_at(o["rezept"]) <= punkt and o.get("nur", (0, 999))[0] <= punkt < o.get("nur", (0, 999))[1]]
+                for o in (frei or olist):
                     c, own_val = 0.0, 0.0
                     for m, q in o["mats"].items():
                         need = o["n"] * q / pts
@@ -229,6 +317,7 @@ def vz_plan(de_out, prices_now):
                     f = FORMEL.get(o["rezept"])
                     if f and f not in formel_gekauft:
                         c += prices_now.get(f, 0.0)                     # Formel voll beim ersten Einsatz
+                    c -= o.get("zurueck", 0.0) * o["n"] / pts           # Händler zahlt für das Ergebnis (Zauberstäbe)
                     key = (round(c, 6), round(own_val, 6))              # zuerst Kaufkosten, dann das billigere eigene Material verbrauchen
                     if best is None or key < best_key:
                         best, best_key = o, key
@@ -240,11 +329,12 @@ def vz_plan(de_out, prices_now):
                         add(buy, m, need - take)
                 key = (a, b, best["rezept"])                     # Bereich dieser Stufe, nicht der ganze Abschnitt der Route
                 add(used, key, best["n"] / pts)
+                zur += best.get("zurueck", 0.0) * best["n"] / pts
                 f = FORMEL.get(best["rezept"])
                 if f and f not in formel_gekauft:
                     formel_gekauft.add(f)
                     add(buy, f, 1)
-        plan.append({"stufe": stufe, "bis": vz_bis, "buy": buy, "used": used, "stock": dict(stock)})
+        plan.append({"stufe": stufe, "bis": vz_bis, "buy": buy, "used": used, "stock": dict(stock), "zurueck": zur})
     return plan
 
 
@@ -264,17 +354,85 @@ def tier_costs(lw, vz, de_out, p):
     return rows
 
 
+def scan_preise():
+    """Preise «jetzt» mit den Medianen des letzten eigenen AH-Scans (data/preise/ah_eigen.csv, nur zum Vergleich im Bericht;
+    ob die eigenen Scans den Plan ersetzen, ist offene Entscheidung 17). Händlerware bleibt beim Händlerpreis."""
+    pfad = os.path.join(D, "preise", "ah_eigen.csv")
+    if not os.path.exists(pfad):
+        return None, None
+    rows = [r for r in read(pfad) if r.get("median_s") and r.get("hinweis", "") != "unvollständig"]
+    if not rows:
+        return None, None
+    letzt = max(r["datum"] for r in rows)
+    by_id = {r["item_id"]: num(r["median_s"]) for r in rows if r["datum"] == letzt}
+    out = dict(P)
+    for n, r in IT.items():
+        if n not in VENDOR and r.get("item_id") in by_id:
+            out[n] = by_id[r["item_id"]]
+    return out, f"{letzt}, {rows[0]['markt']}"
+
+
+def lehrer_stufen(lw, vz):
+    """Pro Stufe: was beim Lehrer zu lernen ist (Ränge und Rezepte der Route) mit Kosten in Silber (lehrer.csv).
+    Rezepte ohne Eintrag in der Liste (z. B. mit dem Rang gelernt) kosten 0; die Formel 2H Weapon steht beim Einkauf."""
+    gelernt, out = set(), []
+    for i, st in enumerate(lw):
+        posten = []
+        if i == 0:
+            posten += ["LW Lehrling", "VZ Lehrling", "LW Geselle", "VZ Geselle"]
+        posten += [s["rezept"] for s in st["steps"]]
+        posten += [rez for (_, _, rez) in sorted(vz[i]["used"])]
+        liste = []
+        for p_ in posten:
+            if p_ in gelernt:
+                continue
+            gelernt.add(p_)
+            e = LEHRER.get(p_)
+            if e and e["kosten"]:
+                liste.append((p_, e))
+        out.append(liste)
+    return out
+
+
+def haendler_stufen(de_sold, vz):
+    """Pro Stufe: Einnahmen beim Händler für verkaufte LW-Teile (VERKAUFEN) und für Zauberstäbe (nur in der Variante)."""
+    out = []
+    for i, sold in enumerate(de_sold):
+        v = sum(q * ANKAUF[t][0] for t, q in sold.items())
+        out.append(v + vz[i].get("zurueck", 0.0))
+    return out
+
+
 # --- Rechnen ------------------------------------------------------------------------------------------------------------
 results = {}
 for variant in wp:
-    lw, de_parts, de_out = run(variant)
+    lw, de_parts, de_out, de_sold = run(variant)
     vz = vz_plan(de_out, P)
     gross = sum(c for _, _, c in tier_costs(lw, vz, de_out, P))
     left = vz[-1]["stock"]
     resale = sum(max(0.0, q) * P.get(m, 0.0) for m, q in left.items())
-    results[variant] = {"lw": lw, "de_parts": de_parts, "de_out": de_out, "vz": vz, "gross": gross, "resale": resale}
-CHOICE = min(results, key=lambda v: results[v]["gross"] - results[v]["resale"])
+    haendler = sum(haendler_stufen(de_sold, vz))
+    results[variant] = {"lw": lw, "de_parts": de_parts, "de_out": de_out, "de_sold": de_sold, "vz": vz, "gross": gross,
+                        "resale": resale, "haendler": haendler}
+CHOICE = min(results, key=lambda v: results[v]["gross"] - results[v]["resale"] - results[v]["haendler"])
 R = results[CHOICE]
+R["lehrer"] = lehrer_stufen(R["lw"], R["vz"])
+# Variante mit Zauberstäben (Vorschlag, nicht im Guide): gleiche LW-Stufen, VZ mit STAEBE
+R_STAB = {"vz": vz_plan(R["de_out"], P, staebe=True)}
+R_STAB["lehrer"] = lehrer_stufen(R["lw"], R_STAB["vz"])
+P_SCAN, SCAN_STAND = scan_preise()
+
+
+def stufen_netto(vz, lehr, p=None):
+    """Pro Stufe (Einkauf, Lehrer, Händler zurück, netto) in Silber; Einkauf mit den Preisen p (Standard «jetzt»)."""
+    p = p or P
+    t = tier_costs(R["lw"], vz, R["de_out"], p)
+    h = haendler_stufen(R["de_sold"], vz)
+    out = []
+    for i, (st, _, c) in enumerate(t):
+        l_ = sum(e["kosten"] for _, e in lehr[i])
+        out.append((st, c, l_, h[i], c + l_ - h[i]))
+    return out
 
 
 def sweetspot():
@@ -377,6 +535,14 @@ def regeln():
         ("LW 130–150", "Tab «Cured Heavy Hide» (20 Heavy Hide, 60 Salt, 14 Hillman's) statt «ohne Heavy Hide» (24 Hillman's), ohne Entzaubern gerechnet",
          lambda p: cmp(20 * p["Heavy Hide"] + 60 * p["Salt"] + 14 * (14 * p["Medium Leather"] + 4 * p["Fine Thread"]),
                        24 * (14 * p["Medium Leather"] + 4 * p["Fine Thread"]), "Cured Heavy Hide", "ohne Heavy Hide")),
+        ("Light Leather Pants: Händler statt Entzaubern", f"Händler zahlt {silber(ANKAUF.get('Light Leather Pants', (0, ''))[0])} (Forever-Client); lohnt, solange der Ertrag (1,875 Strange Dust, 0,3 Greater Magic Essence, 0,04 Splitter) weniger wert ist",
+         lambda p: cmp(cost(DE["Light Leather Pants"], p), ANKAUF.get("Light Leather Pants", (0, ""))[0], "Händler", "entzaubern")),
+        ("Dark Leather Belt: Händler statt Entzaubern", f"Händler zahlt {silber(ANKAUF.get('Dark Leather Belt', (0, ''))[0])} (Forever-Client); lohnt, solange 3,75 Strange Dust, 0,3 Lesser Astral Essence und 0,04 Splitter weniger wert sind",
+         lambda p: cmp(cost(DE["Dark Leather Belt"], p), ANKAUF.get("Dark Leather Belt", (0, ""))[0], "Händler", "entzaubern")),
+        ("VZ 10–75: Geringer Magiezauberstab", "statt 1 Strange Dust pro Punkt (Chest - Inferior Stamina): 1 Simple Wood und 1 Lesser Magic Essence, der Händler zahlt den Stab zurück",
+         lambda p: cmp(p["Simple Wood"] + p["Lesser Magic Essence"] - ANKAUF.get("Lesser Magic Wand", (0, ""))[0], p["Strange Dust"], "Zauberstab", "Staub")),
+        ("VZ 70–110: Grosser Magiezauberstab", "statt 2 Strange Dust (Bracer - Minor Stamina): 1 Simple Wood und 2 Lesser Magic Essence, der Händler zahlt den Stab zurück",
+         lambda p: cmp(p["Simple Wood"] + 2 * p["Lesser Magic Essence"] - ANKAUF.get("Greater Magic Wand", (0, ""))[0], 2 * p["Strange Dust"], "Zauberstab", "Staub")),
         ("Leder grinden statt angeln", "Grinden (50–80 Häute pro Stunde, Gegner 11–15) bringt mehr als Angeln (nur Deviate Fish, Rate ungeprüft)",
          lambda p: f"{silber(50 * skin_value(b2, p))}–{silber(80 * skin_value(b2, p))} gegen {silber(fish * p['Deviate Fish'])} pro Stunde: "
                    + ("Grinden" if 80 * skin_value(b2, p) > fish * p["Deviate Fish"] else "Angeln")),
@@ -419,8 +585,19 @@ def main(OUT):
           f"Laut Modell reicht das Leder; die fehlenden Fetzen und Bälge kosten im AH wenig (Stufe A unten).",
           f"- Ab LW 80 bringt jedes Leichte Leder {RATIO[0]:.0f}- bis {RATIO[1]:.0f}-mal weniger Punkte als davor (Tabelle in Abschnitt 1). Mehr Leder zu farmen bringt "
           f"{50 * skin_value(b2, P):.0f}–{80 * skin_value(b2, P):.0f} Silber pro Stunde Materialwert (Beta); Angeln ergäbe etwa {silber(ANGELN_FAENGE_H * DEVIATE_ANTEIL * P['Deviate Fish'])} pro Stunde (nur Deviate Fish, Rate ungeprüft, Abschnitt 1).",
-          f"- Kosten (Beta-Preise «jetzt», ohne Lehrer und Rezepte): Stufe A {silber(t['A'])}, B {silber(t['B'])}, C {silber(t['C'])}, D {silber(t['D'])}. "
+          f"- Einkauf (Beta-Preise «jetzt»): Stufe A {silber(t['A'])}, B {silber(t['B'])}, C {silber(t['C'])}, D {silber(t['D'])}. "
           f"Derselbe Einkauf mit den 30-Tage-Medianen: A {silber(t30['A'])}, B {silber(t30['B'])}, C {silber(t30['C'])}, D {silber(t30['D'])}.",
+          "- Mit Lehrer (Lernkosten gemessen in Orgrimmar, `data/kombi/lehrer.csv`) und dem, was der Händler für verkaufte Teile zahlt: "
+          + ", ".join(f"Stufe {st} {silber(c)} + Lehrer {silber(l_)} − Händler {silber(h)} = netto {silber(n)}" for st, c, l_, h, n in stufen_netto(vz, R["lehrer"]))
+          + f". Zusammen netto {silber(sum(x[4] for x in stufen_netto(vz, R['lehrer'])))}.",
+          (f"- Derselbe Plan mit den Medianen des letzten eigenen AH-Scans ({SCAN_STAND}; nur Vergleich, offene Entscheidung 17): "
+           + ", ".join(f"{st} netto {silber(n)}" for st, c, l_, h, n in stufen_netto(vz, R["lehrer"], P_SCAN))
+           + f", zusammen {silber(sum(x[4] for x in stufen_netto(vz, R['lehrer'], P_SCAN)))}." if P_SCAN else
+           "- Eigene AH-Scans: noch keine in `data/preise/ah_eigen.csv`."),
+          f"- Verkaufen statt entzaubern (Preisregel, Abschnitt 6): {', '.join(sorted(t_ for t_ in VERKAUFEN if any(t_ in sold for sold in R['de_sold'])))} "
+          "gehen an den Händler, weil er mehr zahlt, als ihr Entzauberungs-Ertrag im AH kostet (Händlerpreise aus dem Forever-Client, Testlog 15.10.).",
+          f"- Vorschlag (nicht im Guide, Abschnitt 9): VZ 10–109 mit Zauberstäben, die der Händler zurückkauft. Netto A–D zusammen "
+          f"{silber(sum(x[4] for x in stufen_netto(R_STAB['vz'], R_STAB['lehrer'])))} statt {silber(sum(x[4] for x in stufen_netto(vz, R['lehrer'])))}.",
           f"- LW 130–150 rechnet der Plan mit dem Tab «{CHOICE}» von wow-professions (billiger bei diesen Preisen, Vergleich in Abschnitt 4).",
           f"- Nach allen Stufen bleibt Entzauberungs-Material übrig, das VZ bis 150 nicht braucht (Wert im AH etwa {silber(R['resale'])}, Abschnitt 5).", ""]
 
@@ -466,6 +643,10 @@ def main(OUT):
         for s in st["steps"]:
             mats = ", ".join(f"{need:.0f} {m}" + (f" (davon {take:.0f} aus dem Vorrat)" if take > 0.5 else "") for m, (need, take) in s["use"].items())
             L.append(f"- LW {s['von']:.0f}→{s['bis']:.0f}: {s['n']:.0f}× {s['rezept']} — {mats}")
+        sold = R["de_sold"][i]
+        if sold:
+            L += ["", "Beim Händler verkaufen (statt entzaubern): " + ", ".join(
+                f"{q:.0f}× {m} zu je {silber(ANKAUF[m][0])} = {silber(q * ANKAUF[m][0])}" for m, q in sold.items())]
         parts = de_parts[i]
         if parts:
             L += ["", "Entzaubern: " + ", ".join(f"{q:.0f}× {m}" for m, q in parts.items()) + " → erwartet " + fmt_bag(de_out[i], 1)
@@ -480,8 +661,12 @@ def main(OUT):
         bag = ceil_bag(bag)
         ah = {m: q for m, q in bag.items() if m not in VENDOR}
         ven = {m: q for m, q in bag.items() if m in VENDOR}
+        lehr = R["lehrer"][i]
         L += ["", f"Einkauf im AH: {fmt_bag(ah)} = {silber(cost(ah, P))} (derselbe Einkauf mit den 30-Tage-Medianen: {silber(cost(ah, P30))})",
-              f"Einkauf beim Händler: {fmt_bag(ven)} = {silber(cost(ven, P))}", ""]
+              f"Einkauf beim Händler: {fmt_bag(ven)} = {silber(cost(ven, P))}",
+              "Beim Lehrer: " + (", ".join(f"{n_} {silber(e['kosten'])} ({e['lehrer']}, ab {e['ab']:.0f})" if e["ab"] else
+                                           f"{n_} {silber(e['kosten'])} ({e['lehrer']})" for n_, e in lehr) or "–")
+              + f" = {silber(sum(e['kosten'] for _, e in lehr))}", ""]
 
     # 3. Lernstufen
     L += ["## 3. Lernstufen: wo die Quellen sich widersprechen", "",
@@ -511,8 +696,10 @@ def main(OUT):
     rest = {m: q for m, q in inv_end.items() if q > 0.3 and m not in DE and m != "Fine Leather Belt"}
     if rest:
         L += ["", "Dazu aus der Lederverarbeitung: " + ", ".join(f"{q:.0f} {m}" for m, q in rest.items()) + ". Heavy Leather braucht wow-professions erst ab LW 155."]
-    L += ["", "Produkte der Verzauberkunst (Zauberstäbe, Öle): Die Beta-Zahlen widersprechen sich (Händlerpreis Lesser Magic Wand seit Build 70245 1c, "
-          "AHledger-Rezeptseiten und Itemseiten mit verschiedenen Ständen; `data/rechnung/Produkte.csv`). Der Plan rechnet deshalb nicht damit; zum Start neu prüfen.", ""]
+    L += ["", "Produkte der Verzauberkunst (Zauberstäbe): Der Forever-Client zahlt beim Händler "
+          f"{silber(ANKAUF.get('Lesser Magic Wand', (0, ''))[0])} für den Geringen und {silber(ANKAUF.get('Greater Magic Wand', (0, ''))[0])} "
+          "für den Grossen Magiezauberstab (Gegenstands-Infos, Testlog 15.10.; der Verkauf von 11 grossen für 22s am 14.10. passt dazu). "
+          "Eine Patch-Notiz vom 01.10. nannte 1c (Widerspruch 21). Der Plan rechnet nur in der Variante von Abschnitt 9 damit; zum Start neu prüfen.", ""]
 
     # 6. Item-IDs
     L += ["## 6. Preisregeln (Break-even)", "",
@@ -533,10 +720,39 @@ def main(OUT):
           "- Entzaubern: Erwartungswert aus `Kreislauf.csv`; Greater Magic Essence zählt als 3 Lesser (wow-professions: Rechtsklick teilt sie).",
           "- Verzaubern: pro Punkt das Rezept mit den geringsten Kaufkosten; eigenes Material kostet nichts. Ob man ein Zielteil (Armschiene, Brust, Umhang, Stiefel, "
           "Zweihänder) braucht, sagt keine Forever-Quelle ausdrücklich (wow-professions erwähnt im Makro einen «optional target slot»).",
-          "- Lehrer: LW-Geselle Karolek, VZ-Geselle Godan (Orgrimmar; wow-professions, Icy Veins). Kosten der Ränge laut wow-professions ohne Einheit "
-          "(«Journeyman 5», bei Karolek «450»); Kosten der Rezepte nicht gefunden. Das Testlog misst beides (GELERNT, GELD).",
-          f"- Fangrate beim Angeln: {ANGELN_FAENGE_H:.0f} Fänge pro Stunde (Testlog 13.10., Stonebull Lake, Angeln 1–15). Im Brachland ungeprüft.",
+          "- Lehrer: Lernstufen und Kosten gemessen bei Kamari, Karolek, Jhag und Godan (Orgrimmar, Testlog 15.10., `data/kombi/lehrer.csv`): "
+          "Lehrling 10c, Geselle 5s (ab Stufe 10 und Fertigkeit 50), Rezepte 50c bis 25s. Lehrer in Thunder Bluff nicht gemessen. Rezepte ohne Eintrag "
+          "in der Liste (Light Leather, Light Armor Kit, Runed Copper Rod, Bracer - Inferior Stamina, Bracer - Minor Deflect) zählen mit 0; laut SeeMeta "
+          "kommt Minor Deflect mit dem Rang (https://seemeta.com/en/wow-forever/professions/enchanting, Stand 14.10.2026), im Spiel ungeprüft.",
+          "- Händler zahlt (Verkauf der Teile): Forever-Client (`data/preise/haendler_ankauf.csv`, Testlog 15.10.); für Teile ohne Messung "
+          "AHledger (Spalte «Händlerpreis (s)» in `Kreislauf.csv`), im Spiel ungeprüft. Viele hergestellte Teile zahlt der Forever-Händler "
+          "niedriger als Classic (z. B. Grosser Magiezauberstab 2s statt 15s 35c, Geprägte Lederhandschuhe 71c statt 1s 19c; Vergleich in "
+          "`docs/recherche/2026-10-15_haendlerpreise.md`).",
+          f"- Fangrate beim Angeln: {ANGELN_FAENGE_H:.0f} Fänge pro Stunde (Testlog 13.10., Stonebull Lake, Angeln 1–15: 14 Fänge, 13 Abstände in 349 s). Im Brachland ungeprüft.",
           "- Preise: Beta, Normal Horde US. Zum Start zählen die Preise des eigenen Realms (offene Entscheidung 4).", ""]
+
+    # 9. Variante Zauberstäbe
+    L += ["## 9. Variante: Verzauberkunst mit Zauberstäben (Vorschlag von Claude, nicht im Guide)", "",
+          "Idee: Der Geringe Magiezauberstab (ab VZ 10, 50c beim Lehrer) ist laut SeeMeta bis VZ 75 orange, der Grosse (ab VZ 70, 2s) bis 110 "
+          "(https://seemeta.com/en/wow-forever/professions/enchanting, Stand 14.10.2026; bei VZ 100 im Testlog 15.10. bestätigt: Geringer grün, "
+          "Grosser orange). Orange heisst: jede Herstellung gibt einen Punkt. Der Händler kauft die Stäbe zurück (Forever-Client: "
+          f"{silber(ANKAUF.get('Lesser Magic Wand', (0, ''))[0])} bzw. {silber(ANKAUF.get('Greater Magic Wand', (0, ''))[0])}). "
+          "Gleiche Lederverarbeitung wie oben; die Verzauberkunst nimmt pro Punkt das Billigste, Zauberstäbe eingeschlossen.", "",
+          "| Stufe | Einkauf | Lehrer | Händler zurück | netto | ohne Zauberstäbe netto |", "|---|---|---|---|---|---|"]
+    base = {x[0]: x for x in stufen_netto(vz, R["lehrer"])}
+    for st, c, l_, h, n in stufen_netto(R_STAB["vz"], R_STAB["lehrer"]):
+        L.append(f"| {st} | {silber(c)} | {silber(l_)} | {silber(h)} | {silber(n)} | {silber(base[st][4])} |")
+    L += ["", "Verzaubern in der Variante:", ""]
+    for i, st in enumerate(STUFEN):
+        used = R_STAB["vz"][i]["used"]
+        if used:
+            L.append(f"- Stufe {st[0]}: " + ", ".join(f"VZ {a:.0f}–{b:.0f} {anzahl(n)}× {rez}" for (a, b, rez), n in sorted(used.items())))
+    L += ["", "Was dafür spricht und was offen ist:", "",
+          "- Bei den eigenen Scan-Preisen vom 15.10. (Lesser Magic Essence 88c, Strange Dust 60c) kostet ein Punkt mit dem Geringen Stab netto "
+          "etwa 16c statt 60c, mit dem Grossen etwa 14c statt 1s 20c (Regeln in Abschnitt 6).",
+          "- Offen: ob die Farben in Forever so laufen (SeeMeta, nur bei VZ 100 geprüft; das Testlog schreibt jeden Farbwechsel), ob der Händlerpreis "
+          "zum Start bleibt (Widerspruch 21) und ob der Markt die nötigen Essenzen hat (am 15.10. rund 2500 Stück im Angebot).",
+          "- Entscheid beim Nutzer (offener Punkt 7: woher das Material für Verzauberkunst kommt).", ""]
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     open(OUT, "w", encoding="utf-8").write("\n".join(L) + "\n")
@@ -548,7 +764,8 @@ def main(OUT):
         bag = dict(st["buy"])
         for m, q in vz[i]["buy"].items():
             add(bag, m, q)
-        print(f"Stufe {st['stufe']}: kaufen {fmt_bag(bag)} = {silber(cost(bag, P))} | entzaubern {fmt_bag(de_parts[i])} -> {fmt_bag(de_out[i], 1)}")
+        print(f"Stufe {st['stufe']}: kaufen {fmt_bag(bag)} = {silber(cost(bag, P))} | entzaubern {fmt_bag(de_parts[i])} -> {fmt_bag(de_out[i], 1)}"
+              f" | Händler {fmt_bag(R['de_sold'][i])} | Lehrer {silber(sum(e['kosten'] for _, e in R['lehrer'][i]))}")
         for (von, bis, rez), n in sorted(vz[i]["used"].items()):
             print(f"   VZ {von:.0f}-{bis:.0f} {rez}: {n:.1f}")
     print(f"Rest: {fmt_bag(vz[-1]['stock'], 1)}")

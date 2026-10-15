@@ -4,7 +4,10 @@ rem ----------------------------------------------------------------------------
 rem  addons_verknuepfen.bat  (einmal ausfuehren)
 rem  Verknuepft die Addons aus diesem Repo mit dem AddOns-Ordner von WoW
 rem  (Verzeichnis-Verknuepfung, "Junction"). Danach genuegt "git pull" bzw.
-rem  aktualisieren.bat, und das Spiel hat die neue Version (im Spiel /reload).
+rem  aktualisieren.bat, und das Spiel hat die neue Version (im Spiel /reload;
+rem  einen neu verknuepften Ordner laedt das Spiel erst nach einem Neustart).
+rem  Seit 15.10.2026 (Entscheid Punkt 25) installiert Claude die Addons selbst:
+rem  dafuer stattdessen einmal kombi_einrichten.bat ausfuehren.
 rem
 rem  Aufruf: den Ordner  ...\_classic_beta_\Interface\AddOns  mit der Maus auf
 rem  diese Datei ziehen. Ohne Ordner wird der uebliche Pfad versucht oder
@@ -33,7 +36,7 @@ echo.
 set "ALT=%ADDONS%\_alt_kombi"
 for %%A in (KombiTestlog RXPGuides_KombiGuide RXPGuides_Kombi) do call :link %%A
 echo.
-echo Fertig. Im Spiel /reload eingeben oder das Spiel neu starten.
+echo Fertig. Das Spiel neu starten (neu verknuepfte Ordner laedt es erst dann).
 echo Klappt etwas nicht: Rechtsklick auf diese Datei, "Als Administrator ausfuehren".
 pause
 exit /b 0

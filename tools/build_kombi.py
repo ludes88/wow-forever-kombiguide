@@ -36,7 +36,9 @@ GRUPPEN = [
                  ("Guides/Forever/dungeon/Horde-12-22_Barrens.lua", ("12-17 The Barrens", "17-22 Stonetalon/Barrens/Ashenvale"))],
      "dungeons": True, "subgroup": "(WIP) Dungeon Guide 1-22"},
 ]
-LAST_NEXT = "RestedXP Forever Guide (H)\\22-24 Hillsbrad"
+LAST_NEXT = "RestedXP Forever Guide (H)\\22-24 Hillsbrad"   # nur, wenn RXPs #next keine Gruppe nennt (Speedrun-Route);
+# nennt RXP eine Gruppe (Dungeon-Route: «RestedXP Horde 22-30\\22-24 Hillsbrad», v4.11.23 Zeile 3190), bleibt sein Ziel
+# (Prüfbericht 15.10., A9; ob das Ziel im gekauften Guide existiert, ist ungeprüft: Test T5)
 ZONES = {"1412": "Mulgore", "1413": "The Barrens", "1454": "Orgrimmar", "1456": "Thunder Bluff"}
 
 
@@ -49,9 +51,16 @@ def show(path):
     return subprocess.run(["git", "-C", RXP, "show", f"{TAG}:{path}"], capture_output=True, text=True, check=True).stdout
 
 
+def anchor_mode(anker):
+    """'accept 96661 @softcore' -> ('accept 96661', 'softcore'): nur Schritte mit #softcore (bzw. #hardcore) zählen als
+    Treffer. Nötig, wenn RXP denselben Schritt für beide Modi führt (6-12 Mulgore: Kaga Wildhoof)."""
+    a, _, mode = anker.partition(" @")
+    return a.strip(), mode.strip() or None
+
+
 def anchor_regex(anker):
     """'accept 1656' -> Zeile '.accept 1656', 'label Name' -> '#label Name'."""
-    cmd, _, arg = anker.strip().partition(" ")
+    cmd, _, arg = anchor_mode(anker)[0].partition(" ")
     if cmd == "label":
         return rf"^\s*#label\s+{re.escape(arg.strip())}\s*$"
     return rf"^\s*\.{re.escape(cmd)}\s+{re.escape(arg.strip())}\b"
@@ -258,6 +267,10 @@ for r in dungeon_rows:
     if r["an"].strip().lower() not in ("ja", "nein"):
         raise SystemExit(f"data/kombi/dungeons.csv: '{r['kuerzel']}' braucht an = ja oder nein")
 
+# Zeilen mit Status «aus …» sind vorbereitet, aber nicht eingebaut (z. B. bis der Nutzer entscheidet, ob Schritte vor der
+# gespeicherten Stelle eines Testcharakters dazukommen dürfen; offene Entscheidung 11)
+aus = [r for r in plan if (r.get("status") or "").strip().lower().startswith("aus")]
+plan = [r for r in plan if r not in aus]
 # Zeilen mit gleichem Guide, Anker und Position bilden einen Block (Reihenfolge wie in der Tabelle)
 blocks = {}
 for row in plan:
@@ -284,8 +297,10 @@ for G in GRUPPEN:
                     l = f"#subgroup {G['subgroup']}"
                 elif re.match(r"^\s*#(defaultfor|beta)\b", l):
                     continue
-                elif re.match(r"^\s*#next\s+(?:[^;\n]*\\)?22-24 Hillsbrad\s*$", l):
+                elif re.match(r"^\s*#next\s+22-24 Hillsbrad\s*$", l):
                     l = f"#next {LAST_NEXT}"
+                elif re.match(r"^\s*#next\s+[^;\n]*\\22-24 Hillsbrad\s*$", l):
+                    report.append(f"{where}: #next bleibt wie bei RXP: {l.strip()[6:]}")
                 newhead.append(l)
             if G["dungeons"]:
                 steps, dropped, filtered, tags = resolve_dungeons(steps, DUNGEONS_ON, DUNGEONS_KNOWN, where, problems)
@@ -296,8 +311,9 @@ for G in GRUPPEN:
             for (gname, anker, pos), rows in blocks.items():
                 if gname != name:
                     continue
-                rx = anchor_regex(anker)
-                hits = [i for i, st in enumerate(steps) if any(re.search(rx, x) for x in st)]
+                rx, mode = anchor_regex(anker), anchor_mode(anker)[1]
+                hits = [i for i, st in enumerate(steps) if any(re.search(rx, x) for x in st)
+                        and (not mode or any(re.match(rf"^\s*#{mode}\b", x) for x in st))]
                 if len(hits) != 1:
                     problems.append(f"{where}: Anker '{anker}' {len(hits)}x gefunden")
                     continue
@@ -395,6 +411,8 @@ open(os.path.join(d, "RXPGuides_KombiGuide.toc"), "w", encoding="utf-8").write(
     "## Interface: 16001\n## Title: RXP Guides Kombiguide\n"
     "## Notes: Kombi-Guide " + VERSION + ": RXP-Route 1-22 (Basis " + TAG + "), Speedrun und Dungeon (WIP), mit Berufsschritten. CC BY-NC-SA 4.0\n"
     "## Author: ludes88\n## Version: " + VERSION + "-" + TAG + "\n## Dependencies: RXPGuides\n\nKombi_Guide.lua\n")
+if aus:
+    report.append("Vorbereitet, nicht eingebaut (Status «aus»): Plan-Zeilen " + ", ".join(r["nr"] for r in aus))
 print("\n".join(report))
 print("Probleme: " + ("; ".join(problems) if problems else "keine"))
 sys.exit(1 if problems else 0)
