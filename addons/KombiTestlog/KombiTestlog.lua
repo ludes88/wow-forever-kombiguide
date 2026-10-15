@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 15.10.2026, Version 3.6
+-- Stand 15.10.2026, Version 3.7
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -38,12 +38,19 @@
 --               stufen, ältere nur plan; höchstens 60 Scans. Ohne Verkäufernamen.
 --               Version 3.6: Preisstufen «Kupfer*Stück*davon lang*davon sehr lang» (Restlaufzeit-Band), dazu abnahme:
 --               was seit dem letzten Scan von den billigsten Angeboten fehlt («ID:weg:geschätzt gekauft»)
+--               Version 3.7: bei bekanntem Händlerpreis «ID:…:Angebote:Händlerpreis:Stück darunter:Kosten», dazu in der
+--               Zeile und im Chat die Gegenstände, die unter dem Händlerpreis angeboten werden (kaufen, beim Händler verkaufen)
 --   REZEPTE     beim Öffnen des Berufsfensters: gelernte Rezepte mit Reagenzien, Ergebnis und Farbe; danach nur
 --               Farbwechsel (Version 3.6). Daten in KombiTestlogDB.chars[Charakter].rezepte
 --   INVENTAR    Taschen beim Ein- und Ausloggen, Bank beim Öffnen und Schliessen (Version 3.6); Daten in chars, kontobank
 --   AH-POST     Briefe des Auktionshauses beim Öffnen des Briefkastens: verkauft, abgelaufen, gekauft (Version 3.6)
 --   AH-ANGEBOT  eigenes Angebot im Auktionshaus: Menge, Preis, Dauer, Pfand (Version 3.6). Daten in KombiTestlogDB.ahPost
 --
+--   DUNGEON     Betreten einer Instanz und Ende des Laufs: Dauer, XP, Kills, Geld, Beute, Tode (Version 3.7)
+--   Laufweg und XP pro Quelle (Version 3.7) schreiben keine Zeilen, nur Daten: chars[Charakter].weg und .xp
+--
+-- Version 3.7: Laufweg (alle 10 s, bei Stillstand alle 60 s), XP pro Quelle (Gegner mit Kreatur-ID und Stufe, Quest,
+-- sonst), Dungeon-Läufe, Pfand eines eigenen Angebots aus dem Geldabzug. Einzelheiten vor «Version 3.6: Empfehlungen».
 -- Version 3.6: Rezepte, Bestand (Taschen, Bank), AH-Post, eigene Angebote, Abnahme zwischen zwei AH-Scans, /tl tipp.
 -- Version 3.5: AH-Preisscan beim Öffnen des Auktionshauses (höchstens alle 15 Minuten) oder mit /tl ah.
 -- Version 3.4: Lehrerliste. Damit alle Einträge erscheinen, im Lehrerfenster den Filter auf alle drei Arten stellen
@@ -57,7 +64,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.6"
+local VERSION = "3.7"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -71,7 +78,7 @@ local DEFAULT_ITEMS = {
     2449,  -- Earthroot
     2589,  -- Linen Cloth
     6291,  -- Raw Brilliant Smallfish
-    2447,  -- Peacebloom (Classic-ID, in Forever ungeprüft)
+    2447,  -- Peacebloom (Classic-ID; im Spiel am 14.10. bestätigt)
     765,   -- Silverleaf (Classic-ID; im Spiel am 13.10. als «Silberblatt» bestätigt)
     785,   -- Mageroyal (Classic-ID, in Forever ungeprüft)
     2450,  -- Briarthorn (Classic-ID, in Forever ungeprüft)
@@ -178,6 +185,9 @@ local bankLast = {}        -- «Bank»/«Kontobank» -> zuletzt geschriebene Lis
 local mailToken = 0
 local postQueue = {}       -- eigene Angebote, die noch auf die Bestätigung warten
 local postWarnings = false -- AUCTION_HOUSE_POST_WARNING liess sich registrieren (Bestätigungsfenster erkennbar)
+-- Version 3.7: Laufweg, XP-Quellen, Dungeon-Läufe, Pfand aus dem Geldabzug. Alles in einer Tabelle, weil Lua 5.1
+-- höchstens 200 lokale Variablen auf der Datei-Ebene erlaubt (hier sind es schon gut 190).
+local W = { kills = 0, xpSum = 0, combatEnd = 0, inCombat = false, wegT = 0, deaths = 0, drops = {}, posts = {} }
 
 local function say(msg)
     DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg)
@@ -724,6 +734,7 @@ local function finishLoot()
     local r = lootRecord
     lootRecord = nil
     if #r.items > 0 then quietUntil = now() + 1.5 end
+    if W.run and not W.run.left then W.loot(r) end   -- Version 3.7: Beute im Dungeon
     if not db.auto then return end
     -- leeres Lootfenster ohne Quelle (kam am 13.10. oft vor dem Kürschnern): sagt nichts aus
     if not r.src and #r.items == 0 and r.money == 0 then return end
@@ -1365,13 +1376,24 @@ local function ahFinish()
     for id in pairs(s.items) do ids[#ids + 1] = id end
     table.sort(ids)
     local offset = ahBandOffset(s)
-    local all, plan, steps, stat = {}, {}, {}, {}
+    local all, plan, steps, stat, arb = {}, {}, {}, {}, {}
     for _, id in ipairs(ids) do
         local list = s.items[id]
         local lo, med, total = ahStats(list)
         lo, med = math.floor(lo + 0.5), math.floor(med + 0.5)
         stat[id] = { lo, med, total }
         local entry = string.format("%d:%.0f:%.0f:%d:%d", id, lo, med, total, #list)   -- %.0f: Kupfer über 2^31
+        -- Version 3.7: Händlerpreis und was darunter angeboten wird («…:Händlerpreis:Stück darunter:Kosten»)
+        local sp = W.sellPrice(id)
+        if sp and sp > 0 then
+            local under, cost = 0, 0
+            for _, e in ipairs(list) do   -- ahStats hat nach Preis pro Stück sortiert
+                if e[1] >= sp then break end
+                under, cost = under + e[2], cost + e[1] * e[2]
+            end
+            entry = entry .. string.format(":%d:%d:%.0f", sp, under, cost)
+            if under > 0 then arb[#arb + 1] = { id, under, sp * under - cost, cost } end
+        end
         all[#all + 1] = entry
         if watched(id) then
             plan[#plan + 1] = entry
@@ -1389,7 +1411,7 @@ local function ahFinish()
         zeit = s.epoch, datum = date("%Y-%m-%d %H:%M", s.epoch), realm = realm, fraktion = faction, region = region,
         client = build, angebote = s.n, gegenstaende = #ids, nurGebot = s.bidOnly, fehlend = s.missing, geheim = s.secret,
         dauer = math.floor(now() - s.t0 + 0.5), alle = table.concat(all, ";"), plan = table.concat(plan, ";"), stufen = steps,
-        baender = bandsText, bandVersatz = offset,
+        baender = bandsText, bandVersatz = offset, testlog = VERSION,
         bandRoh = s.bandMin and string.format("%d-%d", s.bandMin, s.bandMax) or nil,
     }
     -- Version 3.6: Abnahme seit dem letzten Scan desselben Markts. Beide Scans fast vollständig (fehlende Angebote sähen
@@ -1440,13 +1462,35 @@ local function ahFinish()
         warn = string.format(" | unvollständig: %d Angebote ohne Daten (Auktionshaus zu früh geschlossen?)", s.missing)
     end
     if s.secret > 0 then warn = warn .. string.format(" | %d Angebote mit geheimen Werten", s.secret) end
+    -- Version 3.7: Angebote unter dem Händlerpreis (kaufen und beim Händler verkaufen), die grössten Gewinne zuerst
+    local arbText = ""
+    if #arb > 0 then
+        table.sort(arb, function(a, b) return a[3] > b[3] end)
+        local sum, top = 0, {}
+        for i, a in ipairs(arb) do
+            sum = sum + a[3]
+            if i <= 5 then top[i] = string.format("%s %dx für %s, Gewinn %s", ahLabel(a[1]), a[2], money(math.floor(a[4] + 0.5)),
+                money(math.floor(a[3] + 0.5))) end
+        end
+        rec.unterHaendler = #arb
+        arbText = string.format(" | unter Händlerpreis: %d %s, Gewinn zusammen %s: %s", #arb,
+            (#arb == 1) and "Gegenstand" or "Gegenstände", money(math.floor(sum + 0.5)), table.concat(top, ", "))
+        W.arb = { top = top, n = #arb, sum = sum }
+    else
+        W.arb = nil
+    end
     -- die Abnahme steht vor der Preisliste (tools/ah_aus_testlog.py liest die Liste bis zum Zeilenende)
-    add("AH-SCAN", string.format("Scan %s | %s %s | Realm %s | %d Angebote, %d Gegenstände, %d nur mit Gebot, %d s%s%s | Tiefstpreis / Median / Stück: %s",
-        rec.datum, region, faction, realm, s.n, #ids, s.bidOnly, rec.dauer, warn, demandText,
+    add("AH-SCAN", string.format("Scan %s | %s %s | Realm %s | %d Angebote, %d Gegenstände, %d nur mit Gebot, %d s%s%s%s | Tiefstpreis / Median / Stück: %s",
+        rec.datum, region, faction, realm, s.n, #ids, s.bidOnly, rec.dauer, warn, demandText, arbText,
         (#parts > 0) and table.concat(parts, "; ") or "keine Plan-Gegenstände im Angebot"))
     local ex = stat[2318]
     say(string.format("AH-Scan fertig: %d Angebote, %d Gegenstände.%s", s.n, #ids,
         ex and string.format(" Leichtes Leder: Tiefstpreis %s, Median %s, %d Stück.", money(ex[1]), money(ex[2]), ex[3]) or ""))
+    if W.arb then
+        say(string.format("Unter Händlerpreis: %d %s, Gewinn zusammen %s (kaufen, beim Händler verkaufen). Grösste: %s",
+            W.arb.n, (W.arb.n == 1) and "Gegenstand" or "Gegenstände", money(math.floor(W.arb.sum + 0.5)),
+            table.concat(W.arb.top, "; ")))
+    end
     if not db.ahHinted then
         db.ahHinted = true
         say("Einmal prüfen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis pro Stück? Wenn nicht: /tl bug AH-Preis")
@@ -1866,15 +1910,18 @@ local DURATION_NAMES = { "AUCTION_DURATION_ONE", "AUCTION_DURATION_TWO", "AUCTIO
 
 local function postRecord(p, how)
     db.ahPost = db.ahPost or {}
-    table.insert(db.ahPost, { art = "angeboten", id = p.id, menge = p.qty, preis = p.price, je = p.per, dauer = p.duration,
-                              pfand = p.deposit, zeit = epoch(), bestaetigt = how })
+    local e = { art = "angeboten", id = p.id, menge = p.qty, preis = p.price, je = p.per, dauer = p.duration,
+                pfand = p.deposit, zeit = epoch(), bestaetigt = how }
+    table.insert(db.ahPost, e)
+    W.postDeposit(e)   -- Version 3.7: Pfand aus dem Geldabzug (CalculateCommodityDeposit meldete am 15.10. 0c, abgezogen wurde 1s)
     while #db.ahPost > AH_POST_KEEP do table.remove(db.ahPost, 1) end
     if not db.auto then return end
     local dname = p.duration and rawget(_G, DURATION_NAMES[p.duration] or "")
     add("AH-ANGEBOT", string.format("%sx %s zu %s je %s | Dauer %s | Pfand %s | %s", tostring(p.qty or "?"),
         p.id and idLabel(p.id) or "?", p.price and money(p.price) or "?", p.per,
         (type(dname) == "string" and not isSecret(dname)) and dname or tostring(p.duration or "?"),
-        p.deposit and money(p.deposit) or "?", how))
+        (e.pfand and money(e.pfand) or "?") .. ((e.pfandApi ~= nil and e.pfandApi ~= e.pfand)
+            and (" (Geldabzug; Spiel meldete " .. money(e.pfandApi) .. ")") or ""), how))
 end
 
 local function onPost(fn, item, duration, quantity, a, b)
@@ -1939,6 +1986,280 @@ local function postTick()
     end
 end
 
+-- Version 3.7: Laufweg, XP pro Quelle, Dungeon-Läufe, Pfand aus dem Geldabzug
+--
+-- Laufweg: alle 10 s eine Probe, wenn der Charakter sich bewegt hat, sonst höchstens alle 60 s. Gespeichert in
+--   KombiTestlogDB.chars[Charakter].weg als Text «Serverzeit Karte x y Stufe XP XP-für-die-Stufe Kills Zeichen» (x, y in Prozent wie
+--   im Protokoll; Kills = Gegner mit XP seit dem Einloggen; Zeichen: T Flug, D tot oder Geist, K Kampf, R erholt
+--   (Gasthaus/Stadt), I Instanz, «-» keines). «S Serverzeit Version» markiert ein neues Einloggen. Höchstens 30 000
+--   Proben pro Charakter (bei 10 s gut 80 Stunden), die älteste fällt weg. In einer Instanz ohne Kartenposition
+--   steht statt der Karte «I» und die Instanz-ID.
+-- XP pro Quelle: jede XP-Änderung (PLAYER_XP_UPDATE) mit Quelle: «Quest» (innerhalb 2 s nach QUEST_TURNED_IN),
+--   «Gegner» (im Kampf oder bis 5 s danach; Kreatur-ID und Stufe vom toten Ziel oder vom letzten Ziel der letzten
+--   10 s) oder «sonst» (Entdecken u. a.). Summiert in chars[Charakter].xp unter «Quelle:Kreatur:Gegnerstufe:Stufe»
+--   mit n und xp, dazu nE und xpE für die Fälle mit erholter XP (GetXPExhaustion vorher über 0; die XP sind dann
+--   meist doppelt). Ein Stufenaufstieg zählt die XP bis zur Stufe und die neuen XP zusammen.
+-- Dungeon-Läufe: Betreten einer Instanz (IsInInstance «party», «raid» oder «scenario», GetInstanceInfo) beginnt
+--   einen Lauf. Wer stirbt und von draussen zurückkommt, bleibt im selben Lauf, wenn er innerhalb von 10 Minuten
+--   dieselbe Instanz wieder betritt. Ende beim Verlassen (nach 10 Minuten draussen gilt der Zeitpunkt des
+--   Verlassens), beim Betreten einer anderen Instanz oder beim Ausloggen. Zeile DUNGEON beim Betreten und am Ende
+--   mit Dauer, Zeit draussen, XP, Kills, Geld, Beute, Tode, Stufe; Daten in KombiTestlogDB.dungeons (höchstens 500).
+-- Pfand: Ein Geldabzug im Auktionshaus bis 5 s vor oder nach einem eigenen Angebot gilt als dessen Pfand
+--   (Testlog 15.10.: CalculateCommodityDeposit meldete 0c, abgezogen wurde 1s). Weicht er vom Wert des Spiels ab,
+--   steht der Wert des Spiels in pfandApi.
+W.WEG_TAKT, W.WEG_RUHE, W.WEG_MAX = 10, 60, 30000
+W.RUN_PAUSE, W.DUNGEON_KEEP = 600, 500
+
+function W.val(name, ...)
+    local ok, v = callApi(name, ...)
+    if ok then return num(v) end
+    return nil
+end
+
+function W.yes(name, ...)
+    local ok, v = callApi(name, ...)
+    return ok and v == true
+end
+
+function W.creature(unit)
+    local ok, guid = callApi("UnitGUID", unit)
+    if not ok or type(guid) ~= "string" or isSecret(guid) then return nil end
+    local kind, id = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-")
+    if kind == "Creature" or kind == "Vehicle" then return tonumber(id) end
+    return nil
+end
+
+-- Ziel merken (beim Wechsel und bei jedem Takt), damit ein Kill auch ohne totes Ziel eine Kreatur hat
+function W.seeTarget()
+    local id = W.creature("target")
+    if not id then return end
+    W.target = { id = id, lvl = W.val("UnitLevel", "target"), t = now(), dead = W.yes("UnitIsDead", "target") }
+end
+
+function W.xpState()
+    return W.val("UnitXP", "player"), W.val("UnitXPMax", "player"), W.val("UnitLevel", "player")
+end
+
+function W.xpInit()
+    W.xpLast, W.maxLast, W.lvlLast = W.xpState()
+    W.restLast = W.val("GetXPExhaustion")
+end
+
+function W.xpBook(art, id, mlvl, lvl, gain, rested)
+    local c = charDB()
+    c.xp = c.xp or {}
+    local key = string.format("%s:%s:%s:%s", art, id and tostring(id) or "?", mlvl and tostring(mlvl) or "?", tostring(lvl))
+    local r = c.xp[key] or { n = 0, xp = 0, nE = 0, xpE = 0 }
+    r.n, r.xp = r.n + 1, r.xp + gain
+    if rested then r.nE, r.xpE = r.nE + 1, r.xpE + gain end
+    c.xp[key] = r
+end
+
+function W.xpUpdate()
+    local xp, mx, lvl = W.xpState()
+    if not (xp and mx and lvl) then return end
+    local gain
+    if W.xpLast and W.lvlLast and W.maxLast then
+        if lvl > W.lvlLast then
+            gain = (W.maxLast - W.xpLast) + xp   -- mehrere Stufen auf einmal: zu tief, kommt kaum vor
+        elseif lvl == W.lvlLast then
+            gain = xp - W.xpLast
+        end
+    end
+    local rested = (W.restLast or 0) > 0
+    local lvlBefore = W.lvlLast or lvl   -- Stufe, auf der die XP verdient wurden
+    W.xpLast, W.maxLast, W.lvlLast = xp, mx, lvl
+    W.restLast = W.val("GetXPExhaustion")
+    if not gain or gain <= 0 then return end
+    W.xpSum = W.xpSum + gain
+    local t = now()
+    -- Die Quelle erst 1 s später festlegen: QUEST_TURNED_IN kann nach PLAYER_XP_UPDATE kommen (Reihenfolge ungeprüft)
+    C_Timer.After(1, function()
+        if windows.questDone and math.abs(windows.questDone - t) < 2 then
+            W.xpBook("Quest", nil, nil, lvlBefore, gain, rested)
+        elseif W.inCombat or t - W.combatEnd < 5 then
+            W.kills = W.kills + 1
+            if W.run and not W.run.left then W.run.kills = W.run.kills + 1 end
+            local id, mlvl
+            if W.target and t - W.target.t < 10 then id, mlvl = W.target.id, W.target.lvl end
+            local now_id = W.creature("target")
+            if now_id and W.yes("UnitIsDead", "target") then id, mlvl = now_id, W.val("UnitLevel", "target") end
+            W.xpBook("Gegner", id, mlvl, lvlBefore, gain, rested)
+        else
+            W.xpBook("sonst", nil, nil, lvlBefore, gain, rested)
+        end
+    end)
+end
+
+-- Laufweg
+function W.flags()
+    local f = ""
+    if W.yes("UnitOnTaxi", "player") then f = f .. "T" end
+    if W.yes("UnitIsDeadOrGhost", "player") then f = f .. "D" end
+    if W.inCombat then f = f .. "K" end
+    if W.yes("IsResting") then f = f .. "R" end
+    if W.inst then f = f .. "I" end
+    return (f ~= "") and f or "-"
+end
+
+function W.wegPush(text)
+    local c = charDB()
+    c.weg = c.weg or {}
+    c.weg[#c.weg + 1] = text
+    while #c.weg > W.WEG_MAX do table.remove(c.weg, 1) end
+end
+
+function W.wegTick(force)
+    local t = epoch()
+    if not force and t - W.wegT < W.WEG_TAKT then return end
+    local m, x, y = playerPos()
+    local where, key
+    if m then
+        where = string.format("%d %.2f %.2f", m, x * 100, y * 100)
+        key = string.format("%d %.1f %.1f", m, x * 100, y * 100)
+    else
+        where = (W.inst and ("I" .. tostring(W.inst.id)) or "-") .. " - -"
+        key = where
+    end
+    if not force and key == W.wegKey and t - W.wegT < W.WEG_RUHE then return end
+    local xp, mx, lvl = W.xpState()
+    W.wegPush(string.format("%d %s %s %s %s %d %s", t, where, lvl and tostring(lvl) or "?", xp and tostring(xp) or "?",
+        mx and tostring(mx) or "?", W.kills, W.flags()))
+    W.wegT, W.wegKey = t, key
+end
+
+-- Dungeon-Läufe
+function W.instance()
+    local ok, inInst, itype = callApi("IsInInstance")
+    if not ok or not plain(itype) or not inInst then return nil end
+    if itype ~= "party" and itype ~= "raid" and itype ~= "scenario" then return nil end
+    local okI, name, _, diff, _, maxP, _, _, id = callApi("GetInstanceInfo")
+    if not okI then return { id = 0, name = "?", art = itype } end
+    return { id = num(id) or 0, name = (type(name) == "string" and not isSecret(name)) and name or "?", diff = num(diff),
+             max = num(maxP), art = itype }
+end
+
+function W.loot(r)
+    local run = W.run
+    run.beute = run.beute or {}
+    for _, s in ipairs(r.items) do
+        local n, id = s:match("^(%d+)x .*%((%d+)%)$")
+        if id then run.beute[id] = (run.beute[id] or 0) + tonumber(n) end
+    end
+    run.lootN = run.lootN + #r.items
+end
+
+function W.runStart(inst)
+    local xp, _, lvl = W.xpState()
+    W.run = { id = inst.id, name = inst.name, art = inst.art, diff = inst.diff, t0 = epoch(), draussen = 0, wieder = 0,
+              xp0 = W.xpSum, kills = 0, m0 = moneyLast, tode0 = W.deaths, lootN = 0, lvl0 = lvl, xpStand0 = xp,
+              gruppe = W.val("GetNumGroupMembers") or 0 }
+    add("DUNGEON", string.format("betreten %s (Instanz %s) | Gruppe %d", inst.name, tostring(inst.id), W.run.gruppe))
+end
+
+function W.runEnd(reason, ctx)
+    local r = W.run
+    if not r then return end
+    W.run = nil
+    local tEnd = r.left or epoch()
+    local _, _, lvl = W.xpState()
+    local geld = (moneyLast and r.m0) and (moneyLast - r.m0) or nil
+    local beute = {}
+    for id, n in pairs(r.beute or {}) do beute[#beute + 1] = id .. ":" .. n end
+    table.sort(beute)
+    local rec = { char = charKey(), id = r.id, name = r.name, art = r.art, diff = r.diff, start = r.t0,
+                  dauer = tEnd - r.t0, draussen = r.draussen, wieder = r.wieder, xp = W.xpSum - r.xp0, kills = r.kills,
+                  geld = geld, beute = table.concat(beute, ","), stapel = r.lootN, tode = W.deaths - r.tode0,
+                  stufe0 = r.lvl0, stufe1 = lvl or r.lvl0, xpStand0 = r.xpStand0, gruppe = r.gruppe, ende = reason,
+                  version = VERSION }
+    db.dungeons = db.dungeons or {}
+    table.insert(db.dungeons, rec)
+    while #db.dungeons > W.DUNGEON_KEEP do table.remove(db.dungeons, 1) end
+    local min = math.floor(rec.dauer / 60)
+    add("DUNGEON", string.format("Ende %s (Instanz %s) | %s | Dauer %d:%02d, davon draussen %d Min | XP +%d, Kills %d | "
+        .. "Geld %s | Beute %d Stapel | Tode %d | Stufe %s -> %s | Gruppe %d", r.name, tostring(r.id), reason, min,
+        rec.dauer % 60, math.floor(r.draussen / 60), rec.xp, rec.kills, geld and money(geld, true) or "?", rec.stapel,
+        rec.tode, tostring(rec.stufe0 or "?"), tostring(rec.stufe1 or "?"), rec.gruppe), true, ctx)
+end
+
+function W.dungeonTick()
+    local inst = W.instance()
+    W.inst = inst
+    local r = W.run
+    local t = epoch()
+    if inst then
+        if r and r.id == inst.id then
+            if r.left then
+                r.draussen, r.wieder, r.left = r.draussen + (t - r.left), r.wieder + 1, nil
+            end
+        else
+            if r then W.runEnd("andere Instanz") end
+            W.runStart(inst)
+        end
+    elseif r then
+        if not r.left then
+            r.left = t
+        elseif t - r.left > W.RUN_PAUSE then
+            W.runEnd("verlassen")
+        end
+    end
+end
+
+-- Pfand: Geldabzug und eigenes Angebot zusammenführen, egal in welcher Reihenfolge sie kommen
+function W.postDeposit(e)
+    local t = now()
+    for i, d in ipairs(W.drops) do
+        if t - d.t <= 5 then
+            table.remove(W.drops, i)
+            e.pfandApi, e.pfand = e.pfand, d.betrag
+            return
+        end
+    end
+    W.posts[#W.posts + 1] = { e = e, t = t }
+end
+
+function W.moneyDrop(betrag)
+    local t = now()
+    for i = #W.posts, 1, -1 do
+        if t - W.posts[i].t > 5 then table.remove(W.posts, i) end
+    end
+    local p = table.remove(W.posts, 1)
+    if p then
+        local e = p.e
+        if e.pfand ~= betrag then
+            e.pfandApi, e.pfand = e.pfand, betrag
+            if db.auto then
+                add("AH-ANGEBOT", string.format("Pfand laut Geldabzug %s (Spiel meldete %s) für %sx %s", money(betrag),
+                    e.pfandApi and money(e.pfandApi) or "?", tostring(e.menge or "?"), e.id and idLabel(e.id) or "?"))
+            end
+        end
+        return
+    end
+    if #postQueue > 0 then
+        W.drops[#W.drops + 1] = { betrag = betrag, t = t }
+        while #W.drops > 10 do table.remove(W.drops, 1) end
+    end
+end
+
+-- Händlerpreis nur für Gegenstände, deren Daten der Client schon hat (kein Abruf beim Server für tausende Gegenstände)
+function W.sellPrice(id)
+    if not (C_Item and C_Item.GetItemInfo) then return nil end
+    if C_Item.IsItemDataCachedByID then
+        local okC, cached = pcall(C_Item.IsItemDataCachedByID, id)
+        if okC and cached == false then return nil end
+    end
+    local ok, _, _, _, _, _, _, _, _, _, _, sell = pcall(C_Item.GetItemInfo, id)
+    if ok then return num(sell) end
+    return nil
+end
+
+function W.tick()
+    W.seeTarget()
+    W.restLast = W.val("GetXPExhaustion") or W.restLast   -- erholte XP vor dem nächsten Kill
+    W.dungeonTick()
+    W.wegTick()
+end
+
 -- Version 3.6: Empfehlungen anzeigen (KombiDaten: stand, zeit, markt, tipps, hinweise)
 local function ageText(sec)
     if type(sec) ~= "number" or sec < 0 then return nil end
@@ -1959,6 +2280,8 @@ local function tick()
         add("FEHLER", "AH-Angebot: " .. tostring(errP), false)
     end
     checkRXP()
+    local okW, errW = pcall(W.tick)   -- Version 3.7
+    if not okW then add("FEHLER", "Laufweg/Dungeon: " .. tostring(errW), false) end
     lastContext = context()
     local m = bestMap()
     if m and not (db.maps and db.maps[m]) then logMap(m) end
@@ -2033,6 +2356,24 @@ local function showTips(arg)
     local age = ageText(num(d.zeit) and (epoch() - d.zeit) or nil)
     local head = string.format("Empfehlungen vom %s%s%s", tostring(d.stand or "?"), age and (", vor " .. age) or "",
         d.markt and (" (" .. tostring(d.markt) .. ")") or "")
+    -- Version 3.7: nächster Schritt für diesen Charakter (KombiDaten.schritte["Name-Realm"])
+    local mine = type(d.schritte) == "table" and d.schritte[charKey()] or nil
+    if type(mine) == "table" and #mine > 0 then
+        if arg == "alle" then
+            local buf = { "Nächster Schritt für dich (" .. tostring(d.stand or "?") .. "):" }
+            for _, z in ipairs(mine) do buf[#buf + 1] = "- " .. tostring(z) end
+            buf[#buf + 1] = ""
+            buf[#buf + 1] = head
+            for i, t in ipairs(d.tipps) do buf[#buf + 1] = i .. ". " .. tostring(t) end
+            if type(d.hinweise) == "table" then
+                for _, h in ipairs(d.hinweise) do buf[#buf + 1] = "Hinweis: " .. tostring(h) end
+            end
+            showText(table.concat(buf, "\n"), "Empfehlungen von Claude (Strg+A, Strg+C zum Kopieren)")
+            return
+        end
+        say("Nächster Schritt für dich:")
+        for _, z in ipairs(mine) do say("- " .. tostring(z)) end
+    end
     if #d.tipps == 0 then
         say(head .. ": noch keine Empfehlung mit Beleg.")
         if type(d.hinweise) == "table" and d.hinweise[1] then say("Hinweis: " .. tostring(d.hinweise[1])) end
@@ -2153,6 +2494,10 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
             (#profs > 0) and table.concat(profs, ", ") or "noch keine (Berufsfenster öffnen)",
             c.bank and date("%d.%m. %H:%M", c.bank.zeit) or "noch nie (Bank öffnen)", #(db.ahPost or {}),
             tipsData() and tostring(tipsData().stand) or "keine"))
+        local nx = 0
+        for _ in pairs(c.xp or {}) do nx = nx + 1 end
+        say(string.format("Laufweg: %d Proben · XP-Quellen: %d · Dungeon-Läufe: %d%s", #(c.weg or {}), nx,
+            #(db.dungeons or {}), W.run and (" · jetzt in " .. tostring(W.run.name)) or ""))
     elseif lower == "leeren" then
         if string.lower(rest) == "ja" then
             wipe(db.log)
@@ -2190,8 +2535,10 @@ local function beginLogging()
     sessionStart()
     inventoryBags("beim Einloggen")
     local tips = tipsData()
-    if tips and #tips.tipps > 0 then
-        say(string.format("Empfehlungen geladen: %d Tipps vom %s. Anzeigen: /tl tipp", #tips.tipps, tostring(tips.stand or "?")))
+    local mine = tips and type(tips.schritte) == "table" and tips.schritte[charKey()] or nil
+    if tips and (#tips.tipps > 0 or (type(mine) == "table" and #mine > 0)) then
+        say(string.format("Empfehlungen geladen: %d Tipps%s vom %s. Anzeigen: /tl tipp", #tips.tipps,
+            (type(mine) == "table" and #mine > 0) and (" und " .. #mine .. " Schritte für dich") or "", tostring(tips.stand or "?")))
     end
     if #missingEvents > 0 then
         table.sort(missingEvents)
@@ -2199,6 +2546,10 @@ local function beginLogging()
     end
     lastContext = context()
     logMap(bestMap())
+    W.xpInit()   -- Version 3.7
+    W.wegPush(string.format("S %d %s", epoch(), VERSION))
+    W.dungeonTick()
+    W.wegTick(true)
     C_Timer.NewTicker(2, function()
         local ok, err = pcall(tick)
         if not ok then add("FEHLER", "tick: " .. tostring(err), false) end
@@ -2231,6 +2582,7 @@ function handlers.PLAYER_LOGOUT()
     finishLoot()
     finishSession("Ausloggen")
     if ready then inventoryBags("beim Ausloggen", lastContext) end   -- Version 3.6: letzter bekannter Taschenbestand
+    if W.run then W.runEnd("Ausloggen", lastContext) end              -- Version 3.7
     add("ENDE", nil, true, lastContext)
 end
 
@@ -2267,8 +2619,18 @@ function handlers.QUEST_TURNED_IN(questID, xpReward, moneyReward)
 end
 
 function handlers.PLAYER_DEAD()
+    W.deaths = W.deaths + 1   -- Version 3.7: Tode pro Dungeon-Lauf
     if db.auto then add("TOD", nil) end
 end
+
+-- Version 3.7: XP pro Quelle, Kampf, Ziel
+function handlers.PLAYER_XP_UPDATE(unit)
+    if unit and (isSecret(unit) or unit ~= "player") then return end
+    if ready then W.xpUpdate() end
+end
+function handlers.PLAYER_REGEN_DISABLED() W.inCombat = true end
+function handlers.PLAYER_REGEN_ENABLED() W.inCombat, W.combatEnd = false, now() end
+function handlers.PLAYER_TARGET_CHANGED() if ready then W.seeTarget() end end
 
 function handlers.BAG_UPDATE_DELAYED()
     local diff = bagDiff()
@@ -2361,6 +2723,7 @@ function handlers.PLAYER_MONEY()
     local d = m - (moneyLast or m)
     moneyLast = m
     if d == 0 then return end
+    if d < 0 then W.moneyDrop(-d) end   -- Version 3.7: Pfand eines eigenen Angebots?
     if lootRecord then
         lootRecord.money = lootRecord.money + d
         return

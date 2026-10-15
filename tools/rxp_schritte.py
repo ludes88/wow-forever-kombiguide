@@ -3,7 +3,8 @@
 # Aufruf:
 #   python3 tools/rxp_schritte.py liste <Quelle> "<Guide-Name>" [--klasse druid] [--rasse tauren] [--von N] [--bis M] [--dungeons RFC,WC]
 #   python3 tools/rxp_schritte.py vergleich <alte Quelle> <neue Quelle> "<Guide-Name>" --stelle N [--klasse ...] [--rasse ...]
-#       Exit 1, wenn sich einer der Schritte 1..N in Zeilennummer, Kopf oder Inhalt ändert (dann fände RXP die Stelle nicht mehr).
+#       Exit 1, wenn sich einer der Schritte 1..N in der Zeilennummer verschiebt (dann fände RXP die Stelle nicht mehr sicher);
+#       geänderter Inhalt bei gleicher Zeile wird nur gemeldet (RXP findet die Stelle über die Zeilennummer, Best Practice §6).
 #   --gruppe: nur Guides dieser Gruppe (Kombi_Guide.lua enthält jeden Guide-Namen zweimal: «Kombiguide (H)» zuerst, dann
 #       «Kombiguide Dungeon (H)»). Ohne die Angabe gilt der erste Guide mit dem Namen.
 #   --dungeons: eingeschaltete Dungeons (Kürzel wie in RXP, z. B. RFC,WC,BFD). Ohne die Angabe sind alle aus, wie in Forever:

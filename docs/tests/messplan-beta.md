@@ -1,13 +1,41 @@
 # Messplan Beta: Daten mit den Druiden sammeln (14.–22.10.2026)
 
-Stand 15.10.2026. Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
+Stand 15.10.2026 (spät). Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
 
 Jede Messung beantwortet eine offene Frage im Plan. Bei jeder steht, welche Zahl sie ersetzt. Ob, welche und wann gemessen wird, entscheidest du. Die Reihenfolge unten ist ein Vorschlag.
 
 Grundlagen:
 - Goldquellen und Rechnungen: `docs/recherche/2026-10-14_goldquellen.md`
 - Pläne: `docs/plan/berufe-plan.md`, `docs/plan/mengen-leder.md`
-- Tests T3–T12: Best Practice §10
+- Tests T0–T28: Best Practice §10
+
+## Ab 16.10.: der Stufe-8-Druide bis Orgrimmar oder weiter (Vorschlag von Claude, 15.10. spät)
+
+Dein Plan (15.10.): «ich spiele ab jetzt den level 8er bis sicher og oder weiter. umso mehr ich spiele umso genauer». Dein Ziel: herausfinden, was den Kreislauf verbessert und wie effizient es wirklich geht. Seit Testlog 3.7 schreibt das Testlog fast alles selbst; die Liste sagt, wo ein paar Handgriffe viel bringen. Reihenfolge und Umfang entscheidest du; Dauern habe ich keine gemessenen, darum stehen keine da.
+
+**Einmal vorher (T28):** Im Ordner `World of Warcraft\_classic_beta_` liegt `KombiEinrichten.bat` (Kopie von `tools/windows/kombi_einrichten.bat`). Doppelklick. Sie entfernt die drei Verknüpfungen auf deinen Repo-Klon und holt die neuen Addon-Ordner (Testlog 3.7, Kombi-Guide 0.5.2), die ich nach `_classic_beta_\_kombi_neu` gelegt habe. Danach das Spiel starten. SITZUNG zeigt «Testlog 3.7», «Kombiguide 0.5.2-v4.11.23» und «KombiDaten …». Ab dann schreibe ich neue Versionen direkt, und bei dir reicht `/reload`.
+
+**Beim Spielen (alles automatisch, ausser wo «du» steht)**
+
+| Was | Wo | Was zurückkommt | Wofür |
+|---|---|---|---|
+| Normal nach dem Kombi-Guide leveln; welche Gruppe, entscheidest du (offener Punkt 29) | überall | Laufweg alle 10 s, XP pro Gegner und Quest, Tode, Zeit im Kampf, auf dem Weg, auf Flügen (T23) | Stufen und XP pro Stunde pro Gebiet; welche Gegner sich lohnen; wo Zeit verloren geht |
+| Jedes Tier kürschnern, Kräuter am Weg | Mulgore, Brachland | SAMMELN mit Kreatur, Beute, Zeit; Leder-Zähler gegen das Modell (T9) | Sweetspot und Farm-Stopp S1 (M6) |
+| Du: an jedem Auktionshaus kurz öffnen und warten, bis «AH-Scan fertig» kommt | Thunder Bluff, Orgrimmar | Preise, Abnahme seit dem letzten Scan, Händlerpreise und Angebote darunter (T20, T26) | Ab drei Scans an zwei Tagen gibt `/tl tipp` Kauf- und Verkaufstipps mit Beleg; jeder weitere Scan macht die Abnahme genauer |
+| Du: `/tl tipp` lesen | jederzeit | – | Was sich gerade lohnt und der nächste Berufsschritt (T27) |
+| Du: Briefkasten öffnen, wenn du an einem vorbeikommst | Städte | AH-Post (T16) | Belege für eigene Verkäufe |
+| Berufswechsel nach dem Guide (Verlernen, LW 1–80, VZ 1–50, Gesellen) | Orgrimmar, etwa Stufe 16 | Zeit, Kosten, Punkte pro Rezept, Farbwechsel (HERSTELLEN, REZEPTE, GELD; M5, T11) | Ob der Sweetspot (62 Leichtes Leder) reicht und was die Sitzung kostet; Entscheid 22 |
+| Du: nach dem Lehrling Verzauberkunst einmal das Berufsfenster öffnen | Orgrimmar | REZEPTE zeigt, ob «Armschiene - Schwache Abwehr» mit dem Rang kommt | Minor Deflect (Widerspruch 17, SeeMeta) |
+| Du, wenn du magst: 5 Geringe Magiezauberstäbe (ab VZ 10, 50c) herstellen und beim Händler verkaufen | Orgrimmar | Farbe des Rezepts pro Fertigkeit und Händlerpreis (REZEPTE, HÄNDLER) | Variante Zauberstäbe (offener Punkt 28): ist der Stab bis VZ 75 orange, zahlt der Händler 1s 10c? |
+| Ein Dungeon, falls es passt (RFC oder WC) | – | DUNGEON mit Dauer, XP, Beute, Toden, Gruppe (T24) | Dungeon-Route gegen Speedrun-Route (offene Punkte 23, 24) |
+| Du, wenn du magst: 20 Minuten angeln | Stonebull Lake oder Lushwater Oasis | ANGELN mit Würfen pro Fang (M3) | Angeln als Goldquelle (offener Punkt 9) |
+
+**Am Schluss:** `/reload` und hier «fertig» schreiben. Ich werte aus (`tools/spiel_aus_testlog.py`, `tools/markt.py`, `tools/ah_aus_testlog.py`), führe zusammen und schreibe die neuen Tipps ins Spiel.
+
+**Mit dem Stufe-18-Charakter, wenn du ihn einloggst (Tipps vom 15.10., Scan 22:15; Preise prüfen):**
+- Für den Händler herstellen: Leichte Lederhose (gelb bei LW 109): Der Händler zahlt 5s 99c, das Material kostete im Scan 5s 65c. Lohnt, solange Leichtes Leder höchstens 38c kostet; gibt dazu Punkte bis LW 115 (`/tl tipp`).
+- Geschmeidigen leichten Balg selbst herstellen (1 Leichter Balg und 1 Salz; du hast 27 Salz) statt im AH kaufen.
+- Bei VZ 100: der Plan sagt 9× Umhang - Schwacher Schutz bis 109; billiger wäre der Grosse Magiezauberstab (orange bei VZ 100, der Händler zahlt 2s; netto etwa 14c statt 1s 20c je Punkt, Vorschlag, offener Punkt 28).
 
 ## Kurzliste bis 22.10. (Vorschlag von Claude, 15.10.)
 
@@ -85,7 +113,7 @@ Für die Messungen braucht es den Kombi-Guide nicht. Wer ihn auf einem Messchara
 - Ab welcher Fertigkeit lässt sich ein Rezept lernen? Die Quellen widersprechen sich:
   - Widersprüche 17 und 20 (Best Practice §9)
   - AHledgers Farben könnten berechnet sein (`2026-10-14_goldquellen.md` §5)
-- Was kosten Geselle, Rezepte und Druidenzauber pro Stufe? Im Guide steht bisher «Kosten ungeprüft».
+- Was kosten Geselle, Rezepte und Druidenzauber pro Stufe? (Berufe in Orgrimmar gemessen 15.10.; Thunder Bluff und Druidenzauber offen.)
 - Führt ein Lehrer Barbaric Bracers, Mystic Medium Armor Kit oder Heavy Armor Kit?
 
 **Ablauf**
@@ -120,7 +148,7 @@ Pro Lehrer und Sitzung schreibt das Testlog eine Zeile. Darin steht jeder Eintra
 
 ## M2 Gold pro Stufe
 
-**Frage:** Wie viel Gold hat ein Druide auf Stufe 16 (Orgrimmar) und 20 (Thunder Bluff)? Reicht es für Stufe B schon in Orgrimmar (etwa 1g 68s, Beta)?
+**Frage:** Wie viel Gold hat ein Druide auf Stufe 16 (Orgrimmar) und 20 (Thunder Bluff)? Reicht es für Stufe B schon in Orgrimmar? (Plan, Beta-Preise: Stufe A etwa 41s Material und 18s Lehrer, Stufe B etwa 1g 68s Material und 8s 50c Lehrer; `docs/plan/berufe-plan.md`.)
 
 **Ablauf**
 - Jeden Druiden einmal einloggen. SITZUNG schreibt Stufe und Geld von selbst.
@@ -152,7 +180,7 @@ Quest-Geld kommt nebenbei aus jeder Sitzung (QUEST AB mit Geld). Am 13.10. gaben
 **Ersetzt**
 - Fangrate und Deviate-Anteil in `tools/plan_berufe.py`: `ANGELN_FAENGE_H` (Stonebull Lake, Mulgore) und `DEVIATE_ANTEIL` (AHledger 35 % von 153)
 - Damit die Rechnung «Angeln pro Stunde» (berufe-plan §1 und §6) und die offene Entscheidung 9 (Angelzeit)
-- Grundlage für Kombi-Guide v0.5 (Angeln als Goldquelle)
+- Grundlage für Kombi-Guide v0.6 (Angeln als Goldquelle)
 
 ## M4 Kräuter und Frilled Lichen im Südbrachland
 
