@@ -1,6 +1,6 @@
 # Messplan Beta: Daten mit den Druiden sammeln (14.–22.10.2026)
 
-Stand 14.10.2026. Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
+Stand 15.10.2026. Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
 
 Jede Messung beantwortet eine offene Frage im Plan. Bei jeder steht, welche Zahl sie ersetzt. Ob, welche und wann gemessen wird, entscheidest du. Die Reihenfolge unten ist ein Vorschlag.
 
@@ -9,32 +9,57 @@ Grundlagen:
 - Pläne: `docs/plan/berufe-plan.md`, `docs/plan/mengen-leder.md`
 - Tests T3–T12: Best Practice §10
 
+## Kurzliste bis 22.10. (Vorschlag von Claude, 15.10.)
+
+Du willst in der Beta nur noch wenig spielen, damit die Lust zum Start bleibt (15.10.). Die Liste nimmt nur, was der Plan zum Start braucht und was sich beim Spielen zum Start nicht ohnehin nebenbei misst. Was du davon machst, entscheidest du.
+
+Vorher einmal: `aktualisieren.bat`, dann `/reload`. Die Zeile SITZUNG zeigt «Testlog 3.5».
+
+**Sitzung 1, etwa 2 Stunden (Schätzung aus den Dauern unten): ein Druide auf Stufe 15–16 mit Kürschnerei, Kräuterkunde und Angeln, der Kürschnerei und Kräuterkunde verlernen darf**
+1. Orgrimmar: das Auktionshaus öffnen. Der AH-Scan läuft von selbst. Offen lassen, bis «AH-Scan fertig» im Chat steht, und einmal vergleichen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis? Steht stattdessen «übersprungen» oder kommt nichts: `/tl ah`. (M11, T15)
+2. Orgrimmar: Berufswechsel mit dem Kombi-Guide («12-17 The Barrens», Block nach «SpiritsPickup», in der Schrittliste direkt wählbar) oder von Hand nach `docs/plan/berufe-plan.md` §2, Stufe A. So weit Material und Gold reichen, kein Leder extra farmen. Bei Kamari, Karolek, Jhag und Godan im Lehrerfenster den Filter einmal auf alle drei Arten stellen. (M5, M1, T11)
+3. Lushwater Oasis im Brachland (etwa 46.8, 39.4; aus RXP umgerechnet, im Spiel ungeprüft): 30 Minuten angeln. (M3)
+4. Danach jeden anderen Druiden einmal einloggen und wieder aus. (M2)
+
+**Sitzung 2, wenn du magst (Schritt 5 etwa 10 Minuten, 6 etwa 10 Minuten mit Wegen, 7 30 Minuten; geschätzt)**
+5. Ein Druide auf Stufe 21–22: im Kombi-Guide «17-22» die letzten Schritte wählen, in den gekauften Guide wechseln, ein paar Schritte gehen, zurück in den Kombi-Guide und wieder in den gekauften. Steht er noch am selben Schritt? (M9, T5, T14)
+6. Der Druide aus Sitzung 1 in Thunder Bluff: Lehrerfenster von Una (Lederverarbeitung, Experte) sowie Mot und Teg Dawnstrider (Verzauberkunst), Filter auf alle drei Arten; dort nochmals das Auktionshaus öffnen, als zweiter Scan an einem anderen Tag. (M1, M11)
+7. Nur mit einem Druiden mit Kräuterkunde ab 70: 30 Minuten Kräuter im Südbrachland, dazu `/tl M4 Bountiful Harvest Rang <Zahl oder keiner>`. (M4)
+
+Weggelassen, weil es beim Spielen zum Start ohnehin mitläuft oder teuer ist: M6 (Farm-Stopp S1), M7 (Armor Kits), M8 (Orte), M10 (Sitzung in Thunder Bluff).
+
+**Nach jeder Sitzung**
+- `/reload` oder ausloggen. Erst dann schreibt WoW die Datei.
+- Ist dieser Chat mit deinem PC verbunden und der PC an: «fertig» schreiben, ich lese die Datei selbst. Sonst die Datei `World of Warcraft\_classic_beta_\WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua` im Chat anhängen. Sie enthält alles, auch die AH-Scans.
+- Notizen braucht es keine, ausser in Schritt 7. Wenn etwas nicht stimmt: `/tl bug <was>`.
+
 ## So läuft eine Messung
 
-1. `aktualisieren.bat`, dann `/reload`. SITZUNG zeigt «Testlog 3.4». Neu darin: die Zeile LEHRER, die beim Öffnen eines Lehrerfensters die ganze Liste schreibt.
+1. `aktualisieren.bat`, dann `/reload`. SITZUNG zeigt «Testlog 3.5». Seit 3.4: die Zeile LEHRER, die beim Öffnen eines Lehrerfensters die ganze Liste schreibt. Neu in 3.5: AH-SCAN beim Öffnen des Auktionshauses (M11).
 2. Zu Beginn `/tl M3 Start`, am Ende `/tl M3 Ende` (mit der Nummer der Messung). Die Notiz schreibt Ort, Stufe und Berufe dazu. So finde ich die Abschnitte im Protokoll.
-3. Spielen wie unten beschrieben. Das Testlog schreibt das meiste selbst: SAMMELN, ANGELN, HERSTELLEN, ENTZAUBERN, LEHRER, GELD, QUEST AB, BERUF.
-4. Danach das Protokoll schicken:
-   - `/tl zeigen` zeigt die letzten 1000 Einträge zum Kopieren.
-   - Bei langen Sitzungen besser die Datei `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`.
-   - Die Datei enthält Charakternamen. Sie kommt nicht ins Repo; ich übernehme nur die Zahlen.
+3. Spielen wie unten beschrieben. Das Testlog schreibt das meiste selbst: SAMMELN, ANGELN, HERSTELLEN, ENTZAUBERN, LEHRER, GELD, QUEST AB, BERUF, AH-SCAN.
+4. Danach `/reload` und das Protokoll schicken:
+   - Am besten die Datei `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`; nur sie enthält die AH-Scans ganz. Ist der Chat mit deinem PC verbunden, lese ich sie selbst.
+   - Notfalls `/tl zeigen`: die letzten 1000 Einträge zum Kopieren (vom AH-Scan nur die Plan-Gegenstände, ohne Preisstufen).
+   - Die Datei enthält Charakter- und Realmnamen. Sie kommt nicht ins Repo; ich übernehme nur die Zahlen.
 
 Für die Messungen braucht es den Kombi-Guide nicht. Wer ihn auf einem Messcharakter lädt, speichert dort eine eigene Stelle. Welche Stellen bei einem Neubau erhalten bleiben müssen, ist offen (`docs/entscheidungen.md`, Punkte 11 und 14).
 
 ## Übersicht
 
-| Nr. | Frage | Druide | Dauer | Vorschlag |
+| Nr. | Frage | Druide | Dauer | Kurzliste (15.10.) |
 |---|---|---|---|---|
-| M1 | Lehrerlisten: Lernstufen, Kosten, was lernbar ist | jeder, der an einem Lehrer vorbeikommt | 1–2 Min pro Lehrer | zuerst |
-| M2 | Gold pro Stufe | alle Druiden | 1 Min pro Druide | zuerst |
-| M3 | Angeln an der Lushwater Oasis | ab etwa Stufe 14, mit Angeln | 30 Min | zuerst |
-| M4 | Kräuter und Frilled Lichen im Südbrachland | Stufe 16–22, Kräuterkunde ab 70 | 30 Min, dazu Route | zuerst |
-| M5 | Sitzung in Orgrimmar (T11) | ab Stufe 10; darf die Berufe wechseln | 60 Min | danach |
-| M6 | Farm-Stopp S1 (T10) | Stufe 13–16, mit Kürschnerei | 20 Min | danach |
-| M7 | Medium Armor Kit und Mystic Medium Armor Kit | LW 50–105 | 20 Min | wenn Zeit |
-| M8 | Orte und Widersprüche vor Ort (T8) | jeder | nebenbei | wenn Zeit |
-| M9 | Ende von «17-22» und Sprung in den gekauften Guide (T5), Stellen mit `#completewith` (T3) | Stufe 21–22 | 10 Min | wenn Zeit |
-| M10 | Sitzung in Thunder Bluff (T12) | Stufe 20, LW etwa 80 und VZ etwa 50 | 60 Min | wenn Zeit |
+| M1 | Lehrerlisten: Lernstufen, Kosten, was lernbar ist | jeder, der an einem Lehrer vorbeikommt | 1–2 Min pro Lehrer | Sitzung 1 und 2 |
+| M2 | Gold pro Stufe | alle Druiden | 1 Min pro Druide | Sitzung 1 |
+| M3 | Angeln an der Lushwater Oasis | ab etwa Stufe 14, mit Angeln | 30 Min | Sitzung 1 |
+| M4 | Kräuter und Frilled Lichen im Südbrachland | Stufe 16–22, Kräuterkunde ab 70 | 30 Min, dazu Route | Sitzung 2, wenn es den Druiden gibt |
+| M5 | Sitzung in Orgrimmar (T11) | ab Stufe 10; darf die Berufe wechseln | 60 Min | Sitzung 1 |
+| M6 | Farm-Stopp S1 (T10) | Stufe 13–16, mit Kürschnerei | 20 Min | weggelassen |
+| M7 | Medium Armor Kit und Mystic Medium Armor Kit | LW 50–105 | 20 Min | weggelassen |
+| M8 | Orte und Widersprüche vor Ort (T8) | jeder | nebenbei | weggelassen |
+| M9 | Ende von «17-22» und Sprung in den gekauften Guide (T5), Wechsel hin und zurück (T14), Stellen mit `#completewith` (T3) | Stufe 21–22 | 10 Min | Sitzung 2 |
+| M10 | Sitzung in Thunder Bluff (T12) | Stufe 20, LW etwa 80 und VZ etwa 50 | 60 Min | weggelassen |
+| M11 | AH-Scan (T15) | jeder, am Auktionshaus | ungeprüft (Schätzung: 1–2 Min) | Sitzung 1 und 2 |
 
 ## M1 Lehrerlisten (Testlog 3.4)
 
@@ -218,6 +243,7 @@ Nebenbei, wenn ein Druide vorbeikommt: neben die Person stellen und `/tl M8 <Nam
 - Ein Druide auf Stufe 21–22 lädt in RXP «Kombiguide (H)» → «17-22» und wählt in der Schrittliste die letzten Schritte.
 - Erwartet: Nach dem letzten Schritt springt RXP in den gekauften Guide «22-24 Hillsbrad», oder es kommt eine klare Meldung.
 - Bei Problemen `/tl bug <was>`.
+- T14: Nach ein paar Schritten im gekauften Guide zurück in den Kombi-Guide und wieder in den gekauften wechseln. Erwartet: RXP steht im gekauften Guide am selben Schritt (RXP speichert die Stelle pro Guide, `RXPCData.guideProgress`, Best Practice §3). Das braucht es für Berufs-Halte nach Stufe 22 (Weg B, offene Entscheidung 18).
 - T3 nebenbei: Bleibt irgendwo ein Schritt hängen, an dem ein Kombi-Schritt neben einem RXP-Schritt mit `#completewith` steht, `/tl bug` mit der Schrittnummer.
 
 ## M10 Sitzung in Thunder Bluff (T12)
@@ -229,9 +255,25 @@ Nebenbei, wenn ein Druide vorbeikommt: neben die Person stellen und `/tl M8 <Nam
 - Dazu Dauer und Kosten der Stufen B–D.
 - Teuer: Stufe D allein kostet in der Beta etwa 7g 38s.
 
+## M11 AH-Scan (Testlog 3.5, T15)
+
+**Frage**
+- Läuft der Scan im Spiel? Ungeprüft sind: ob der Index bei 0 oder 1 beginnt (das Testlog erkennt es selbst), ob der Sofortkaufpreis für das ganze Angebot gilt (Preis pro Stück = Sofortkauf durch Anzahl), wie lange der Scan dauert und wie lange der Server danach sperrt.
+- Bleiben die Scans über Ausloggen und Tage erhalten? Daraus kommen die Wochenpreise.
+
+**Ablauf**
+- Das Auktionshaus öffnen. Der Scan läuft von selbst, höchstens alle 15 Minuten (so oft wie der Auto-Scan von AHledger, https://www.curseforge.com/wow/addons/ahledger; wie lange der Server sperrt, steht dort nicht). Die 15 Minuten gelten fürs ganze Konto: Hat ein anderer Charakter gerade gescannt, meldet der Chat «übersprungen». Das Auktionshaus offen lassen, bis «AH-Scan fertig» kommt.
+- Einmal vergleichen: den Tiefstpreis von Leichtem Leder in der Chatmeldung mit dem Preis im Auktionshaus. Weicht er ab: `/tl bug AH-Preis <was du siehst>`.
+- Von Hand: `/tl ah`. Ausschalten: `/tl ah aus`, einschalten: `/tl ah an`.
+- Läuft daneben ein anderes Scan-Addon mit Auto-Scan (z. B. AHledger), eines davon ausschalten: `/tl ah aus` oder dort `/ahl auto off` (Befehl laut https://www.curseforge.com/wow/addons/ahledger).
+
+**Ersetzt**
+- Den Preis «jetzt» in `data/rechnung/Preise.csv` und `data/kombi/preise_zusatz.csv`, sobald du es willst (`tools/ah_aus_testlog.py --eintragen`, offene Entscheidung 17): 7-Tage-Median aus vollständigen Scans, nur bei mindestens 50 Stück im Angebot. Bis dahin vergleicht der Bericht `docs/plan/ah-preise.md` nur.
+- Grundlage für die Wochenpreise zum Start.
+
 ## Was danach passiert
 
-- Ich werte jede Lieferung aus und trage die Messwerte mit Datum in die Tabellen ein: `rezepte.csv`, `kuerschnern_anteile.csv`, `bedarf_lw_vz.csv`, `Kreislauf.csv`, Konstanten in `plan_berufe.py`.
+- Ich werte jede Lieferung aus und trage die Messwerte mit Datum in die Tabellen ein: `rezepte.csv`, `kuerschnern_anteile.csv`, `bedarf_lw_vz.csv`, `Kreislauf.csv`, Konstanten in `plan_berufe.py`. AH-Scans übernimmt `tools/ah_aus_testlog.py` nach `data/preise/` (ohne Realm- und Charakternamen).
 - Danach rechne ich die Pläne neu und baue den Guide neu. Der Bericht sagt, welche Zahl sich wie geändert hat.
 - Entscheidungen bleiben bei dir. Mit M3 und M4 lassen sich die offenen Punkte 9 (Angelzeit) und 12 (Kräuterkunde bis Thunder Bluff) entscheiden; mit M1 und M7 der Punkt 15 (verkaufen statt entzaubern).
 - Beta-Daten gelten für die Beta. Zum Start am 04.11. prüfe ich Preise und Orte nach (Risiko 6).

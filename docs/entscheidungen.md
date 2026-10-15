@@ -29,6 +29,9 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 - 14.10.2026: «Wenn es sich nicht lohnt mit leichtem Leder auf 150 zu kommen, dann tun wir das auch nicht! Dafür ist die Zeit zu schade», Mittleres Leder kauft der Nutzer im AH, finanziert über Fischen und über verkaufte Erzeugnisse. Umgesetzt: eigenes Leder bis LW 80, danach wird gekauft.
 - 14.10.2026: Berufswechsel (Kräuterkunde zu Verzauberkunst, Kürschnerei zu Lederverarbeitung) in Orgrimmar: «In OG, aber es soll der Sweetspot an Verrissenem (diese kürschnere ich ja zu leichtem) und leichtem Leder in der Anzahl sein. Dann grinde ich halt ein paar Mobs mehr, aber es muss die errechnete Menge an leichtem Leder sein für einen Break-even an Investment von leichtem Leder.» Umgesetzt: Wechsel in «12-17 The Barrens» nach RXPs Schritt #108 (Stufe 16); Sweetspot nach der Lesart von Claude (offener Punkt 6): LW 1–80 aus eigenem Material, also 99 Fetzen und 62 Leichtes Leder (Zähler beim Farm-Stopp S1). Die Farm-Stopps S2 und S3 entfallen, weil danach nicht mehr gekürschnert wird.
 
+- 15.10.2026: In der Beta nur noch wenig spielen, damit die Lust zum Start bleibt. Dafür eine kleine Liste, was bis 22.10. noch nötig ist und welche Daten pro Sitzung zurückkommen. Umgesetzt: Kurzliste in `docs/tests/messplan-beta.md` (Vorschlag von Claude).
+- 15.10.2026: Ziel: einloggen, 2–3 Stunden spielen (Fischen, Auktionshaus, Kürschnern, Lehrer usw.), und am Schluss hat Claude alle Daten, auch zum Start; einmal im Auktionshaus scannen, damit der Plan nach den Wochenpreisen angepasst werden kann. Umgesetzt (Vorschlag von Claude): AH-Scan im Testlog 3.5 beim Öffnen des Auktionshauses, `tools/ah_aus_testlog.py`.
+
 ## Offen
 
 1. Welche Quellen-Widersprüche zuerst im Spiel geprüft werden.
@@ -46,3 +49,6 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 13. Ab dem nächsten RXP-Release: Berufssitzung in Thunder Bluff vor oder nach der neuen Druiden-Questreihe «The Great Cat Spirit»? Sie beginnt bei Turak in Thunder Bluff, gleich nach der Stelle unseres Blocks (RXP-Hauptzweig, Commit 060d66a0 vom 11.10.; Best Practice §5).
 14. Welche Charaktere bei einem Neubau ihre Stelle im Kombi-Guide behalten müssen, wenn mehrere Druiden den Guide für Messungen laden (erweitert Punkt 11).
 15. Ob «verkaufen statt entzaubern» in den Plan kommt: Mystic Medium Armor Kit in Stufe B (grob 58s günstiger, NH), Erzeugnisse ab LW 130 statt Hillman's Leather Gloves. Vorher braucht es Lernstufen und Farben aus M1 und M7 (`docs/recherche/2026-10-14_goldquellen.md` §4).
+16. AH-Preise: eigener Scan im Testlog 3.5 (gebaut, Vorschlag von Claude) oder zusätzlich bzw. stattdessen das Addon AHledger (https://www.curseforge.com/wow/addons/ahledger: Scan-Knopf, Preise im Tooltip; Upload an ahledger.com nur mit der Sync-App und «Contribute scans», laut Seite standardmässig an).
+17. Ab wann die eigenen Scan-Preise den Plan ersetzen (`tools/ah_aus_testlog.py --eintragen`): zum Start, nach wie vielen Tagen Scans, welcher Markt.
+18. Ausbau ab Stufe 22 bis Lederverarbeitung und Verzauberkunst 300 (Frage des Nutzers vom 15.10.): eigene Berufs-Halte neben dem gekauften Guide (Weg B, Test T14) oder zuerst nur ein Mengen- und Kostenplan 150–300.

@@ -21,15 +21,16 @@ Vorgehen und Versionen: @docs/vorgehen.md
 | Ordner | Inhalt |
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
-| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3.4: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld, Lehrerlisten `LEHRER`; Liste im Dateikopf) |
+| `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3.5: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld, Lehrerlisten `LEHRER`, AH-Scan `AH-SCAN` mit Daten in `KombiTestlogDB.ahScans`; Liste im Dateikopf) |
 | `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
 | `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, bis, extra, Quelle, Status); `VERSION` |
 | `data/kombi/*.csv` (ausser plan.csv) | Mengenmodell Leder bis zum Wechsel in Orgrimmar: `abschnitte`, `modell_leder` (Quests mit Tieren), `kuerschnern_anteile`, `farmstellen`, `farmstopps`, `bedarf_lw_vz` (LW/VZ 1–150, Spalte `variante`), alle mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md`. Berufe-Plan: `rezepte` (Lernstufen laut AHledger), `items` (Item-IDs), `preise_zusatz` (Händlerpreise, Fisch); `tools/plan_berufe.py` macht daraus `docs/plan/berufe-plan.md` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
-| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `plan_berufe.py` (Berufe-Plan: Sweetspot, Stufen A–D), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
+| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `plan_berufe.py` (Berufe-Plan: Sweetspot, Stufen A–D), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `ah_aus_testlog.py` (AH-Scans übernehmen, Bericht `docs/plan/ah-preise.md`, mit `--eintragen` in den Plan), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
 | `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe, Messplan Beta `messplan-beta.md`), `recherche/` (Quellen mit Datum), `plan/` (erzeugte Berichte) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
+| `data/preise/` | eigene AH-Scans, erzeugt von `tools/ah_aus_testlog.py`: `ah_eigen.csv` (Plan-Gegenstände, alle Scans), `ah_alle.csv` (letzter Scan, alle Gegenstände); ohne Realm- und Charakternamen |
 | `testlogs/` | Testlog-Dateien aus dem Spiel (`KombiTestlog.lua`), nicht versioniert |
 | `vendor/`, `build/` | RXP-Klon und erzeugte Dateien, nicht versioniert |
 
@@ -46,6 +47,7 @@ python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/forever/Horde-12-22_Barr
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
 python3 tools/karte_aus_testlog.py <Testlog> v4.11.23      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen
+python3 tools/ah_aus_testlog.py <Testlog> [--eintragen]     # AH-Scans -> data/preise/, docs/plan/ah-preise.md; --eintragen: 7-Tage-Median in Preise.csv (dann plan_berufe.py)
 ```
 
 Vor jedem Commit an Guides oder Addons: `validate.py` (handgeschriebene Guides mit einem `RegisterGuide`), `build_kombi.py` (prüft den erzeugten Kombi-Guide selbst; `validate.py` passt dafür nicht) bzw. `testlog_harness.py` laufen lassen.

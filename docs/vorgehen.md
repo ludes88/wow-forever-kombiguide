@@ -1,6 +1,6 @@
 # Vorgehen: vom Plan zum Kombi-Guide
 
-Stand 14.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`); hier steht, wie gearbeitet wird.
+Stand 15.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`); hier steht, wie gearbeitet wird.
 
 ## Arbeitsweise (Entscheidung des Nutzers vom 13.10.2026)
 
@@ -8,7 +8,7 @@ Stand 14.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 - Für Recherche, Mengen-Rechnung und Bauen kann Claude parallele Agenten einsetzen.
 - Die Verbindung «Link to this computer» bot die Desktop-App für die erste Sitzung nicht an (13.10.). Ersatz: Die AddOns des Nutzers sind mit dem Repo verknüpft (`tools/windows/addons_verknuepfen.bat`, einmal). Der Kombi-Guide liegt deshalb erzeugt im Repo unter `addons/RXPGuides_KombiGuide/`.
 - Ist eine Sitzung mit dem PC verbunden, liest Claude die Testlog-Datei selbst; sonst schickt der Nutzer sie im Chat. Die Testlog-Datei enthält Charakternamen und kommt NIE ins Repo.
-- Die Arbeit des Nutzers pro Runde: `aktualisieren.bat` doppelklicken, `/reload`, spielen, Testlog schicken.
+- Die Arbeit des Nutzers pro Runde: `aktualisieren.bat` doppelklicken, `/reload`, spielen, am Schluss `/reload`, dann die Datei `KombiTestlog.lua` anhängen oder, bei verbundenem PC, «fertig» schreiben. Die Datei enthält auch die AH-Scans (Testlog 3.5).
 
 ## Datenkette statt Handarbeit
 
@@ -41,6 +41,7 @@ Stand 14.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
    - Berufe-Plan (`tools/plan_berufe.py`, seit 14.10.): nimmt den Bestand beim Wechsel in Orgrimmar aus dem Mengenmodell und rechnet den Sweetspot für eigenes Leder sowie die Stufen A–D (Herstellen, Entzaubern, Verzaubern, Einkauf im AH und beim Händler, Verkauf) mit Stückzahlen und Kosten. Eingaben: `bedarf_lw_vz.csv` (Spalte `variante` für die zwei Tabs ab LW 130, Route «wow-professions Alternative» für Soul Dust), `rezepte.csv` (Lernstufen laut AHledger, für die Widerspruchsprüfung), `items.csv` (Item-IDs, deutsche Namen nur aus dem Testlog), `preise_zusatz.csv` (Händlerpreise und Fisch), dazu `data/rechnung/Preise.csv` und `Kreislauf.csv`. Bericht `docs/plan/berufe-plan.md`; die Zahlen trägt Claude in `plan.csv` ein.
    - Wert (Entscheide vom 13.10.): beim Kräuterfarmen das gewinnbringendste Kraut, gerechnet pro Knoten mit Zusatzbeute; beim Fischen der Fisch mit dem höchsten AH-Wert, roh oder gekocht. Preise in der Beta von AHledger, zum Start aus dem Startdokument des Nutzers (EU). Grundlagen: `docs/recherche/2026-10-13_kraeuter-fische-kochen.md`.
    - Goldbilanz entlang der Route: Kosten (Lehrer für Zauber und Berufe, Rezepte, Händlermaterial, Flüge) gegen Einnahmen; Kostenquellen in `docs/recherche/2026-10-13_kosten.md`, gemessene Werte aus Testlog 3.
+   - Eigene AH-Preise (seit 15.10.): Das Testlog 3.5 liest beim Öffnen des Auktionshauses alle Angebote (höchstens alle 15 Minuten). `tools/ah_aus_testlog.py <Testlog>` übernimmt die Scans ohne Realm- und Charakternamen nach `data/preise/ah_eigen.csv` (Plan-Gegenstände, alle Scans; daraus der 7-Tage-Median) und `data/preise/ah_alle.csv` (letzter Scan, alle Gegenstände); Bericht `docs/plan/ah-preise.md` mit dem Vergleich zum Rechenpreis des Plans. Mit `--eintragen` ersetzt der 7-Tage-Median den Preis «jetzt» in `data/rechnung/Preise.csv` und in den AH-Zeilen von `preise_zusatz.csv` (nur vollständige Scans, nur bei mindestens 50 Stück im Angebot; 30-Tage-Werte und xlsx bleiben AHledger); danach `plan_berufe.py` neu rechnen. Wann das geschieht, entscheidet der Nutzer (offene Entscheidung 17). Markt = Region, Fraktion, Kurzzeichen des Realms (statt des Namens), Beta oder Live.
 4. **Generator** `tools/build_kombi.py`: liest Plan- und Kartentabelle, baut die RXP-Gratis-Route in genau der RXP-Version des Nutzers neu und fügt die Schritte ein.
 5. **Prüfung** (automatisch im Generator):
    - Lua-Syntax, Kopf, bekannte Befehle
@@ -48,7 +49,7 @@ Stand 14.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
    - kein `--` und kein `[[`/`]]` in eigenen Texten, Koordinaten 0–100
    - dazu von Hand vor dem Merge: `tools/rxp_schritte.py vergleich` für jede gespeicherte Stelle eines Testcharakters (Best Practice §6)
 6. **Spieltest** mit KombiTestlog, dann Auswertung durch Claude, dann Plan anpassen, neue Version bauen und austauschen. Der Fortschritt bleibt, solange Gruppe und Guide-Namen gleich bleiben (T6).
-   - Messplan für die Beta (14.–22.10.): `docs/tests/messplan-beta.md`. Jede Messung (M1–M10) nennt, welche Zahl in welcher Tabelle sie ersetzt. Testlog 3.4 schreibt dafür auch die Lehrerlisten (LEHRER).
+   - Messplan für die Beta (14.–22.10.): `docs/tests/messplan-beta.md`. Jede Messung (M1–M11) nennt, welche Zahl in welcher Tabelle sie ersetzt; oben die Kurzliste vom 15.10. Testlog 3.4 schreibt dafür auch die Lehrerlisten (LEHRER), 3.5 die AH-Scans (AH-SCAN).
 
 ## Versionen
 
