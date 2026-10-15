@@ -7,7 +7,11 @@
 #   data/preise/ah_eigen.csv   pro Scan und Gegenstand des Plans: Tiefstpreis, Median, Menge, Angebote und was die
 #                              billigsten 20 und 100 Stück kosten. Neue Scans kommen dazu, alte bleiben: daraus die Wochenpreise.
 #   data/preise/ah_alle.csv    der letzte Scan mit allen Gegenständen (Tiefstpreis, Median, Menge, Angebote)
-#   docs/plan/ah-preise.md     Bericht: Scans und Plan-Gegenstände mit AHledger-Preis, Median und 7-Tage-Median
+#   data/preise/ah_abnahme.csv Testlog 3.6: pro Scan und beobachtetem Gegenstand, was seit dem Scan davor von den billigsten
+#                              Angeboten fehlt (weg) und die Schätzung der Käufe (gekauft); sammelt sich wie ah_eigen
+#   docs/plan/ah-preise.md     Bericht: Scans und Plan-Gegenstände mit AHledger-Preis, Median und 7-Tage-Median, Abnahme
+# «Plan-Gegenstände» sind seit Testlog 3.6 alle beobachteten: Plan (AH_WATCH), /tl item und Reagenzien und Ergebnisse
+# der gelernten Rezepte.
 # --eintragen  schreibt den 7-Tage-Median der eigenen Scans (Markt des letzten Scans) als «Eigener Preis (s)» und
 #              «Rechenpreis (s)» in data/rechnung/Preise.csv und als preis_s in die AH-Zeilen von data/kombi/preise_zusatz.csv.
 #              Nur aus vollständigen Scans und nur, wenn im Mittel mindestens MIN_MENGE Stück im Angebot waren.
@@ -26,6 +30,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 D = os.path.join(ROOT, "data")
 EIGEN = os.path.join(D, "preise", "ah_eigen.csv")
 ALLE = os.path.join(D, "preise", "ah_alle.csv")
+ABNAHME = os.path.join(D, "preise", "ah_abnahme.csv")
 BERICHT = os.path.join(ROOT, "docs", "plan", "ah-preise.md")
 PREISE = os.path.join(D, "rechnung", "Preise.csv")
 ZUSATZ = os.path.join(D, "kombi", "preise_zusatz.csv")
@@ -35,6 +40,7 @@ MIN_MENGE = 50          # «Schwelle dünner Markt» aus data/rechnung/Uebersich
 F_EIGEN = ["datum", "markt", "item_id", "material", "deutsch", "tiefstpreis_s", "median_s", "menge", "angebote",
            "kosten_20_s", "kosten_100_s", "hinweis", "quelle"]
 F_ALLE = ["datum", "markt", "item_id", "material", "tiefstpreis_s", "median_s", "menge", "angebote"]
+F_ABNAHME = ["datum", "markt", "item_id", "deutsch", "stunden", "weg", "gekauft", "quelle"]
 USAGE = "Aufruf: python3 tools/ah_aus_testlog.py <KombiTestlog.lua oder Text von /tl zeigen> [--eintragen]"
 
 
@@ -83,11 +89,23 @@ def kennung(realm):
 
 
 def _stufen(s):
+    """«Preis*Stück» (Testlog 3.5) oder «Preis*Stück*davon lang*davon sehr lang» (3.6) -> [(Preis, Stück)]."""
     out = []
     for teil in (s or "").split(","):
-        if "*" in teil:
-            u, c = teil.split("*")
-            out.append((int(float(u)), int(float(c))))
+        f = teil.split("*")
+        if len(f) >= 2:
+            out.append((int(float(f[0])), int(float(f[1]))))
+    return out
+
+
+def _abnahme(s):
+    """«ID:weg:geschätzt gekauft;…» (Testlog 3.6) -> {ID: (weg, geschätzt gekauft)}."""
+    out = {}
+    for teil in (s or "").split(";"):
+        f = teil.split(":")
+        if len(f) == 3:
+            i, weg, mind = (int(float(x)) for x in f)
+            out[i] = (weg, mind)
     return out
 
 
@@ -117,7 +135,8 @@ def _aus_lua(db):
                       "phase": phase(datum), "client": r.get("client", "-"), "angebote": n,
                       "gegenstaende": r.get("gegenstaende"), "nur_gebot": r.get("nurGebot"), "fehlend": fehlend,
                       "unvollstaendig": n > 0 and fehlend > n * UNVOLLSTAENDIG,
-                      "dauer": r.get("dauer"), "quelle": "Testlog-Datei", "preise": preise})
+                      "dauer": r.get("dauer"), "quelle": "Testlog-Datei", "preise": preise,
+                      "abnahme": _abnahme(r.get("abnahme")), "abstand": int(r.get("abstand") or 0)})
     return scans
 
 
@@ -154,18 +173,31 @@ def _aus_text(text):
                       "phase": phase(datum), "client": "-", "angebote": int(m.group("angebote")),
                       "gegenstaende": int(m.group("gegen")), "nur_gebot": int(m.group("gebot")), "fehlend": None,
                       "unvollstaendig": "unvollständig" in m.group("warn"), "dauer": int(m.group("dauer")),
-                      "quelle": "Text von /tl zeigen", "preise": preise, "namen": namen})
+                      "quelle": "Text von /tl zeigen", "preise": preise, "namen": namen, "abnahme": {}, "abstand": 0})
     return scans
+
+
+def namen_aus_db(db):
+    """Item-ID -> deutscher Name: aus den AH-SCAN-Zeilen und (Testlog 3.6) aus den Gegenstands-Infos."""
+    namen = {}
+    for z in _aus_text("\n".join(db.get("log") or [])):
+        namen.update(z["namen"])
+    for i, e in (db.get("info") or {}).items():
+        if isinstance(e, dict) and e.get("n") and str(i).isdigit():
+            namen.setdefault(int(i), e["n"])
+    return namen
+
+
+def ist_datei(text):
+    return re.search(r"^\s*KombiTestlogDB\s*=", text, re.M) is not None
 
 
 def lese(text):
     """Scans aus der SavedVariables-Datei (bevorzugt) oder aus dem Text von /tl zeigen. Ohne Realm- und Charakternamen."""
-    if re.search(r"^\s*KombiTestlogDB\s*=", text, re.M):
+    if ist_datei(text):
         db = _py(_lua_tabelle(text))
         scans = _aus_lua(db)
-        namen = {}
-        for z in _aus_text("\n".join(db.get("log") or [])):   # deutsche Namen aus den AH-SCAN-Zeilen
-            namen.update(z["namen"])
+        namen = namen_aus_db(db)
         for s in scans:
             s["namen"] = namen
         if scans:
@@ -301,6 +333,45 @@ def zusammenfuehren(neu):
     return sorted(merged.values(), key=lambda r: (r["datum"], r["markt"], int(r["item_id"]))), len(merged) - len(alt)
 
 
+def zeilen_abnahme(scans):
+    """Testlog 3.6: pro Scan und beobachtetem Gegenstand, was seit dem Scan davor von den billigsten Angeboten fehlt."""
+    rows = []
+    for s in scans:
+        if not s.get("abnahme") or not s.get("abstand"):
+            continue
+        markt = f"{s['markt']} {s['phase']}"
+        for i, (weg, mind) in sorted(s["abnahme"].items()):
+            rows.append({"datum": s["datum"], "markt": markt, "item_id": i, "deutsch": s.get("namen", {}).get(i, ""),
+                         "stunden": f"{s['abstand'] / 3600:.2f}", "weg": weg, "gekauft": mind,
+                         "quelle": "Testlog 3.6, Vergleich mit dem Scan davor"})
+    return rows
+
+
+def zusammenfuehren_abnahme(neu):
+    alt = _read(ABNAHME) if os.path.exists(ABNAHME) else []
+    key = lambda r: (r["datum"], r["markt"], str(r["item_id"]))
+    merged = {key(r): r for r in alt}
+    for r in neu:
+        merged[key(r)] = r
+    return sorted(merged.values(), key=lambda r: (r["datum"], r["markt"], int(r["item_id"]))), len(merged) - len(alt)
+
+
+def abnahme_summe(rows, markt, tage=7):
+    """Pro Item-ID in den letzten «tage» Tagen bis zur letzten Zeile dieses Markts:
+    (geschätzt gekauft, weg, beobachtete Stunden, Anzahl Vergleiche)."""
+    eigene = [r for r in rows if r["markt"] == markt]
+    if not eigene:
+        return {}
+    letzt = max(r["datum"] for r in eigene)
+    grenze = (datetime.strptime(letzt, "%Y-%m-%d %H:%M") - timedelta(days=tage)).strftime("%Y-%m-%d %H:%M")
+    out = {}
+    for r in eigene:
+        if r["datum"] >= grenze:
+            m, w, h, n = out.get(int(r["item_id"]), (0, 0, 0.0, 0))
+            out[int(r["item_id"])] = (m + int(r["gekauft"]), w + int(r["weg"]), h + float(r["stunden"]), n + 1)
+    return out
+
+
 def wochen_median(rows, markt):
     """Pro Item-ID aus den vollständigen Scans dieses Markts in den 7 Tagen bis zum letzten Scan:
     (Median der Scan-Mediane, Anzahl Scans, Median der Menge). Dazu das Datum des letzten Scans."""
@@ -316,7 +387,7 @@ def wochen_median(rows, markt):
     return {i: (statistics.median(m for m, _ in v), len(v), statistics.median(q for _, q in v)) for i, v in werte.items()}, letzt
 
 
-def bericht(scans, rows, plan, eingetragen):
+def bericht(scans, rows, plan, eingetragen, abn_rows=()):
     letzter = max(scans, key=lambda s: (s["datum"], s["zeit"]))
     markt = f"{letzter['markt']} {letzter['phase']}"
     woche, _ = wochen_median(rows, markt)
@@ -363,6 +434,22 @@ def bericht(scans, rows, plan, eingetragen):
                  f"{abw} | {nutzbar} |")
     if fehlt:
         L += ["", "Nicht im Angebot: " + ", ".join(fehlt) + "."]
+    summe = abnahme_summe(list(abn_rows), markt)
+    if summe:
+        namen = {int(r["item_id"]): r["deutsch"] for r in abn_rows if r.get("deutsch")}
+        L += ["", "## Abnahme (Testlog 3.6)", "",
+              "Schätzung der Käufe zwischen zwei Scans: Von den billigsten Angeboten des Scans davor fehlt, was bis dahin "
+              "nicht ablaufen konnte (Restlaufzeit-Band länger als der Abstand), von unten bis zur ersten Preisstufe, auf "
+              "der noch etwas liegt, abzüglich neuer Angebote bis zu diesem Preis. «weg» enthält auch zurückgezogene "
+              "Angebote. Annahme: Käufer nehmen die billigsten zuerst (so verkauft der Server Waren). Zu hoch, wenn jemand "
+              "zurückzieht und teurer neu einstellt; zu tief, wenn neue Angebote dazukommen. Ganz verschwundene Gegenstände "
+              "zählen nicht. 7 Tage bis zum letzten Vergleich, gleicher Markt; Werte in `data/preise/ah_abnahme.csv`.", "",
+              "| Gegenstand | ID | geschätzt gekauft | weg | beobachtet | Vergleiche | pro Stunde |",
+              "|---|---|---|---|---|---|---|"]
+        for i, (mind, weg, h, n) in sorted(summe.items(), key=lambda kv: (-kv[1][0], kv[0])):
+            name = plan.get(i, {}).get("material") or namen.get(i) or str(i)
+            L.append(f"| {name} | {i} | {mind} | {weg} | {h:.1f} h | {n} | {mind / h:.1f} |" if h > 0 else
+                     f"| {name} | {i} | {mind} | {weg} | – | {n} | – |")
     L += ["", "Spalte «Plan»: «ja» = mit `--eintragen` übernehmbar, «dünn» = bleibt beim AHledger-Preis.", "",
           "## Im Plan", "",
           (f"Eingetragen: {eingetragen} Preise (7-Tage-Median dieses Markts) als «Eigener Preis (s)» und «Rechenpreis (s)» in "
@@ -436,11 +523,17 @@ def main():
                 for i, p in sorted(letzter["preise"].items())]
         _write(ALLE, F_ALLE, alle)
     n = eintragen(rows, markt) if "--eintragen" in sys.argv else 0
-    bericht(scans, rows, plan, n)
+    abn_neu = zeilen_abnahme(scans)
+    abn_rows, abn_n = zusammenfuehren_abnahme(abn_neu)
+    if abn_neu:
+        _write(ABNAHME, F_ABNAHME, abn_rows)
+    bericht(scans, rows, plan, n, abn_rows)
     unv = sum(1 for s in scans if s["unvollstaendig"])
     print(f"{len(scans)} Scans gelesen ({letzter['quelle']}{f', {unv} unvollständig' if unv else ''}), letzter {letzter['datum']} "
           f"{markt}: {letzter['angebote']} Angebote, {letzter['gegenstaende']} Gegenstände")
     print(f"{os.path.relpath(EIGEN, ROOT)}: {len(rows)} Zeilen ({neu} neu)")
+    if abn_rows:
+        print(f"{os.path.relpath(ABNAHME, ROOT)}: {len(abn_rows)} Zeilen ({abn_n} neu)")
     if "--eintragen" in sys.argv:
         print(f"eingetragen: {n} Preise (7 Tage, {markt}, nur mit mindestens {MIN_MENGE} Stück); jetzt python3 tools/plan_berufe.py")
     print("Bericht:", os.path.relpath(BERICHT, ROOT))
