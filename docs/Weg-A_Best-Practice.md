@@ -1,16 +1,17 @@
 # Weg A: Kombi-Guide aus RXP-Route und Berufen – Best Practice
 
-Stand 15.10.2026 (spät). Gilt für die Forever-Beta: Client 1.60.1 (Build 70338), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 998caf30 (14.10.).
+Stand 15.10.2026 (Nacht). Gilt für die Forever-Beta: Client 1.60.1 (Build 70338), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 998caf30 (14.10.; die Dungeon-Teile geprüft auf dec489a2, 15.10.).
 Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link oder Code-Stelle) oder als **ungeprüft** markiert.
 
 ---
 
 ## 0. Schnellzugriff
 
-- **Was Weg A ist:** RXPs Gratis-Route für Stufe 1–22 (Mulgore, Brachland) als Kopie, darin unsere Berufsschritte an Ankerstellen. Ein Guide, ein Fenster. Ab 22 wechselt der Nutzer zu seinem gekauften Guide.
+- **Was Weg A ist:** RXPs Gratis-Route für Stufe 1–22 (Mulgore, Brachland) als Kopie, darin unsere Berufsschritte an Ankerstellen. Ein Guide, ein Fenster. Ab 22 wechselt der Nutzer zu seinem gekauften Guide. Seit v0.5 zwei Gruppen in derselben Datei: «Kombiguide (H)» (RXPs Speedrun-Route) und «Kombiguide Dungeon (H)» (RXPs Dungeon-Route mit fest eingebauten Dungeons, §5).
 - **Wie er geladen wird:** als eigenes kleines Addon (`RXPGuides_KombiGuide`, gebaut von `tools/build_kombi.py`), das `RXPGuides.RegisterGuide([[ … ]])` aufruft. Das Import-Fenster von RXP nimmt nur verschlüsselte, kontogebundene Texte. Im Spiel bestätigt am 13.10. (Testlauf 1 und 2, `docs/tests/`).
 - **Pflicht im Kopf jedes Guides:** `#forever`, `#name`, `#group`, `<< Horde`. Ohne `#forever` lädt RXP den Guide in Forever nicht.
-- **Eigene Gruppe:** `#group Kombiguide (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
+- **Eigene Gruppen:** `#group Kombiguide (H)` und `#group Kombiguide Dungeon (H)`. Keine Gruppe/Name-Kombination doppelt mit RXP.
+- **Dungeons:** In Forever lässt RXP keine Dungeons zu (Auswahl ausgeblendet, beim Laden auf «keine» gesetzt; §4). Die Dungeon-Gruppe enthält die Dungeons aus `data/kombi/dungeons.csv` deshalb fest (§5).
 - **Update-Ablauf:** RXP-Version aus dem Testlog lesen → genau diesen Tag holen → Skript mischt neu → statische Prüfung → Pull Request und Merge → beim Nutzer `aktualisieren.bat` und `/reload` (AddOns sind mit dem Repo verknüpft, `docs/vorgehen.md`) → der Nutzer testet.
 - **Testlog:** `/tl <Text>`, `/tl bug <Text>`, `/tl zeigen`. Datei: `WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua`. Version 3 schreibt zusätzlich von selbst: HERSTELLEN, ENTZAUBERN, SAMMELN, ANGELN, BEUTE, HÄNDLER, POST, AUKTIONSHAUS, GELD, GELERNT, REZEPT (Liste im Kopf von `KombiTestlog.lua`). Version 3.2 beendet Fenster-Sitzungen auch ohne CLOSED-Ereignis (Risiko 19) und zählt beim Angeln die Würfe pro Fang; 3.3 nimmt beim Ausloggen den letzten bekannten Geldstand; 3.4 schreibt beim Öffnen eines Lehrerfensters die ganze Liste (LEHRER: Status, Lernstufe, Kosten; T13); 3.5 liest beim Öffnen des Auktionshauses alle Angebote (AH-SCAN, höchstens alle 15 Minuten, von Hand `/tl ah`; T15); 3.6 schreibt die gelernten Rezepte mit Reagenzien und Farbe (REZEPTE), den Bestand in Taschen, Bank und Kontobank (INVENTAR), die Briefe des Auktionshauses (AH-POST), eigene Angebote (AH-ANGEBOT) und die Abnahme zwischen zwei AH-Scans; `/tl tipp` zeigt die Empfehlungen aus dem Addon `KombiDaten` (T16–T21).
 - **Messplan Beta:** `docs/tests/messplan-beta.md` (M1–M12, was jede Messung im Plan ersetzt; Kurzliste bis 22.10. vom 15.10.). Goldquellen mit Zahlen: `docs/recherche/2026-10-14_goldquellen.md`.
@@ -20,7 +21,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - **Koordinaten:** eigene Orte in Spielkoordinaten; umgerechnet über `data/karten/forever_karten.csv`. RXPs Kommentar-Koordinaten (`--c:`) passen in Mulgore nicht zur Forever-Karte, in Thunder Bluff, Orgrimmar, Durotar und im Brachland genau (Abschnitt 7, Risiko 17). Exakt gemessen: Mulgore, Brachland, Thunder Bluff, Orgrimmar, seit 15.10. auch Durotar, Tirisfal, Undercity und der Kontinent Östliche Königreiche.
 - **Mengen:** `tools/plan_mengen.py` rechnet aus `data/kombi/*.csv`, wie viel Leder die RXP-Route bis Stufe 20 bringt (mit und ohne Farm-Stopps), was Lederverarbeitung 150 und Verzauberkunst 150 brauchen und wie gross die Lücke ist (Bericht `docs/plan/mengen-leder.md`). Die Ziele im Kombi-Guide kommen daher.
 - **Berufe-Plan:** `tools/plan_berufe.py` rechnet aus dem Mengenmodell, der LW- und VZ-Route von wow-professions und den Preisen den Sweetspot für eigenes Leder und die Stufen A–D mit Stückzahlen, Einkauf, Entzaubern und Verkauf (Bericht `docs/plan/berufe-plan.md`). Kombi-Guide v0.4 setzt das um: Wechsel in Orgrimmar (Stufe A, dazu B, wenn das Gold reicht), Rest in Thunder Bluff (Stufe 20).
-- **Schritte lesen und Stellen prüfen:** `tools/rxp_schritte.py liste …` zeigt die Schritte so, wie RXP sie einem Charakter zeigt; `… vergleich …` prüft vor dem Merge, dass ein Neubau die gespeicherte Stelle eines Testcharakters nicht verschiebt (§6).
+- **Schritte lesen und Stellen prüfen:** `tools/rxp_schritte.py liste …` zeigt die Schritte so, wie RXP sie einem Charakter zeigt (`--gruppe` wählt die Gruppe, `--dungeons RFC,WC` schaltet Dungeons ein); `… vergleich …` prüft vor dem Merge, dass ein Neubau die gespeicherte Stelle eines Testcharakters nicht verschiebt (§6).
 
 ---
 
@@ -49,10 +50,17 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 |---|---|---|
 | `Guides/forever/Horde-1-12_Mulgore.lua` | 1-6 Mulgore (62 Schritte), 6-12 Mulgore (275) | RestedXP Forever Guide (H), Untergruppe «Speedrun Guide 1-22», `#defaultfor Tauren` |
 | `Guides/forever/Horde-12-22_Barrens.lua` | 12-17 The Barrens (399), 17-22 Stonetalon/Barrens/Ashenvale (460) | dito; `#next 22-24 Hillsbrad` zeigt auf den gekauften Teil |
-| `Guides/Forever/dungeon/*.lua` | Dungeon-Varianten | RestedXP Forever Dungeon Guide (H) |
+| `Guides/Forever/dungeon/Horde-1-12_Mulgore.lua` | 1-6 Mulgore, 6-12 Mulgore, je nur ein `#include RestedXP Forever Guide (A)\…` | RestedXP Forever Dungeon Guide (H), Untergruppe «(WIP) Dungeon Guide 1-22», `#beta`, `#defaultfor Tauren` |
+| `Guides/Forever/dungeon/Horde-12-22_Barrens.lua` | 12-17 The Barrens (403), 17-22 Stonetalon/Barrens/Ashenvale (436), beide `#xprate <1.99`; dazu 13-20 The Barrens und 20-24 Stonetalon/Barrens mit `#xprate >1.99` | dito; `#next RestedXP Horde 22-30\22-24 Hillsbrad` |
 | `Guides/forever/RestedXP-Skyborne.lua` | neues Startgebiet Zephras Isle | – |
 
 - Schrittzahlen gezählt in Release v4.11.23, mit Klassen-Varianten.
+- Dungeon-Route (v4.11.23, gelesen am 15.10.):
+  - Die Dungeon-Mulgore-Guides binden «RestedXP Forever Guide (A)\1-6 Mulgore» bzw. «…\6-12 Mulgore» ein. Einen Guide mit Gruppe «(A)» und diesem Namen gibt es in v4.11.23 nicht (`git grep "#name 1-6 Mulgore"`); findet RXP ihn nicht, meldet es «Error trying to include guide» (`GuideWindow.lua` `IncludeGuide`). Lesart von Claude: Gemeint ist die Speedrun-Route. Im Spiel ungeprüft.
+  - Schon die Speedrun-Route enthält Dungeon-Schritte: «12-17» 71 Schritte mit `.dungeon` (RFC 68, DM 3), «17-22» 125 (WC, DM, BFD). In Forever erscheinen sie nie (§4, Dungeons).
+  - Die Dungeon-Route ist eine eigene Route, nicht die Speedrun-Route mit Dungeons: «12-17» +683/−577 Zeilen gegenüber der Speedrun-Route, «17-22» +427/−374. Ein Tauren-Druide sieht ohne Dungeons 150 bzw. 171 Schritte (Speedrun-Route 184 bzw. 198), mit RFC, WC und BFD 202 bzw. 222 (`tools/rxp_schritte.py … --dungeons RFC,WC,BFD`). Ohne Dungeons fehlen in der Dungeon-Route also Quests, die die Dungeons ersetzen.
+  - Welcher Brachland-Teil gilt, entscheidet `#xprate` im Kopf (§3); in Forever ist das «12-17» und «17-22».
+  - Hauptzweig (dec489a2, 15.10.): Die Dungeon-Route im Brachland heisst dort «12-17 The Barrens» und «17-22 The Barrens», die Teile 13-20 und 20-24 fehlen. Ein Neubau auf dem nächsten Release braucht deshalb eine neue Anker- und Namensprüfung.
 - Laut kami-labs (09.10.) sind Stufe 1–20 für alle gratis. Der volle Guide kostet 45 USD für beide Fraktionen oder 30 USD für eine. Die Forever-Routen 1–35 sind fertig, für 35–60 nutzt RXP vorerst die Era-Routen. https://kami-labs.fr/en/wow-forever/mise-a-jour-restedxp-wow-forever/
 - Der gekaufte Teil kommt als Import-Text, der verschlüsselt und an das Konto gebunden ist (Code: `GuideLoader.lua`, Funktion `CheckDataIntegrity` ab Zeile 274; Meldung «Account mismatch»). Den können und wollen wir nicht lesen.
 
@@ -88,6 +96,8 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
   - `#name` und `#group` sind Pflicht.
   - Gibt es Gruppe und Name schon, meldet RXP «Error trying to load a guide already parsed».
 - **Spielversion** (`ParseGuide`, ~L1046): `#classic` gilt auch in Forever. `#forever` zählt nicht als Spieltag, beschränkt also nichts.
+- **`#beta` im Kopf:** Der Kopf setzt `guide.beta` (`GuideLoader.lua` ~L1113–1123), und `IsGuideActive` prüft `BetaVersionCheck(guide)` (`GuideWindow.lua` ~L2398–2402, `RXPGuides.lua` ~L2695). Ein solcher Guide erscheint nur mit «Beta-Features aktivieren» (Einstellungen, «Erweiterte Einstellungen»; deutsche Texte aus `locale/deDE.lua` L333–334). RXPs Forever-Dungeon-Guides haben `#beta`, unsere Gruppen nicht.
+- **`#xprate` im Kopf:** gilt für den ganzen Guide (`XpRateCheck(guide)`, gleiche Stelle). In Forever bleibt die XP-Rate beim Standard 1 (`xprate = 1` in den Standardwerten von `SettingsPanel.lua`): `DetectXPRate` setzt bei Spielversionen unter 20000 nur die Saison.
 - **Ein aktiver Guide:** `addon:LoadGuide` ersetzt den aktuellen (`GuideWindow.lua` ~L1812). Zwei Guides gleichzeitig gehen nicht.
 - **Farm-Guides:** Gruppen mit `+` am Anfang erscheinen nur im «Gold Assistant Modus» (umschaltbar im Menü).
 - **Fortschritt pro Guide:** `RXPCData.guideProgress[guide.key]` mit Schritt und Schritt-ID (`RXPGuides.lua` L1399–1447). Wechseln und zurück behält die Stelle.
@@ -161,6 +171,16 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 - `.money <X` erledigt einen Schritt, solange weniger als X Gold da sind, und prüft das laufend (`functions.lua` `money`). Für Einkaufsschritte taugt das nicht: Der Schritt verschwindet mitten im Einkauf.
 - `#maxlevel N` blendet einen Schritt beim Laden aus, wenn der Charakter über Stufe N ist und «Skip overleveled steps» an ist (Standard; `RXPGuides.lua` `LevelCheck`).
 
+**Dungeons** (Code v4.11.23, dazu Hauptzweig dec489a2 vom 15.10.)
+- `.dungeon X` merkt sich X, `.dungeon !Y` merkt sich Y, je die letzte Zeile im Schritt (`functions.lua` `addon.functions.dungeon`). `DungeonCheck` (`RXPGuides.lua`) blendet den Schritt aus, wenn Y an ist; sonst zeigt es ihn, wenn X an ist oder der Schritt kein X hat. Eine `.dungeon`-Zeile mit `<< Klasse` gilt nur für diese Klasse (wie jede Zeile, `parseLine`).
+- Labels zählt RXP nur unter den gezeigten Schritten, ebenso `#completewith next` (`GuideWindow.lua`: `guide.labels` und `step.index` werden über die gezeigten Schritte vergeben). Ein ausgeblendeter Schritt wirkt also wie ein gelöschter.
+- In Forever lässt RXP keine Auswahl zu:
+  - Die Dungeon-Einstellungen sind für `FOREVER` ausgeblendet (`SettingsPanel.lua` ~L1374–1435, `hidden = addon.game == "FOREVER" or …`).
+  - Der «Guide Configurator» mit «Enable Dungeons» bricht für Forever gleich am Anfang ab (`UI/V2/GuideConfigurator.lua` L2–5: `if WOW_PROJECT_ID == WOW_PROJECT_CAMELOT then --TODO: Fix the dungeon selection for Camelot return end`). Den Knopf «Run Guide Configurator» blendet RXP dann aus (`SettingsPanel.lua` `splashUI`, `hidden = not (… LaunchConfigurator)`); im Spiel ungeprüft.
+  - Beim Laden des gespeicherten Guides setzt RXP alle Dungeons auf «aus» (`RXPGuides.lua` ~L1365–1368, `addon.settings.dungeons:SetNone()`, gleicher TODO-Kommentar). Standard ist ohnehin «keine» (`dungeons = {}`).
+  - Hauptzweig (dec489a2): Die Einstellungen erscheinen mit `/rxp debug`; Konfigurator und Zurücksetzen beim Laden sind unverändert.
+- RXPs Empfehlung (`SetRecommended`, `SettingsPanel.lua`): Wert = Reise × 0,7 + Quests × 1,2 + Klasse × 1,4 aus `dungeonStats` (`DB/forever/db.lua`), an ab einem Wert über 7. Horde-Druide (v4.11.23): an WC 9,9, BFD 8,5, GNOMER 8,0, ZF und MARA 7,8, SFK 7,3, RFK und RFC 7,1; aus RFD 5,9, ULDA und ST 5,7, SM 4,5, DM 4,2. Kürzel wie in RXP; Gebiets-IDs in `dungeonList` derselben Datei (RFC 2437, WC 718, BFD 719, DM 1581).
+
 ---
 
 ## 5. Aufbau von Weg A
@@ -176,9 +196,10 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 1. RXP-Release holen, das der Nutzer installiert hat (Tag aus dem Testlog).
 2. `RegisterGuide`-Blöcke trennen: Kopf und Schritte.
 3. Kopf anpassen:
-   - `#group Kombiguide (H)`
-   - `#defaultfor` entfernen (sonst konkurrieren zwei Standard-Guides)
+   - `#group Kombiguide (H)` bzw. `#group Kombiguide Dungeon (H)` (dort auch `#subgroup (WIP) Dungeon Guide 1-22` für alle vier Guides)
+   - `#defaultfor` entfernen (sonst konkurrieren zwei Standard-Guides), ebenso `#beta` (§3)
    - letztes `#next` → `RestedXP Forever Guide (H)\22-24 Hillsbrad`
+   - Nur Dungeon-Gruppe: Dungeons aus `data/kombi/dungeons.csv` fest einbauen, bevor die Berufsschritte dazukommen (§4 Dungeons): Ein Schritt, den RXPs `DungeonCheck` mit dieser Auswahl ausblenden würde, fällt weg; bei den übrigen fallen die `.dungeon`-Zeilen weg. Gilt eine `.dungeon`-Zeile nur für eine Klasse und ändert sie für diese das Ergebnis, kommt die Bedingung in die Kopfzeile (`step << !Priest`). Fehlt ein Dungeon in `dungeons.csv`, bricht das Skript ab.
 4. Berufsschritte an Ankern einfügen. Ein Anker ist eine eindeutige Zeile, z. B. `.turnin 768`, ein `#label` oder eine Quest-ID.
    - Ein Anker muss genau einmal vorkommen, sonst bricht das Skript ab und meldet es.
    - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen. Das Skript schiebt die Einfügestelle weiter.
@@ -225,6 +246,14 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
   - der Kauf von Salt und Coarse Thread für Stufe B ab LW 100 (`.skill leatherworking,100,1`, auch in Thunder Bluff)
   
   Die Herstell- und Verzauberungsschritte entfielen schon vorher über `.skill` und `.itemcount`. Übrig bleiben das Kästchen «Weiter mit der Route» und die Kästchen fürs Entzaubern, falls Embossed Leather Gloves oder mehr als 10 Fine Leather Belts in den Taschen sind. Im Spiel ungeprüft.
+- Kombi-Guide v0.5 (15.10.), Wunsch des Nutzers «ich brauche den MIT dungeons» (`docs/entscheidungen.md`): zweite Gruppe «Kombiguide Dungeon (H)» in derselben Datei `Kombi_Guide.lua` (so reicht beim Nutzer `/reload`; die Gruppe «Kombiguide (H)» bleibt Zeichen für Zeichen gleich, Stellen #45 und #103 geprüft).
+  - Quellen: «1-6» und «6-12 Mulgore» aus der Speedrun-Datei (RXPs Dungeon-Mulgore bindet sie ein, §2), «12-17 The Barrens» und «17-22 Stonetalon/Barrens/Ashenvale» aus `Guides/Forever/dungeon/Horde-12-22_Barrens.lua`. Die Teile 13-20 und 20-24 (`#xprate >1.99`) nicht.
+  - Dungeons: Vorschlag von Claude ist RXPs eigene Empfehlung für Horde-Druiden (§4): RFC, WC und BFD an, DM aus (`data/kombi/dungeons.csv`, offene Entscheidung 23). BFD betrifft in 12-22 nur Priester.
+  - Mit dieser Auswahl fallen 3 RXP-Schritte in «12-17» und 34 in «17-22» weg (vor allem der Weg ohne WC: Ruhestein nach Thunder Bluff mit `.dungeon !WC`); ein Schritt bekommt `step << !Priest` (`.dungeon !BFD << Priest`). In «6-12 Mulgore» erscheint RXPs Schritt «RFCPickups1» (Quests 5722 und 5723 bei Rahauro, Thunder Bluff).
+  - Geprüft mit `tools/rxp_schritte.py`: Für 9 Klassen und 5 Rassen zeigt die gebaute Gruppe (ohne Dungeons, wie in Forever) dieselben RXP-Schritte wie RXPs Quelle mit RFC, WC und BFD (180 Vergleiche, keine Abweichung).
+  - Tauren-Druide in der Dungeon-Gruppe: «6-12 Mulgore» 208 Schritte, «12-17» 234 (davon 32 Kombi-Schritte), «17-22» 256 (34). RFC kommt gleich zu Beginn von «12-17» (Reise nach Orgrimmar, RXP-Text «Now you should be looking for a group to Ragefire Chasm»), WC in «17-22». Berufsschritte an denselben Ankern: Sweetspot-Zähler #106 vor `.xp 16` (Sludge Fen, gleicher RXP-Text wie in der Speedrun-Route), Orgrimmar nach «SpiritsPickup» (#123), Thunder Bluff nach «DeathDUPpickup» (#87).
+  - Nicht neu gerechnet: Das Mengenmodell (`docs/plan/mengen-leder.md`) und die Leder-Ziele gelten für die Speedrun-Route. Wie viel Leder die Dungeon-Route bis Orgrimmar bringt, ist ungeprüft (offene Entscheidung 24).
+  - Im Spiel ungeprüft (T22).
 - Probebau auf dem RXP-Hauptzweig (14.10., 998caf30):
   - Alle Anker passen ausser einem: «Camping 101: Cooking» (`turnin 96661`) kommt dort zweimal vor.
   - Plan-Zeile 5 hängt deshalb seit 14.10. an `label Vision` (davor). Auf v4.11.23 ist der Bau damit bytegleich.
@@ -269,6 +298,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
     - Die alten Kennungen treffen im Neubau keinen anderen Schritt. RXP nimmt deshalb die Nummer.
     - Unter dieser Nummer steht derselbe Schritt: «Well» bzw. derselbe Inhalt bei #77, geprüft für alle 9 Klassen.
     - Ein Neubau auf dem nächsten Release dürfte die Stellen also halten, sofern RXP bis dahin vor den Stellen nichts mehr ändert. Im Spiel ungeprüft (T6).
+  - Seit v0.5 (15.10.) steht jeder Guide-Name zweimal in `Kombi_Guide.lua` (zuerst «Kombiguide (H)», dann «Kombiguide Dungeon (H)»). `tools/rxp_schritte.py … --gruppe "<Gruppe>"` wählt die Gruppe; ohne `--gruppe` gilt die erste. Die Kennung hängt an Gruppe und Name (`guideId`) und an der Zeile im eigenen Guide-Text, die Gruppen stören sich also nicht. In «Kombiguide Dungeon (H)» steht noch kein Testcharakter (15.10.); sobald einer dort steht, gilt dieselbe Regel.
 - **Wann aktualisieren?** Das entscheidet der Nutzer. Möglich sind:
   - (a) nur bei Bedarf, also wenn ein Routenfehler stört
   - (b) wöchentlich in der Beta
@@ -304,6 +334,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
 | 22 | AHledger-Preise widersprechen sich innerhalb weniger Tage, je nach Seite: Light Hide 69c (Item-Seite 09.10.) gegen etwa 3s (aus den Reagenzienkosten der Rezeptseite Cured Light Hide, 14.10.); Heavy Leather 11s 98c (08.10.), 9s 40c (12.10.), etwa 7s 20c (Rezeptseite 14.10.) | Die Rangfolge der Optionen im Berufe-Plan kann kippen (Heavy Leather in Stufe C zeigt Gewinn, die Rezeptseite Verlust, `docs/recherche/2026-10-14_goldquellen.md` §1) | Beta-Preise nur als Grössenordnung; Preisregeln (berufe-plan §6) statt fester Wahl; zum Start mit den Preisen des eigenen Realms neu rechnen (offene Entscheidung 4) |
 | 23 | AH-Scan (Testlog 3.5) im Spiel ungeprüft: Index ab 0 oder 1, Sofortkaufpreis für das ganze Angebot, Dauer, und wie lange der Server zwischen zwei Scans sperrt. AHledger nennt nur seinen eigenen Abstand («never runs more than once per 15 minutes»; der Knopf zählt herunter, bis der Server wieder einen Scan erlaubt; https://www.curseforge.com/wow/addons/ahledger, Stand 12.10.). Dieselbe Seite sagt, der Beta-Client schreibe SavedVariables, lese sie aber nicht zurück; ebenso das Addon ForeverSVBridge («the client writes addon saved variables at logout but does not read them back at login», https://www.curseforge.com/wow/addons/foreversvbridge, Stand 24.09.). Am 13.10. sprach alles dagegen: Einträge vor und nach `/reload` und über drei Charaktere in einer Datei (`docs/tests/messdaten-2026-10-13.md`, `testlauf-3.md` Nr. 15), und nach dem Neustart des Spiels um 22:07 fand RXP seine gespeicherte Stelle wieder (`testlauf-3.md` Nr. 2). Geschrieben wird beim Ausloggen und bei `/reload` (https://warcraft.wiki.gg/wiki/Saving_variables_between_game_sessions) | Falsche Preise pro Stück; zu wenige Scans für Wochenpreise; Datei wird gross; Scan wird übersprungen, weil der letzte (auch eines anderen Charakters) weniger als 15 Minuten her ist | Index erkennt das Testlog selbst, Preis pro Stück im Spiel einmal vergleichen (T15); `tools/ah_aus_testlog.py` übernimmt jeden Scan ins Repo, die Wochenpreise hängen also nicht an der Datei; die Datei behält höchstens 60 Scans, nur die 10 neuesten mit allen Gegenständen; ein übersprungener Scan meldet sich im Chat (sofort: `/tl ah`); unvollständige Scans (über 10 % ohne Daten) und dünne Angebote (unter 50 Stück) kommen nicht in den Plan. Erster Scan im Spiel am 15.10. um 20:12 (Testlog 3.5, Orgrimmar): 65 411 Angebote, 3079 Gegenstände, 18 s, kein Angebot ohne Daten, keine geheimen Werte; die Region gibt der Beta-Client als leeren Text zurück (`GetCurrentRegionName`), seither als «?» gespeichert (`docs/tests/messdaten-2026-10-15.md`) |
 | 24 | Testlog 3.6 im Spiel ungeprüft: ob `GetInboxInvoiceInfo` Preis und Gebühr auch für ungeöffnete Briefe liefert (das Forever-UI ruft vorher `GetInboxText` auf, `MailFrame.lua`; das Testlog nicht, weil das den Brief als gelesen markiert); ob die Betreff-Texte des Clients (`AUCTION_SOLD_MAIL_SUBJECT` usw.) in Forever bestehen; ob `GetReplicateItemTimeLeft` die Restlaufzeit als 0–3 (wie `Enum.AuctionHouseTimeLeftBand`) oder als 1–4 (wie die alte `GetAuctionItemTimeLeft`) liefert, die Doku sagt nur «number». `AUCTION_HOUSE_AUCTION_CREATED` nutzt das Forever-UI selbst (Meldung `ERR_AUCTION_STARTED`, `Blizzard_AuctionHouseFrame.lua`), ebenso `AUCTION_HOUSE_POST_WARNING` für das Bestätigungsfenster. `GetAllRecipeIDs` steht weder in der Doku noch im Forever-UI (`GetFilteredRecipeIDs` fehlt in der Doku auch, das UI nutzt es); das Testlog versucht `GetAllRecipeIDs` zuerst und nimmt sonst `GetFilteredRecipeIDs`. Die Abnahme ist eine Schätzung: Ein Scan zeigt Angebote, keine Käufe; wer zurückzieht und teurer neu einstellt, sieht aus wie ein Kauf | AH-POST nur mit Art und Menge aus dem Betreff; Abnahme zu hoch oder zu tief; Empfehlungen zu optimistisch | Rückfall auf die Betreffzeile, die Rechnung wird nachgetragen, sobald sie lesbar ist; ein abgeholter Brief zählt nicht mehr beim Wiederfinden (gleicher Brief danach = neuer Verkauf); die Restlaufzeit-Zählung erkennt das Testlog am Wert 0 oder 4 (sonst keine Abnahme); die Abnahme zählt nur Angebote, die bis zum nächsten Scan nicht ablaufen konnten (Bänder laut `GetTimeLeftBandInfo`), von unten bis zur ersten Preisstufe, auf der noch etwas liegt, abzüglich neuer Angebote bis zu diesem Preis; ganz verschwundene Gegenstände zählen nicht; Beleg erst ab 2 Vergleichen über 1 Stunde, Mengen nie hochgerechnet; Tests T16–T20 |
+| 25 | RXPs Dungeon-Route für Forever ist «WIP» (Untergruppe «(WIP) Dungeon Guide 1-22», `#beta`), und RXP lässt in Forever keine Dungeons zu (§4). Der Hauptzweig baut die Route um (andere Namen, 13-20 und 20-24 fallen weg; §2) | RXP selbst hat die Route in Forever kaum mit Dungeons laufen lassen können; Fehler in Dungeon-Schritten; die fest eingebauten Dungeons lassen sich im Spiel nicht abschalten; Leder-Ziele passen vielleicht nicht zur Route | Auswahl in `data/kombi/dungeons.csv` ändern und neu bauen; Befunde mit `/tl bug`; die Speedrun-Gruppe bleibt als Ausweg; beim nächsten Release Anker und Namen neu prüfen; Mengenmodell für die Dungeon-Route erst nach Entscheid (offene Entscheidung 24); T22 |
 
 ---
 
@@ -548,6 +579,7 @@ Jeder Befund kommt mit `/tl bug <Text>` oder `/tl <Text>` ins Testlog. Zurück a
 | T19 | Etwas im Auktionshaus einstellen (Testlog 3.6) | AH-ANGEBOT mit Menge, Preis je Stück oder je Angebot, Dauer und Pfand wie im Verkaufsfenster, Ende «erstellt» |
 | T20 | Zwei AH-Scans 15 Minuten bis 2 Stunden auseinander (Testlog 3.6) | In der Datei bei jedem Scan `bandRoh` (kleinster und grösster Rohwert der Restlaufzeit) und `bandVersatz` (0 bei 0–3, -1 bei 1–4); zweite Zeile AH-SCAN mit «Abnahme seit dem letzten Scan»; `tools/ah_aus_testlog.py` schreibt `data/preise/ah_abnahme.csv` |
 | T21 | Ordner `KombiDaten` neu, Spiel neu starten, dann `/tl tipp` und `/tl tipp alle` | Beim Einloggen «Empfehlungen geladen»; SITZUNG nennt den Stand; Tipps im Chat und im Fenster zum Kopieren; nach einer neuen `Daten.lua` reicht `/reload` |
+| T22 | Kombi-Guide v0.5: `aktualisieren.bat`, `/reload`, im RXP-Menü die Gruppe «Kombiguide Dungeon (H)» wählen (ohne Beta-Features) | Gruppe mit 4 Guides sichtbar, keine Fehlermeldung beim Laden; SITZUNG meldet «Kombiguide 0.5-v4.11.23»; ein Charakter in «6-12 Mulgore» sieht in Thunder Bluff «RFCPickups1», einer in «12-17» zu Beginn die RFC-Schritte; «Kombiguide (H)» steht weiter an der alten Stelle |
 
 Messungen mit mehreren Druiden (M1–M12, Stand 15.10., mit Kurzliste bis 22.10.): `docs/tests/messplan-beta.md`.
 
@@ -612,3 +644,4 @@ Stand und Liste: `docs/entscheidungen.md`. Am 13.10. entschieden: Update-Rhythmu
 - 15.10.2026 (spät): Testlog 3.6 (Rezepte, Bestand, AH-Post, eigene Angebote, Abnahme zwischen zwei Scans, `/tl tipp`), `tools/markt.py` und Addon `KombiDaten` (§0), `data/preise/ah_abnahme.csv`, Risiko 24, Tests T16–T21, Quellen zu Testlog 3.6 und zur Gebühr (§11).
 - 15.10.2026 (Nachtrag): `tools/markt.py` mit 30-Tage-Vergleich und strengerem Farm-Tipp (§0); Stellen der Testcharaktere am 15.10. (§6); Messwerte vom 14. und 15.10.: Yonn Deepcut, Kürschnern, Händlerpreis Greater Magic Wand (§9, Widersprüche 1 und 21, T8).
 - 15.10.2026 (Nachtrag 2): erster eigener AH-Scan (Risiko 23, T15) in `data/preise/`; Region im Beta-Client leer; Kartenecken Durotar, Tirisfal, Undercity, Östliche Königreiche (§0, Risiko 17); Stelle #103 (§6).
+- 15.10.2026 (Nacht): Dungeon-Route: RXPs Forever-Dungeon-Guides (§2), `#beta` und `#xprate` im Guide-Kopf (§3), Dungeons in Forever und RXPs Empfehlung (§4), Kombi-Guide v0.5 mit der Gruppe «Kombiguide Dungeon (H)» und `data/kombi/dungeons.csv` (§0, §5, §6), Risiko 25, T22.

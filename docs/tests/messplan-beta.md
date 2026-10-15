@@ -15,6 +15,8 @@ Du willst in der Beta nur noch wenig spielen, damit die Lust zum Start bleibt (1
 
 Vorher einmal: `aktualisieren.bat`, dann das Spiel neu starten (nicht nur `/reload`: den neuen Ordner `KombiDaten` lädt das Spiel erst nach einem Neustart). Die Zeile SITZUNG zeigt «Testlog 3.6» und «KombiDaten …».
 
+Neu seit 15.10. (Nacht), Kombi-Guide 0.5: die Gruppe «Kombiguide Dungeon (H)» (Dungeon-Route, Best Practice §5). Wenn du magst, 1 Minute: im RXP-Menü die Gruppe öffnen, «12-17 The Barrens» wählen, die ersten Schritte ansehen (RFC) und wieder zum bisherigen Guide zurück. Erscheint die Gruppe mit 4 Guides und ohne Fehlermeldung? (T22) Die Stelle in «Kombiguide (H)» bleibt dabei erhalten (Fortschritt pro Guide, Best Practice §3).
+
 **Sitzung 1, etwa 2 Stunden (Schätzung aus den Dauern unten): dein Stufe-15-Charakter**
 
 Stand 15.10. abends (`docs/tests/messdaten-2026-10-15.md`): Er hat schon Lederverarbeitung (109) und Verzauberkunst (100), laut Testlog vom 13.10. Den Berufswechsel selbst misst er darum nicht mehr: Verlernen, Lederverarbeitung 1–80 aus eigenem Leder, Sweetspot (M5, T11). Wer das misst, ist offener Punkt 22. Alles andere in Sitzung 1 geht mit ihm.

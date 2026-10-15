@@ -1,6 +1,6 @@
 # WoW Forever: Kombi-Guide und Berufe
 
-Ein RestedXP-Guide für Stufe 1–22 (Horde, Tauren-Druide, Start Mulgore): RXPs Gratis-Route mit eigenen Berufsschritten an den passenden Stellen («Weg A»). Dazu das Test-Addon KombiTestlog.
+Ein RestedXP-Guide für Stufe 1–22 (Horde, Tauren-Druide, Start Mulgore): RXPs Gratis-Route mit eigenen Berufsschritten an den passenden Stellen («Weg A»), als Speedrun-Route (Gruppe «Kombiguide (H)») und als Dungeon-Route (Gruppe «Kombiguide Dungeon (H)», seit v0.5). Dazu das Test-Addon KombiTestlog.
 Ausführlich, mit Belegen: @docs/Weg-A_Best-Practice.md
 Entscheidungen: @docs/entscheidungen.md
 Vorgehen und Versionen: @docs/vorgehen.md
@@ -22,12 +22,12 @@ Vorgehen und Versionen: @docs/vorgehen.md
 |---|---|
 | `addons/RXPGuides_Kombi/` | eigene RXP-Guides (Test: Vorquests Höhlen des Wehklagens) |
 | `addons/KombiTestlog/` | Notizen- und Protokoll-Addon, `/tl hilfe` (Version 3.6: Kartengrenzen `KARTE`, dazu Herstellen, Entzaubern, Sammeln, Beute, Händler, Geld, Lehrerlisten `LEHRER`, AH-Scan `AH-SCAN` mit Abnahme, Daten in `KombiTestlogDB.ahScans`; Rezepte `REZEPTE`, Bestand `INVENTAR`, `AH-POST`, `AH-ANGEBOT`, Daten in `chars`, `kontobank`, `ahPost`, `info`; `/tl tipp` zeigt das Addon `KombiDaten`; Liste im Dateikopf) |
-| `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern) |
+| `addons/RXPGuides_KombiGuide/` | der Kombi-Guide, ERZEUGT von `build_kombi.py` (nie von Hand ändern); eine Datei mit zwei Gruppen: «Kombiguide (H)» (RXP-Speedrun-Route) und «Kombiguide Dungeon (H)» (RXP-Dungeon-Route, WIP, Dungeons aus `data/kombi/dungeons.csv` fest eingebaut) |
 | `tools/windows/` | `addons_verknuepfen.bat` (einmal: AddOns ↔ Repo verknüpfen), `aktualisieren.bat` (`git pull`) für den Nutzer |
-| `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, bis, extra, Quelle, Status); `VERSION` |
+| `data/kombi/plan.csv` | Plan-Tabelle: eine Zeile pro Berufsschritt (Anker, Aktion, ID, Menge, Ort, bis, extra, Quelle, Status), gilt für beide Gruppen; `VERSION`; `dungeons.csv` (welche Dungeons die Dungeon-Route enthält, `an` = ja/nein) |
 | `data/kombi/*.csv` (ausser plan.csv) | Mengenmodell Leder bis zum Wechsel in Orgrimmar: `abschnitte`, `modell_leder` (Quests mit Tieren), `kuerschnern_anteile`, `farmstellen`, `farmstopps`, `bedarf_lw_vz` (LW/VZ 1–150, Spalte `variante`), alle mit Quelle; `tools/plan_mengen.py` macht daraus `docs/plan/mengen-leder.md`. Berufe-Plan: `rezepte` (Lernstufen laut AHledger), `items` (Item-IDs), `preise_zusatz` (Händlerpreise, Fisch); `tools/plan_berufe.py` macht daraus `docs/plan/berufe-plan.md` |
 | `data/karten/forever_karten.csv` | RXP-Weltkoordinaten der Kartenecken (0,0) und (1,1) pro Karte |
-| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `plan_berufe.py` (Berufe-Plan: Sweetspot, Stufen A–D), `rxp_schritte.py` (Schritte wie RXP sie zeigt; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `ah_aus_testlog.py` (AH-Scans und Abnahme übernehmen, Bericht `docs/plan/ah-preise.md`, mit `--eintragen` in den Plan), `markt.py` (Empfehlungen: herstellen, kaufen und wieder verkaufen, Bestand verkaufen, farmen; Ausgabe nur `build/markt/` und Addon `KombiDaten`), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
+| `tools/` | `fetch_rxp.sh`, `build_kombi.py` (Kombi-Guide bauen), `plan_mengen.py` (Mengenmodell), `plan_berufe.py` (Berufe-Plan: Sweetspot, Stufen A–D), `rxp_schritte.py` (Schritte wie RXP sie zeigt, `--gruppe`, `--dungeons`; Stellen-Vergleich vor dem Merge), `karte_aus_testlog.py` (Kartenecken aus dem Testlog übernehmen), `ah_aus_testlog.py` (AH-Scans und Abnahme übernehmen, Bericht `docs/plan/ah-preise.md`, mit `--eintragen` in den Plan), `markt.py` (Empfehlungen: herstellen, kaufen und wieder verkaufen, Bestand verkaufen, farmen; Ausgabe nur `build/markt/` und Addon `KombiDaten`), `validate.py`, `testlog_harness.py` (streng: keine neuen globalen Variablen), `merge_poc.py` (alte Probe) |
 | `docs/` | Best Practice, Entscheidungen, Vorgehen, `tests/` (Testläufe, Messplan Beta `messplan-beta.md`), `recherche/` (Quellen mit Datum), `plan/` (erzeugte Berichte) |
 | `data/rechnung/` | Rechnung LW/VZ 1–300 (CSV-Werte, xlsx mit Formeln) |
 | `data/preise/` | eigene AH-Scans, erzeugt von `tools/ah_aus_testlog.py`: `ah_eigen.csv` (beobachtete Gegenstände, alle Scans), `ah_alle.csv` (letzter Scan, alle Gegenstände), `ah_abnahme.csv` (Abnahme zwischen zwei Scans, Schätzung); ohne Realm- und Charakternamen |
@@ -42,8 +42,10 @@ tools/fetch_rxp.sh v4.11.23                               # RXP in der Version d
 python3 tools/plan_mengen.py                              # Mengenmodell -> docs/plan/mengen-leder.md (Ziele für plan.csv)
 python3 tools/plan_berufe.py                              # Berufe-Plan -> docs/plan/berufe-plan.md (Sweetspot, Stufen A-D, Einkauf; Zahlen für plan.csv)
 python3 tools/build_kombi.py v4.11.23 addons              # Kombi-Guide -> addons/RXPGuides_KombiGuide/ (prüft selbst, Exit 1 bei Problemen); danach committen
-python3 tools/rxp_schritte.py vergleich git:HEAD:addons/RXPGuides_KombiGuide/Kombi_Guide.lua addons/RXPGuides_KombiGuide/Kombi_Guide.lua "6-12 Mulgore" --stelle 30   # Stelle eines Testcharakters bleibt? (Exit 1 sonst)
+python3 tools/rxp_schritte.py vergleich git:HEAD:addons/RXPGuides_KombiGuide/Kombi_Guide.lua addons/RXPGuides_KombiGuide/Kombi_Guide.lua "6-12 Mulgore" --stelle 45 --gruppe "Kombiguide (H)"   # Stelle eines Testcharakters bleibt? (Exit 1 sonst)
 python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/forever/Horde-12-22_Barrens.lua "12-17 The Barrens" --klasse druid   # Route lesen wie RXP sie zeigt
+python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/Forever/dungeon/Horde-12-22_Barrens.lua "12-17 The Barrens" --dungeons RFC,WC,BFD   # RXPs Dungeon-Route mit diesen Dungeons
+python3 tools/rxp_schritte.py liste addons/RXPGuides_KombiGuide/Kombi_Guide.lua "12-17 The Barrens" --gruppe "Kombiguide Dungeon (H)"   # Dungeon-Gruppe des Kombi-Guides
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
 python3 tools/karte_aus_testlog.py <Testlog> v4.11.23      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen
@@ -57,10 +59,11 @@ Vor jedem Commit an Guides oder Addons: `validate.py` (handgeschriebene Guides m
 
 - Forever-Client 1.60.1 (Build 70338), `## Interface: 16001`, Spieltyp `camelot`, UI-Familie Mainline. Addon-Ordner der Beta: `_classic_beta_\Interface\AddOns`.
 - RXP lädt eigene Guides nur als Addon über `RXPGuides.RegisterGuide([[…]])`. Das Import-Fenster nimmt nur verschlüsselte, kontogebundene Texte.
-- Guide-Kopf: `#forever`, `#name`, `#group`, `<< Horde` sind Pflicht. Eigene Gruppe `Kombiguide (H)`, kein `#defaultfor`.
+- Guide-Kopf: `#forever`, `#name`, `#group`, `<< Horde` sind Pflicht. Eigene Gruppen `Kombiguide (H)` und `Kombiguide Dungeon (H)`, kein `#defaultfor`, kein `#beta` (`#beta` im Kopf versteckt einen Guide, solange die Beta-Features von RXP aus sind).
+- Dungeons: In Forever blendet RXP die Dungeon-Auswahl aus, der Konfigurator fehlt, und beim Laden des gespeicherten Guides setzt RXP sie auf «keine» («TODO: Fix the dungeon selection for Camelot», v4.11.23 und Hauptzweig 15.10.). Schritte mit `.dungeon X` erscheinen dort also nie. `build_kombi.py` baut die Auswahl aus `data/kombi/dungeons.csv` deshalb fest in die Dungeon-Gruppe ein (Schritte weg oder `.dungeon`-Zeilen weg, wie RXPs DungeonCheck).
 - In Guide-Text: `--` schneidet die Zeile ab, `[[`/`]]` beendet den Lua-String, `.subzone` braucht Text.
 - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen.
-- Während ein Testcharakter in einem Guide steht: neue Schritte nur nach seiner Stelle einfügen, sonst verschiebt sich die gespeicherte Stelle (RXP merkt sich Zeilennummer und Schrittnummer; Best Practice §6). Stand 15.10.: Tauren-Druide (Stufe 7) in «6-12 Mulgore» #45, zweiter Testcharakter (Stufe 16, laut Schrittfolge Druide) in «12-17 The Barrens» #103 (15.10. 20:58); vor dem Merge mit `tools/rxp_schritte.py vergleich` prüfen.
+- Während ein Testcharakter in einem Guide steht: neue Schritte nur nach seiner Stelle einfügen, sonst verschiebt sich die gespeicherte Stelle (RXP merkt sich Zeilennummer und Schrittnummer; Best Practice §6). Stand 15.10.: Tauren-Druide (Stufe 7) in «6-12 Mulgore» #45, zweiter Testcharakter (Stufe 16, laut Schrittfolge Druide) in «12-17 The Barrens» #103 (15.10. 20:58), beide in «Kombiguide (H)»; in «Kombiguide Dungeon (H)» steht noch niemand. Vor dem Merge mit `tools/rxp_schritte.py vergleich … --gruppe …` prüfen.
 - RXP überspringt leere Argumente (`,,`): `.collect 2318,19,0,1,24` statt `.collect 2318,19,,0,8`.
 - Quest- und NPC-Namen nicht übersetzen: RXP holt Quest-Namen vom Client und übersetzt `.target`/`.mob` selbst.
 - Testlog liest Chat-Text nicht aus (kann im modernen Client «secret» sein), sondern zählt den Taschenbestand. Beim Ausloggen meldet `GetMoney` 0, XP und Karte sind dann ebenfalls unzuverlässig.
