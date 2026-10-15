@@ -1,0 +1,5 @@
+kuerzel;an;name;gebiet_id;wert_druide;status;quelle
+RFC;ja;Ragefire Chasm;2437;7,1;Vorschlag Claude (RXP-Empfehlung), Entscheid offen;RXP v4.11.23 DB/forever/db.lua: dungeonList (Gebiets-ID), dungeonStats Horde (Wert = Reise x 0,7 + Quests x 1,2 + Druide x 1,4); SettingsPanel.lua SetRecommended schaltet ab Wert über 7 ein. Name wie in RXPs Guide-Texten
+WC;ja;Wailing Caverns;718;9,9;Vorschlag Claude (RXP-Empfehlung), Entscheid offen;wie RFC
+BFD;ja;Blackfathom Deeps;719;8,5;Vorschlag Claude (RXP-Empfehlung), Entscheid offen;wie RFC; in 12-22 nur Schritte für Priester
+DM;nein;The Deadmines;1581;4,2;Vorschlag Claude (RXP-Empfehlung), Entscheid offen;wie RFC
