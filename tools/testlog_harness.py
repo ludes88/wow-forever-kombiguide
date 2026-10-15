@@ -957,8 +957,8 @@ auctions = {
   { id = 2318, n = 20, buy = 1100, band = 1, name = 'Leichtes Leder' },
 }""")
 scan4()
-# Angeln: 6 Fänge im Abstand von 60 s (Wert pro Stunde in tools/markt.py)
-for k in range(6):
+# Angeln: 15 Fänge im Abstand von 60 s, zusammen 15 Minuten (Wert pro Stunde in tools/markt.py, Tipp ab 15 Minuten)
+for k in range(15):
     later4(50)
     g4.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-F%d" % k, 7620)
     later4(10)
@@ -1079,6 +1079,16 @@ check(sum(1 for m in msgs5 if m.endswith("5. Tipp 5")) == 1 and not any(m.endswi
       and any("2 weitere: /tl tipp alle" in m for m in msgs5), "3.6: /tl tipp zeigt 5 Tipps und den Rest als Hinweis")
 exp5 = [f.text for f in g5.frames.values() if f.text]
 check(exp5 and "7. Tipp 7" in exp5[0] and "Hinweis: Preise der Beta" in exp5[0], "3.6: /tl tipp alle im Fenster zum Kopieren")
+# Ohne Tipps: der erste Hinweis sagt, warum (z. B. noch kein AH-Scan)
+L5b = runtime(pre="""KombiDaten = { stand = "15.10. 19:38", tipps = { }, hinweise = { "Noch kein AH-Scan in der Datei" } }""")
+g5b = L5b.globals()
+g5b.fire("ADDON_LOADED", "KombiTestlog")
+g5b.fire("PLAYER_ENTERING_WORLD", True, False)
+g5b.SlashCmdList["KOMBITESTLOG"]("tipp")
+msgs5b = [g5b.messages[i] for i in range(1, len(g5b.messages) + 1)]
+check(any("Empfehlungen vom 15.10. 19:38: noch keine Empfehlung mit Beleg." in m for m in msgs5b)
+      and any("Hinweis: Noch kein AH-Scan in der Datei" in m for m in msgs5b) and not any("(-)" in m for m in msgs5b),
+      "3.6: /tl tipp ohne Tipps nennt den ersten Hinweis (%s)" % msgs5b[-3:])
 # Restlaufzeit gezählt wie die alte API (1–4): ein Wert 4 zeigt es, der Versatz gilt danach auch für unklare Scans
 L7 = runtime()
 g7 = L7.globals()
@@ -1188,9 +1198,15 @@ with tempfile.TemporaryDirectory() as tmp:
     hist = [{"datum": "2026-10-%02d 12:00" % d, "markt": m4, "item_id": i, "tiefstpreis_s": "%.2f" % p,
              "median_s": "%.2f" % (p * 1.2), "menge": n, "angebote": 5, "hinweis": "", "quelle": "Test"}
             for d in range(8, 14) for i, (p, n) in verlauf.items()]
+    # Langzeit: Leichtes Leder vom 20.09. bis 05.10. billiger (50c); zählt nur für die 30 Tage
+    hist += [{"datum": "2026-%s 12:00" % d, "markt": m4, "item_id": 2318, "tiefstpreis_s": "0.50", "median_s": "0.60",
+              "menge": 300, "angebote": 5, "hinweis": "", "quelle": "Test"}
+             for d in ["09-%02d" % x for x in range(20, 31)] + ["10-%02d" % x for x in range(1, 6)]]
     at._write(at.EIGEN, at.F_EIGEN, hist)
     abn_test = [{"datum": "2026-10-13 %02d:00" % h, "markt": m4, "item_id": i, "stunden": "%.2f" % st, "weg": w, "gekauft": g,
                  "quelle": "Test"} for h in (10, 12) for i, st, w, g in ((2318, 1.0, 35, 30), (4231, 2.0, 6, 5), (6291, 2.0, 9, 8))]
+    abn_test += [{"datum": "2026-09-%02d 10:00" % d, "markt": m4, "item_id": 2318, "stunden": "1.00", "weg": 10, "gekauft": 8,
+                  "quelle": "Test"} for d in (20, 21)]
     at._write(at.ABNAHME, at.F_ABNAHME, abn_test)
     erg = mk.rechne(sv4, aus=os.path.join(tmp, "markt"))
     mm = erg["markt"]
@@ -1260,6 +1276,33 @@ with tempfile.TemporaryDirectory() as tmp:
           "markt: billigeres Angebot nach dem Kauf verhindert die Empfehlung (%s)" %
           ({k: o2[2318][k] for k in ("menge", "um", "grund")} if 2318 in o2 else erg2["handel"]))
     check("Achtung: Tiefstpreis fällt (-20 % in den letzten 3 Tagen)." in tp[0], "markt: Warnung bei fallendem Preis")
+    # Langzeit (30 Tage): Abnahme im Beleg, Warnung beim Preis; Menge und Zielpreis bleiben bei 7 Tagen
+    check("30 Tage: geschätzt 88 Stück in 4.5 h gekauft (5 Vergleiche)" in tp[0]
+          and "Achtung: Tiefstpreis 7 Tage 80c liegt 60 % über dem Wert der 30 Tage (50c)." in tp[0],
+          "markt: Langzeit-Abnahme und -Warnung im Tipp (%s)" % tp[0])
+    k2318 = mm.kz[2318]
+    check(k2318["boden30"] == 50 and k2318["n30"] == k2318["n7"] + 16 and mk.langzeit_text(k2318).startswith("50c (")
+          and mk.langzeit_text(mm.kz[4231]) == "–", "markt: 30-Tage-Wert nur mit älteren Scans (%s)" % mk.langzeit_text(k2318))
+    check("| 30 Tage |" in bericht_md and "| 50c (" in bericht_md, "markt: Bericht mit Spalte 30 Tage")
+    check(tp[3].endswith("(1 Durchgang, 15 Min)."), "markt: Farmen mit Dauer in Minuten (%s)" % tp[3])
+    # Farmen: kein Tipp unter 15 Minuten oder mit Beute ohne Preis (Testlog vor 3.6 kennt keine Händlerpreise)
+    def beute(n, abstand, info):
+        log = ["15.10. 19:%02d:%02d | BEUTE | L15 71%% | Brachland | 1413 53.6,11.7 | RXP x #1 | Kreatur 3285 | "
+               "3x Leinenstoff (2589) | Geld +8c" % divmod(k * abstand, 60) for k in range(n)]
+        mf = mk.Markt({"log": log, "info": info}, [], {})
+        return mk.farmen(mf), mk.tipps(mf, [], [], [], [], mk.farmen(mf))
+    f_ohne, t_ohne = beute(20, 60, {})
+    f_kurz, t_kurz = beute(10, 60, {2589: {"n": "Leinenstoff", "s": 13}})
+    f_gut, t_gut = beute(20, 60, {2589: {"n": "Leinenstoff", "s": 13}})
+    check(f_ohne[0]["ohne_preis"] == ["Leinenstoff"] and not t_ohne and not t_kurz
+          and t_gut == ["Farmen: Gegner (Brachland) brachte 28s 20c pro Stunde (1 Durchgang, 20 Min)."],
+          "markt: Farm-Tipp nur ab 15 Minuten und mit Preis für jede Beute (%s, %s, %s)" % (t_ohne, t_kurz, t_gut))
+    # Ohne AH-Scan: Stand = letzte Protokollzeile, kein Markt im Addon
+    erg3 = mk.rechne('KombiTestlogDB = { ["log"] = { "15.10. 19:21:49 | SITZUNG | x", "15.10. 19:38:17 | ENDE | x" } }',
+                     aus=os.path.join(tmp, "markt3"))
+    daten3 = open(os.path.join(tmp, "markt3", "KombiDaten", "Daten.lua"), encoding="utf-8").read()
+    check('stand = "15.10. 19:38"' in daten3 and "markt =" not in daten3 and "Noch kein AH-Scan" in daten3 and not erg3["tipps"],
+          "markt: ohne Scan Stand aus dem Protokoll (%s)" % daten3.splitlines()[3:6])
     # Sonderzeichen in Texten bleiben gültiges Lua
     check(mk.lua_str('a "b" \\ c\nd') == '"a \\"b\\" \\\\ c\\nd"', "markt: Lua-Text mit Anführungszeichen und Zeilenumbruch")
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
