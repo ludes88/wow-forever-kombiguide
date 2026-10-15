@@ -1091,6 +1091,7 @@ check(any("Empfehlungen vom 15.10. 19:38: noch keine Empfehlung mit Beleg." in m
       "3.6: /tl tipp ohne Tipps nennt den ersten Hinweis (%s)" % msgs5b[-3:])
 # Restlaufzeit gezählt wie die alte API (1–4): ein Wert 4 zeigt es, der Versatz gilt danach auch für unklare Scans
 L7 = runtime()
+L7.execute('GetCurrentRegionName = function() return "" end')   # wie in der Beta am 15.10.: leerer Text
 g7 = L7.globals()
 g7.fire("ADDON_LOADED", "KombiTestlog")
 g7.fire("PLAYER_ENTERING_WORLD", True, False)
@@ -1117,6 +1118,9 @@ sc7 = g7.KombiTestlogDB.ahScans
 check(sc7[3].bandVersatz is None and sc7[3].bandRoh == "600-170000" and sc7[3].stufen[2318] == "70*5*0*0,80*5*0*0"
       and sc7[4].bandVersatz is None and sc7[4].abnahme is None and g7.KombiTestlogDB.ahBandVersatz is None,
       "unpassende Restlaufzeit-Werte: kein Versatz, keine Abnahme (%s, %s, %s)" % (sc7[3].bandVersatz, sc7[3].stufen[2318], sc7[4].abnahme))
+log7 = [g7.KombiTestlogDB.log[i] for i in range(1, len(g7.KombiTestlogDB.log) + 1)]
+check(sc7[1].region == "?" and any(" | AH-SCAN | " in l and "| ? Horde | Realm" in l for l in log7),
+      "leere Region (Beta) wird zu «?» (%s)" % sc7[1].region)
 
 # Format-Kopplung: tools/ah_aus_testlog.py liest die SavedVariables-Datei und den Text von /tl zeigen
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1131,6 +1135,14 @@ if aus_sv:
     check("realm" not in aus_sv[0] and "Testrealm" not in str(aus_sv[0]) and "Testheld" not in str(aus_sv[0]),
           "ah_aus_testlog gibt keinen Realm- und keinen Charakternamen weiter")
     check(aus_sv[0]["phase"] == "Beta", "Scan vor dem 04.11.2026 zählt als Beta")
+# Leere Region (Testlog 3.5 in der Beta, 15.10.): in der Datei und im Text von /tl zeigen wird sie zu «?»
+leer_sv = at._aus_lua({"ahScans": [{"datum": "2026-10-15 20:12", "region": "", "fraktion": "Horde", "realm": "R", "angebote": 1}]})
+leer_txt = at._aus_text('"15.10. 20:12:32 | AH-SCAN | L16 34% | Orgrimmar | 1454 55.5,64.8 | RXP x #99 | Scan 2026-10-15 20:12 |  '
+                        'Horde | Realm R | 1 Angebote, 1 Gegenstände, 0 nur mit Gebot, 18 s | Tiefstpreis / Median / Stück: '
+                        'Leichtes Leder (2318) 73c / 98c / 4310",')
+check(leer_sv[0]["markt"] == "? Horde " + at.kennung("R") and leer_txt and leer_txt[0]["markt"] == "? Horde " + at.kennung("R")
+      and leer_txt[0]["preise"][2318]["tiefst"] == 73,
+      "ah_aus_testlog: leere Region wird zu «?» (%s, %s)" % (leer_sv[0]["markt"], [s["markt"] for s in leer_txt]))
 aus_txt = at.lese("\n".join(lines))
 check(len(aus_txt) == 1 and aus_txt[0]["preise"].get(2318, {}).get("tiefst") == 48 and aus_txt[0]["preise"].get(2319, {}).get("median") == 200,
       "ah_aus_testlog liest die AH-SCAN-Zeile aus dem Text (%s)" % [x["preise"] for x in aus_txt])
@@ -1297,6 +1309,21 @@ with tempfile.TemporaryDirectory() as tmp:
     check(f_ohne[0]["ohne_preis"] == ["Leinenstoff"] and not t_ohne and not t_kurz
           and t_gut == ["Farmen: Gegner (Brachland) brachte 28s 20c pro Stunde (1 Durchgang, 20 Min)."],
           "markt: Farm-Tipp nur ab 15 Minuten und mit Preis für jede Beute (%s, %s, %s)" % (t_ohne, t_kurz, t_gut))
+    # Münzbeute, die das Testlog als GELD «sonst» schreibt (15.10.): zählt während eines Durchgangs zu «Gegner»,
+    # ausserhalb (30 Minuten später) und in einem anderen Gebiet nicht
+    log_m = []
+    for k in range(20):
+        log_m.append("15.10. 19:%02d:00 | BEUTE | L16 0%% | Brachland | 1413 56.6,7.4 | RXP x #1 | Kreatur 3284 | "
+                     "keine Gegenstände" % k)
+        log_m.append("15.10. 19:%02d:01 | GELD | L16 0%% | Brachland > Das Schlickermoor | 1413 56.6,7.4 | RXP x #1 | "
+                     "sonst +10c | Bestand 1s" % k)
+    log_m.append("15.10. 19:50:00 | GELD | L16 0% | Brachland | 1413 56.6,7.4 | RXP x #1 | sonst +5s | Bestand 6s")
+    log_m.append("15.10. 19:10:30 | GELD | L16 0% | Mulgore | 1412 46.0,60.0 | RXP x #1 | sonst +7s | Bestand 13s")
+    mm2 = mk.Markt({"log": log_m}, [], {})
+    fm2 = mk.farmen(mm2)
+    check(fm2 and fm2[0]["geld_sonst"] == 200 and round(fm2[0]["pro_stunde"]) == 600
+          and mk.tipps(mm2, [], [], [], [], fm2) == ["Farmen: Gegner (Brachland) brachte 6s pro Stunde (1 Durchgang, 20 Min)."],
+          "markt: Geld «sonst» zählt zur Beute während des Durchgangs (%s)" % fm2)
     # Ohne AH-Scan: Stand = letzte Protokollzeile, kein Markt im Addon
     erg3 = mk.rechne('KombiTestlogDB = { ["log"] = { "15.10. 19:21:49 | SITZUNG | x", "15.10. 19:38:17 | ENDE | x" } }',
                      aus=os.path.join(tmp, "markt3"))

@@ -131,7 +131,7 @@ def _aus_lua(db):
         datum = str(r.get("datum", "?"))
         n, fehlend = r.get("angebote") or 0, r.get("fehlend") or 0
         scans.append({"datum": datum, "zeit": int(r.get("zeit") or 0),
-                      "markt": f"{r.get('region', '?')} {r.get('fraktion', '?')} {kennung(r.get('realm'))}",
+                      "markt": f"{r.get('region') or '?'} {r.get('fraktion') or '?'} {kennung(r.get('realm'))}",
                       "phase": phase(datum), "client": r.get("client", "-"), "angebote": n,
                       "gegenstaende": r.get("gegenstaende"), "nur_gebot": r.get("nurGebot"), "fehlend": fehlend,
                       "unvollstaendig": n > 0 and fehlend > n * UNVOLLSTAENDIG,
@@ -141,7 +141,7 @@ def _aus_lua(db):
 
 
 MONEY = re.compile(r"^(?:(\d+)g)? ?(?:(\d+)s)? ?(?:(\d+)c)?$")
-ZEILE = re.compile(r"\| AH-SCAN \|.*?\| Scan (?P<datum>\d{4}-\d\d-\d\d \d\d:\d\d) \| (?P<region>\S+) (?P<fraktion>\S+) \| "
+ZEILE = re.compile(r"\| AH-SCAN \|.*?\| Scan (?P<datum>\d{4}-\d\d-\d\d \d\d:\d\d) \| (?P<region>\S*) (?P<fraktion>\S+) \| "
                    r"Realm (?P<realm>.+?) \| (?P<angebote>\d+) Angebote, (?P<gegen>\d+) Gegenstände, (?P<gebot>\d+) nur mit Gebot, "
                    r"(?P<dauer>\d+) s(?P<warn>.*?)\| Tiefstpreis / Median / Stück: (?P<liste>.*?)\"?,?\s*(?:--.*)?$", re.M)
 EINTRAG = re.compile(r"^(?:(?P<name>.+) \((?P<id>\d+)\)|(?P<id2>\d+)) (?P<lo>[\dgsc ]+?) / (?P<med>[\dgsc ]+?) / (?P<menge>\d+)$")
@@ -169,7 +169,7 @@ def _aus_text(text):
             if e.group("name"):
                 namen[i] = e.group("name")
         datum = m.group("datum")
-        scans.append({"datum": datum, "zeit": 0, "markt": f"{m.group('region')} {m.group('fraktion')} {kennung(m.group('realm'))}",
+        scans.append({"datum": datum, "zeit": 0, "markt": f"{m.group('region') or '?'} {m.group('fraktion')} {kennung(m.group('realm'))}",
                       "phase": phase(datum), "client": "-", "angebote": int(m.group("angebote")),
                       "gegenstaende": int(m.group("gegen")), "nur_gebot": int(m.group("gebot")), "fehlend": None,
                       "unvollstaendig": "unvollständig" in m.group("warn"), "dauer": int(m.group("dauer")),

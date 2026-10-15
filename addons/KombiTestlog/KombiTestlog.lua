@@ -1353,7 +1353,8 @@ local function ahMarket()
     local okF, faction = pcall(UnitFactionGroup, "player")
     if not okF or type(faction) ~= "string" or isSecret(faction) then faction = "?" end
     local okR, region = callApi("GetCurrentRegionName")
-    if not okR or type(region) ~= "string" or isSecret(region) then region = "?" end
+    -- in der Beta liefert der Client einen leeren Text (Testlog 15.10.)
+    if not okR or type(region) ~= "string" or isSecret(region) or region == "" then region = "?" end
     return realm, faction, region
 end
 
