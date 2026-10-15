@@ -10,7 +10,7 @@ Quelle: die Testlog-Datei des Nutzers, Stand 15.10. 19:38 (Testlog 3.3 und 3.5),
 | 14.10. 20:00–20:09 | Tauren-Druide, Stufe 7 (46 % → 74 %) | «6-12 Mulgore» #30 → #45 | Kombiguide 0.3, Testlog 3.3 |
 | 15.10. 19:21–19:38 | Stufe 15 (70 % → 97 %) | «12-17 The Barrens» #77 → #84 | Kombiguide 0.4, Testlog 3.5 |
 
-Nachtrag: Datei vom 15.10. 20:58 (nach `/reload`), siehe Abschnitt «15.10. 19:48–20:58» unten.
+Nachtrag: Datei vom 15.10. 20:58 (nach `/reload`), siehe Abschnitt «15.10. 19:48–20:58» unten; Datei vom 15.10. 22:01, Abschnitt «15.10. 20:58–22:01».
 
 ## Stellen im Kombi-Guide (Best Practice §6)
 
@@ -92,3 +92,44 @@ Gleicher Charakter (Stufe 15 → 16), Kombiguide 0.4, Testlog 3.5. Der Repo-Klon
   - 1411 Durotar: RXPs Kommentare passen genau, 32 Punkte
   - 1415 Östliche Königreiche, 1420 Tirisfal, 1458 Undercity: ohne RXP-Punkte zum Vergleich
 - Münzbeute: In den Ruinen von Lordaeron und im Brachland schrieb das Testlog Geld aus Beute oft als eigene Zeile GELD «sonst», nicht in der Zeile BEUTE. Seit 15.10. rechnet `tools/markt.py` dieses Geld zur Beute, wenn es während eines Durchgangs im selben Gebiet kam. Ruinen von Lordaeron: 5s 55c in 25 Minuten.
+
+## 15.10. 20:58–22:01 (Datei nach `/reload` um 22:01)
+
+Gleicher Charakter, Stufe 16 (65 %) → 18 (56 %). Bis 21:58 Kombiguide 0.4 und Testlog 3.5; um 21:58 hat der Nutzer `aktualisieren.bat` ausgeführt (`.git/FETCH_HEAD` im Klon 21:58:10) und `/reload` gemacht: SITZUNG 21:58:27 meldet «Kombiguide 0.5-v4.11.23 | Testlog 3.6 | KombiDaten 15.10. 20:12, 0 Tipps».
+
+**Verlauf**
+- 20:50–21:09 Ruinen von Lordaeron, ein Tod um 20:52 (Warte Lordamere). Beute u. a. «Rezept: Elixier der geringen Beweglichkeit» (3396), «Gravierter Umhang» (4701).
+- Quests mit XP (Testlog QUEST AB):
+  - Undercity und Umgebung: 95204 «Wappen von Lordaeron» 5450 XP (danach Stufe 17); 92421 «Die Gerechtigkeit des Lichts» 4600 XP und 45s; 92422 «Der Zorn von Rath'mael» 4600; 92401 «Eine verängstigte Bitte» 4600 (Silberwald)
+  - Orgrimmar: 97242 «Yelmaks Mischmasch» 800, 97275 «Whuut Ding will Weile haben» 800, 97249 «Lieblingsessen» 1050 (danach Stufe 18)
+  - Crossroads: 848 1050 (7s), 869 900 (6s), 867 1050 (7s), 870 675, 903 1050 (7s), 98248 «Versandetikett» 650, 91904 «Eine ganz große Kiste» 0 XP und 5s
+  - Ratchet: 902 1150, 863 1700 (20s), 896 1700
+- Der Nutzer hat dabei alle Quests abgegeben, auch gegen RXPs Reihenfolge (Nachricht 15.10.).
+- Neu angenommen: 5725 (Undercity), 1061 «Die Geister des Steinkrallengebirges» (Label «SpiritsPickup»), 97003 «Chol'aruk der Verschlinger».
+
+**Kombi-Guide**
+- Orgrimmar-Block (v0.4): #108 um 21:34 («SpiritsPickup»), #114 bis #143 in rund 5 Minuten. Laut Nutzer hat alles mit Lederverarbeitung und Verzauberkunst funktioniert (T11 teilweise: Charakter mit LW 109 und VZ 100).
+- Bei #115 (Plan-Zeile 23, Einkauf Stufe A, in v0.4 ohne die Bedingung «ab LW 80») kaufte er bei Tamar 44 Grober Faden und 27 Salz für zusammen 17s 90c (HÄNDLER 21:38, 33 Käufe; passt zu 10c und 50c je Stück, AHledger nennt 9c und 45c; die Aufteilung ist aus der Summe nicht eindeutig). Mit LW 109 braucht der Plan beides nicht mehr; v0.4.1 blendet den Schritt dann aus.
+- Stelle «12-17» #152 vor und nach dem Update auf 0.5 (Kombiguide (H)); #152 gehört nicht zu den Stellen, an denen eine alte Kennung im Neubau einen anderen Schritt trifft.
+- Die Versionsangabe aus der `.toc` liest WoW schon beim `/reload` neu: ENDE 21:58:18, SITZUNG 21:58:27 mit «Kombiguide 0.5» (9 Sekunden, also kein Neustart). T22 teilweise.
+
+**Geld** (Bestand 70s 99c → 1g 78s 15c)
+- Ein: Quests 97s, Händler 38s 41c (6 Teile verkauft), Beute 1s 90c
+- Aus: Tamar 17s 90c, Flüge 2s 75c (3 × 55c, 1 × 1s 10c), Pfand im AH 9s 50c
+- Die Summe geht auf (+1g 7s 16c).
+
+**Auktionshaus**
+- Zweiter Scan 21:54 (noch Testlog 3.5): 67 980 Angebote, 3064 Gegenstände, 1 nur mit Gebot, 17 s, keine Angebote ohne Daten. Übernommen mit `tools/ah_aus_testlog.py` (jetzt 2 Scans in `data/preise/ah_eigen.csv`).
+- Gegenüber 20:12 (Tiefstpreis / Median / Stück): Leichtes Leder 73c / 98c / 4310 → 52c / 64c / 7094; Mittleres Leder 1s 99c / 2s 29c / 5984 → 95c / 1s 99c / 7934; Seltsamer Staub 63c / 65c gleich; Verdorbene Lederfetzen 24c → 15c.
+- 21:55 stellte er 4 Edelsteine ein (Tigerauge, Moosachat, Schattenedelstein, Geringer Mondstein; aus einem Beutel in Undercity). Testlog 3.5 kennt nur die Abbuchung: 8s 50c Pfand zusammen.
+- 22:00 mit Testlog 3.6 (T19): AH-ANGEBOT «1x Grober Faden zu 24c je Stück | Dauer 24 Stunden | Pfand 0c | erstellt». Die Zeile AUKTIONSHAUS daneben zeigt «Ausgaben -1s». Der Pfand aus `CalculateCommodityDeposit` stimmt also nicht (der Haken läuft nach dem Einstellen; ob die Funktion dann 0 liefert oder ob es eine Mindestgebühr gibt, ist ungeprüft). Abhilfe geplant: Pfand aus der Abbuchung.
+- Abnahme: noch keine. Der Scan um 21:54 lief mit Testlog 3.5 (ohne Restlaufzeit-Bänder, Region leer statt «?»); 3.6 vergleicht nur mit einem Scan, der Bänder hat und denselben Markt zeigt.
+
+**Testlog 3.6 im Spiel**
+- INVENTAR beim Einloggen: 19 Gegenstände, 131 Stück; Bank beim Schliessen: 0 Gegenstände. Kontobank: keine Daten (ungeprüft, ob es keine gibt oder ob die Abfrage nichts liefert). T18 teilweise.
+- REZEPTE (T17): Lederverarbeitung 109/150 mit 39 Rezepten (7 orange, 2 gelb, 6 grün, 24 grau), Verzauberkunst 100/150 mit 19 (7 orange, 3 gelb, 3 grün, 6 grau), Kochkunst 1/75 mit 4. Für alle 12 Rezepte in `data/kombi/rezepte.csv` mit Zauber-ID (9 LW, 3 VZ) passt die Farbe im Spiel zu den Lernstufen von AHledger, z. B. Leichte Lederhose gelb (100/115), Feiner Ledergürtel grün (100/115), Dunkler Ledergürtel orange (bis 125), Runenverzierte Silberrute orange (bis 130).
+- Verzauberkunst 100, orange: Umhang - Schwacher Schutz (7771), Brust - Geringe Ausdauer (7748), Zweihandwaffe - Schwacher Einschlag (7745), Armschiene - Schwache Beweglichkeit (7779), Waffe - Schwaches Schlagen (7788), Runenverzierte Silberrute (7795), Großer Magiezauberstab (14807); gelb: Brust - Schwache Absorption (7426), Umhang - Schwacher Widerstand (7454), Armschiene - Schwache Ausdauer (7457).
+- Nicht im Protokoll: LEHRER (kein Lehrerfenster geöffnet), AH-POST (Briefkasten nicht geöffnet).
+
+**Karten**
+- 1421 Silberwald exakt (KARTE 21:19; `tools/karte_aus_testlog.py`). Keine RXP-Punkte mit Kommentar zum Vergleich.
