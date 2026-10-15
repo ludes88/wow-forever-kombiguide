@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 14.10.2026, Version 3.4
+-- Stand 15.10.2026, Version 3.5
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -9,8 +9,10 @@
 --   /tl auto          automatische Einträge an/aus
 --   /tl item <Link>   Gegenstand zusätzlich mitzählen (Shift-Klick auf den Gegenstand)
 --   /tl karte         Kartengrenzen der aktuellen Karte nochmals festhalten
+--   /tl ah            AH-Preise jetzt lesen (läuft beim Öffnen des Auktionshauses von selbst, höchstens alle 15 Minuten)
+--   /tl ah aus | an   AH-Scan beim Öffnen des Auktionshauses aus- oder einschalten
 --   /tl status        Überblick
---   /tl leeren ja     Protokoll löschen
+--   /tl leeren ja     Protokoll löschen (die AH-Scans bleiben)
 --   /tl hilfe         diese Hilfe
 --
 -- Automatische Einträge (Version 3 neu: HERSTELLEN bis REZEPT):
@@ -28,7 +30,13 @@
 --   REZEPT      neues Rezept
 --   LEHRER      Liste des Lehrers beim Öffnen: jeder Eintrag mit Status (lernbar, gesperrt, gelernt), Lernstufe
 --               (Stufe, Beruf und Fertigkeit) und Kosten; einmal pro Lehrer und Sitzung (Version 3.4)
+--   AH-SCAN     alle Angebote des Auktionshauses (Version 3.5): Kopfzeile mit den Gegenständen des Plans
+--               (Tiefstpreis / Median / Stück); alles Weitere in KombiTestlogDB.ahScans: alle (jeder Gegenstand
+--               «ID:Tiefstpreis:Median:Menge:Angebote» in Kupfer), plan (dasselbe für die Gegenstände des Plans),
+--               stufen (Preisstufen «Kupfer*Stück» der Plan-Gegenstände). Die 10 neuesten Scans behalten alle und
+--               stufen, ältere nur plan; höchstens 60 Scans. Ohne Verkäufernamen.
 --
+-- Version 3.5: AH-Preisscan beim Öffnen des Auktionshauses (höchstens alle 15 Minuten) oder mit /tl ah.
 -- Version 3.4: Lehrerliste. Damit alle Einträge erscheinen, im Lehrerfenster den Filter auf alle drei Arten stellen
 -- (verfügbar, nicht verfügbar, bereits bekannt); die Zeile nennt den Filter.
 -- Version 3.3: Bestand in Fenster-Zeilen beim Ausloggen aus dem letzten bekannten Wert (GetMoney meldet dann 0).
@@ -40,7 +48,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.4"
+local VERSION = "3.5"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -65,6 +73,33 @@ local DEFAULT_ITEMS = {
     10978, -- Small Glimmering Shard
     11083, -- Soul Dust
 }
+
+-- Version 3.5: Gegenstände des Plans für den AH-Scan (Preisstufen statt nur Tiefstpreis und Median).
+-- IDs aus den AHledger- und Wowhead-Links in data/ und docs/ (Stand 15.10.2026); dazu alles aus DEFAULT_ITEMS und /tl item.
+local AH_WATCH = {
+    -- Leder, Bälge und LW-Material
+    2934, 2318, 783, 2319, 4232, 4234, 4235, 4304, 8170, 4231, 4233,
+    4289, 2320, 2321, 4291, 14341, 4340, 2325,
+    -- LW-Erzeugnisse (Light Armor Kit, Embossed Leather Gloves, Fine Leather Belt, Light Leather Pants, Dark Leather Belt,
+    -- Hillman's Leather Gloves, Dark Leather Boots, Barbaric Shoulders, Guardian Gloves, Nightscape Headband und Pants,
+    -- Wicked Leather Gauntlets und Headband)
+    2304, 4239, 4246, 7282, 4249, 4247, 2315, 5964, 5966, 8176, 8193, 15083, 15086,
+    -- VZ: Staub, Essenzen, Splitter
+    10940, 11083, 11137, 11176, 16204, 10938, 10939, 10998, 11082, 11134, 11135, 11174, 11175, 16202, 16203,
+    10978, 11084, 11138, 11139, 11177, 11178, 14343, 14344,
+    -- VZ: Ruten, Perlen, Shadowgem, Simple Wood, Purple Lotus, Crystal Vial, Mote of Magic, Formeln, Erzeugnisse
+    -- (Runed Copper Rod, Brilliant Wand, Glimmering Staff, Arcane Salvager)
+    6217, 6338, 11128, 11144, 16206, 5500, 7971, 13926, 1210, 4470, 8831, 8925, 247786, 6349, 20758,
+    6218, 249385, 249392, 279985,
+    -- Kräuter, Samen, Phiolen (Peacebloom, Silverleaf, Earthroot, Mageroyal, Briarthorn, Swiftthistle, Bruiseweed,
+    -- Kingsblood, Frilled Lichen, Commonplace und Uncommon Herb Seeds, Empty und Leaded Vial)
+    2447, 765, 2449, 785, 2450, 2452, 2453, 3356, 249399, 268415, 268416, 3371, 3372,
+    -- Fisch, Köder, Kochrezept (Raw Brilliant Smallfish, Raw Longjaw Mud Snapper, Raw Bristle Whisker Catfish,
+    -- Deviate Fish, Firefin Snapper, Raw Sagefish, Shiny Bauble, Nightcrawlers, Recipe: Savory Deviate Delight), Linen Cloth
+    6291, 6289, 6308, 6522, 6359, 21071, 6529, 6530, 6661, 2589,
+}
+local AH_WATCH_SET = {}
+for _, id in ipairs(AH_WATCH) do AH_WATCH_SET[id] = true end
 
 -- Zauber, an denen das Testlog Handlungen erkennt (Classic-IDs, in Forever ungeprüft; Namen als Rückfall)
 local DISENCHANT_IDS = { [13262] = true }
@@ -124,6 +159,8 @@ local session              -- offenes Händler-, Post- oder Auktionshausfenster
 local windows = {}         -- offene Fenster: profession, trainer, taxi (mit Zeit und Ort), quest
 local fishCasts, fishLast = 0, 0   -- Würfe seit dem letzten Fang (Version 3.2)
 local missingEvents = {}   -- Ereignisse, die der Client nicht kennt (Version 3.2)
+local ahScan               -- laufender AH-Scan (Version 3.5)
+local ahWanted             -- Auktionshaus geöffnet: Scan beim nächsten Takt prüfen (Version 3.5)
 
 local function say(msg)
     DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg)
@@ -832,6 +869,7 @@ local function startSession(kind)
     session = placeHere()
     session.kind, session.diff, session.ctx = kind, {}, context()
     session.plus, session.minus, session.nPlus, session.nMinus = 0, 0, 0, 0
+    if kind == "AUKTIONSHAUS" then ahWanted = now() end   -- Version 3.5: AH-Scan beim nächsten Takt
 end
 
 -- Version 3.2: die offene Sitzung, wenn ihr Fenster noch offen ist; sonst beenden
@@ -847,7 +885,273 @@ local function liveSession()
     return s
 end
 
+-- Version 3.5: AH-Preisscan.
+-- Liest alle Angebote des Auktionshauses und speichert pro Gegenstand Tiefstpreis, Median (nach Stückzahl gewichtet),
+-- Menge und Anzahl Angebote; für die Gegenstände des Plans (AH_WATCH, DEFAULT_ITEMS, /tl item) dazu die Preisstufen.
+-- Läuft beim Öffnen des Auktionshauses von selbst (höchstens alle 15 Minuten) oder mit /tl ah.
+-- API laut Forever-UI 1.60.1 (70374), Blizzard_APIDocumentationGenerated/AuctionHouseDocumentation.lua:
+--   C_AuctionHouse.ReplicateItems («should be used in place of an 'allItem' QueryAuctionItems call to query the entire
+--   auction house»; ohne HasRestrictions), GetNumReplicateItems, GetReplicateItemInfo (3. Wert Anzahl, 10. Sofortkauf,
+--   17. Item-ID), Ereignis REPLICATE_ITEM_LIST_UPDATE.
+-- Ungeprüft im Spiel (Test T15): ob der Index bei 0 oder 1 beginnt (wird am ersten Eintrag erkannt) und ob der
+-- Sofortkaufpreis für das ganze Angebot gilt (so gerechnet: Preis pro Stück = Sofortkauf / Anzahl).
+-- Wartezeit: Der Auto-Scan von AHledger läuft höchstens alle 15 Minuten, sein Knopf zählt herunter, bis der Server
+-- wieder einen Scan erlaubt (https://www.curseforge.com/wow/addons/ahledger, Stand 12.10.2026). Wie lange der Server
+-- sperrt, steht dort nicht (ungeprüft); das Testlog wartet wie AHledger 15 Minuten. Verkäufernamen speichert es nicht.
+local AH_PAUSE = 900      -- Sekunden zwischen zwei automatischen Scans (wie AHledgers Auto-Scan)
+local AH_TIMEOUT = 120    -- Sekunden ohne Ergebnis: abbrechen
+local AH_QUIET = 2        -- Sekunden ohne neues Ereignis, dann lesen
+local AH_BATCH = 1000     -- Angebote pro Bildaufbau
+local AH_STEPS = 100      -- Preisstufen pro Gegenstand des Plans (reicht für den Einkauf von einigen hundert Stück)
+local AH_KEEP = 60        -- gespeicherte Scans (der älteste fällt weg)
+local AH_KEEP_FULL = 10   -- so viele neueste Scans behalten alle Gegenstände und die Preisstufen; ältere nur die
+                          -- Plan-Gegenstände (hält die Datei klein; Claude übernimmt jeden Scan ins Repo)
+
+local function epoch()
+    local ok, t = callApi("GetServerTime")
+    if ok and type(t) == "number" and plain(t) then return t end
+    return (time and time()) or 0
+end
+
+local function ahIsOpen()
+    local s = liveSession()
+    if s and s.kind == "AUKTIONSHAUS" then return true end
+    return interacting(SESSION_INFO["AUKTIONSHAUS"].itype) == true
+end
+
+local function ahLabel(id)
+    local n = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id)
+    if type(n) == "string" and not isSecret(n) then return n .. " (" .. id .. ")" end
+    return tostring(id)
+end
+
+-- Anzahl, Sofortkaufpreis und Item-ID eines Angebots (3., 10. und 17. Wert von GetReplicateItemInfo)
+local function ahEntry(i)
+    local ok, _, _, count, _, _, _, _, _, _, buyout, _, _, _, _, _, _, itemID = pcall(C_AuctionHouse.GetReplicateItemInfo, i)
+    if not ok then return nil end
+    return count, buyout, itemID
+end
+
+local function ahFail(why)
+    ahScan = nil
+    add("AH-SCAN", "abgebrochen: " .. why)
+    say("AH-Scan abgebrochen: " .. why)
+end
+
+-- Tiefstpreis, Median nach Stückzahl und Menge; sortiert die Liste nach Preis pro Stück
+local function ahStats(list)
+    table.sort(list, function(a, b) return a[1] < b[1] end)
+    local total = 0
+    for _, e in ipairs(list) do total = total + e[2] end
+    local acc, med = 0, list[#list][1]
+    for _, e in ipairs(list) do
+        acc = acc + e[2]
+        if acc * 2 >= total then
+            med = e[1]
+            break
+        end
+    end
+    return list[1][1], med, total
+end
+
+-- Preisstufen «Preis*Stück» der billigsten Angebote (Kupfer pro Stück), gleiche Preise zusammengefasst
+local function ahSteps(list)
+    local steps = {}
+    for _, e in ipairs(list) do
+        local u = math.floor(e[1] + 0.5)
+        local last = steps[#steps]
+        if last and last[1] == u then
+            last[2] = last[2] + e[2]
+        elseif #steps < AH_STEPS then
+            steps[#steps + 1] = { u, e[2] }
+        else
+            break
+        end
+    end
+    local parts = {}
+    for i, st in ipairs(steps) do parts[i] = st[1] .. "*" .. st[2] end
+    return table.concat(parts, ",")
+end
+
+local function ahMarket()
+    local realm = GetRealmName and GetRealmName()
+    if type(realm) ~= "string" or isSecret(realm) then realm = "?" end
+    local okF, faction = pcall(UnitFactionGroup, "player")
+    if not okF or type(faction) ~= "string" or isSecret(faction) then faction = "?" end
+    local okR, region = callApi("GetCurrentRegionName")
+    if not okR or type(region) ~= "string" or isSecret(region) then region = "?" end
+    return realm, faction, region
+end
+
+local function ahFinish()
+    local s = ahScan
+    ahScan = nil
+    local ids = {}
+    for id in pairs(s.items) do ids[#ids + 1] = id end
+    table.sort(ids)
+    local all, plan, steps, stat = {}, {}, {}, {}
+    for _, id in ipairs(ids) do
+        local list = s.items[id]
+        local lo, med, total = ahStats(list)
+        lo, med = math.floor(lo + 0.5), math.floor(med + 0.5)
+        stat[id] = { lo, med, total }
+        local entry = string.format("%d:%.0f:%.0f:%d:%d", id, lo, med, total, #list)   -- %.0f: Kupfer über 2^31
+        all[#all + 1] = entry
+        if AH_WATCH_SET[id] or db.items[id] then
+            plan[#plan + 1] = entry
+            steps[id] = ahSteps(list)
+        end
+    end
+    local realm, faction, region = ahMarket()
+    local build = "-"
+    if GetBuildInfo then
+        local v, b = GetBuildInfo()
+        build = tostring(v) .. " (" .. tostring(b) .. ")"
+    end
+    local rec = {
+        zeit = s.epoch, datum = date("%Y-%m-%d %H:%M", s.epoch), realm = realm, fraktion = faction, region = region,
+        client = build, angebote = s.n, gegenstaende = #ids, nurGebot = s.bidOnly, fehlend = s.missing, geheim = s.secret,
+        dauer = math.floor(now() - s.t0 + 0.5), alle = table.concat(all, ";"), plan = table.concat(plan, ";"), stufen = steps,
+    }
+    db.ahScans = db.ahScans or {}
+    table.insert(db.ahScans, rec)
+    while #db.ahScans > AH_KEEP do table.remove(db.ahScans, 1) end
+    for i = 1, #db.ahScans - AH_KEEP_FULL do
+        db.ahScans[i].alle, db.ahScans[i].stufen = nil, nil
+    end
+    local parts = {}
+    for _, id in ipairs(AH_WATCH) do
+        local st = stat[id]
+        if st then parts[#parts + 1] = string.format("%s %s / %s / %d", ahLabel(id), money(st[1]), money(st[2]), st[3]) end
+    end
+    local warn = ""
+    if s.missing > s.n * 0.1 then
+        warn = string.format(" | unvollständig: %d Angebote ohne Daten (Auktionshaus zu früh geschlossen?)", s.missing)
+    end
+    if s.secret > 0 then warn = warn .. string.format(" | %d Angebote mit geheimen Werten", s.secret) end
+    add("AH-SCAN", string.format("Scan %s | %s %s | Realm %s | %d Angebote, %d Gegenstände, %d nur mit Gebot, %d s%s | Tiefstpreis / Median / Stück: %s",
+        rec.datum, region, faction, realm, s.n, #ids, s.bidOnly, rec.dauer, warn,
+        (#parts > 0) and table.concat(parts, "; ") or "keine Plan-Gegenstände im Angebot"))
+    local ex = stat[2318]
+    say(string.format("AH-Scan fertig: %d Angebote, %d Gegenstände.%s", s.n, #ids,
+        ex and string.format(" Leichtes Leder: Tiefstpreis %s, Median %s, %d Stück.", money(ex[1]), money(ex[2]), ex[3]) or ""))
+    if not db.ahHinted then
+        db.ahHinted = true
+        say("Einmal prüfen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis pro Stück? Wenn nicht: /tl bug AH-Preis")
+    end
+end
+
+local function ahBatch()
+    local s = ahScan
+    if not s or s.phase ~= "lesen" then return end
+    local last = math.min(s.i + AH_BATCH, s.n)
+    for k = s.i, last - 1 do
+        local count, buyout, id = ahEntry(k + s.base)
+        if id == nil or count == nil or buyout == nil then
+            s.missing = s.missing + 1
+        elseif isSecret(id) or isSecret(count) or isSecret(buyout) then
+            s.secret = s.secret + 1
+        elseif buyout <= 0 or count <= 0 then
+            s.bidOnly = s.bidOnly + 1
+        else
+            local list = s.items[id]
+            if not list then
+                list = {}
+                s.items[id] = list
+            end
+            list[#list + 1] = { buyout / count, count }
+        end
+    end
+    s.i = last
+    if s.i >= s.n then
+        ahFinish()
+    elseif C_Timer and C_Timer.After then
+        C_Timer.After(0, function()
+            local ok, err = pcall(ahBatch)
+            if not ok then ahFail("Fehler beim Lesen: " .. tostring(err)) end
+        end)
+    else
+        ahBatch()
+    end
+end
+
+local function ahRead()
+    local s = ahScan
+    local ok, n = pcall(C_AuctionHouse.GetNumReplicateItems)
+    if not ok or type(n) ~= "number" or isSecret(n) or n <= 0 then
+        ahFail("keine Angebote erhalten")
+        return
+    end
+    local _, _, id0 = ahEntry(0)
+    s.phase, s.n, s.i, s.base = "lesen", n, 0, (id0 ~= nil) and 0 or 1
+    s.items, s.bidOnly, s.missing, s.secret = {}, 0, 0, 0
+    ahBatch()
+end
+
+local function ahStart(manual)
+    ahWanted = nil
+    if ahScan then
+        if manual then say("AH-Scan läuft schon.") end
+        return
+    end
+    local api = C_AuctionHouse
+    if not (api and api.ReplicateItems and api.GetNumReplicateItems and api.GetReplicateItemInfo) then
+        add("AH-SCAN", "nicht möglich: C_AuctionHouse.ReplicateItems fehlt in diesem Client")
+        if manual then say("AH-Scan nicht möglich: Der Client hat C_AuctionHouse.ReplicateItems nicht.") end
+        return
+    end
+    if not ahIsOpen() then
+        if manual then say("Bitte zuerst das Auktionshaus öffnen, dann /tl ah.") end
+        return
+    end
+    local t = epoch()
+    local since = t - (db.ahTry or 0)
+    if since < AH_PAUSE then
+        if not manual then
+            -- die Wartezeit gilt fürs ganze Konto (auch ein Scan des Bankcharakters zählt): darum melden
+            say(string.format("AH-Scan übersprungen: letzter Versuch vor %d Min, von selbst erst nach 15 Min. Sofort: /tl ah",
+                math.floor(since / 60)))
+            return
+        end
+        say(string.format("Letzter Versuch vor %d Min. Der Server lässt einen neuen Scan erst nach einer Wartezeit zu "
+            .. "(Dauer ungeprüft); ich versuche es trotzdem.", math.floor(since / 60)))
+    end
+    local ok, err = pcall(api.ReplicateItems)
+    if not ok then
+        add("AH-SCAN", "Start fehlgeschlagen: " .. tostring(err))
+        say("AH-Scan konnte nicht starten: " .. tostring(err))
+        return
+    end
+    db.ahTry = t
+    ahScan = { t0 = now(), epoch = t, phase = "warten", manual = manual }
+    say("AH-Scan läuft: Auktionshaus offen lassen, bis «AH-Scan fertig» kommt.")
+end
+
+local function ahTick()
+    local t = now()
+    if ahWanted and t - ahWanted >= 1 then
+        ahWanted = nil
+        if db.ahAuto ~= false and ready then ahStart(false) end
+    end
+    local s = ahScan
+    if not s then return end
+    if s.phase == "warten" and t - s.t0 > AH_TIMEOUT then
+        ahFail(string.format("kein Ergebnis nach %d s. Später nochmals das Auktionshaus öffnen oder /tl ah "
+            .. "(der Server lässt einen neuen Scan erst nach einer Wartezeit zu; das Testlog wartet 15 Minuten).", AH_TIMEOUT))
+    elseif s.phase == "daten" and (t - s.tEvent >= AH_QUIET or t - s.t0 > AH_TIMEOUT) then
+        -- AH_TIMEOUT: auch wenn das Ereignis nie ruhig wird, irgendwann lesen
+        ahRead()
+    elseif s.phase == "lesen" and t - s.t0 > 600 then
+        ahFail("Lesen dauerte zu lange")
+    end
+end
+
 local function tick()
+    local okA, errA = pcall(ahTick)
+    if not okA then
+        ahScan = nil   -- ein Fehler im AH-Scan soll nicht alle 2 Sekunden wiederkommen
+        add("FEHLER", "AH-Scan: " .. tostring(errA), false)
+    end
     checkRXP()
     lastContext = context()
     local m = bestMap()
@@ -913,7 +1217,8 @@ local function help()
     say("/tl zeigen [alle]  Protokoll kopieren  ·  /tl status")
     say("/tl auto  automatische Einträge an/aus  ·  /tl item <Shift-Klick>  mitzählen")
     say("/tl karte  Kartengrenzen der aktuellen Karte festhalten")
-    say("/tl leeren ja  alles löschen")
+    say("/tl ah  AH-Preise lesen (läuft beim Öffnen des Auktionshauses von selbst, höchstens alle 15 Min)  ·  /tl ah aus|an")
+    say("/tl leeren ja  Protokoll löschen (AH-Scans bleiben)")
 end
 
 local function note(kind, text)
@@ -973,10 +1278,23 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         else
             say("Keine Karte gefunden")
         end
+    elseif lower == "ah" then
+        local r = string.lower(rest)
+        if r == "aus" or r == "an" then
+            db.ahAuto = (r == "an")
+            say("AH-Scan beim Öffnen des Auktionshauses: " .. r .. (db.ahAuto and "" or " (von Hand: /tl ah)"))
+            add("EINSTELLUNG", "AH-Scan automatisch " .. r, false)
+        else
+            ahStart(true)
+        end
     elseif lower == "status" then
         local n = 0
         for _ in pairs(db.items) do n = n + 1 end
         say(string.format("%d Einträge, automatisch %s, %d Gegenstände gezählt", #db.log, db.auto and "an" or "aus", n))
+        local scans = db.ahScans or {}
+        local lastScan = scans[#scans]
+        say(string.format("AH-Scans: %d gespeichert%s, beim Öffnen des Auktionshauses %s", #scans,
+            lastScan and (", letzter " .. tostring(lastScan.datum)) or "", (db.ahAuto == false) and "aus" or "an"))
     elseif lower == "leeren" then
         if string.lower(rest) == "ja" then
             wipe(db.log)
@@ -1001,6 +1319,7 @@ function handlers.ADDON_LOADED(name)
         if db.items[id] == nil then db.items[id] = true end
     end
     if db.auto == nil then db.auto = true end
+    if db.ahAuto == nil then db.ahAuto = true end
     db.version = VERSION
 end
 
@@ -1197,6 +1516,14 @@ function handlers.MAIL_SHOW() startSession("POST") end
 function handlers.MAIL_CLOSED() finishSession("MAIL_CLOSED") end
 function handlers.AUCTION_HOUSE_SHOW() startSession("AUKTIONSHAUS") end
 function handlers.AUCTION_HOUSE_CLOSED() finishSession("AUCTION_HOUSE_CLOSED") end
+
+-- Version 3.5: Daten des AH-Scans sind da (kann mehrmals kommen; gelesen wird nach AH_QUIET Sekunden Ruhe)
+function handlers.REPLICATE_ITEM_LIST_UPDATE()
+    local s = ahScan
+    if s and (s.phase == "warten" or s.phase == "daten") then
+        s.phase, s.tEvent = "daten", now()
+    end
+end
 function handlers.TRAINER_SHOW() openWindow("trainer"); scheduleTrainerDump() end
 function handlers.TRAINER_UPDATE() if windows.trainer then scheduleTrainerDump() end end
 function handlers.TRAINER_CLOSED() closeWindow("trainer") end
