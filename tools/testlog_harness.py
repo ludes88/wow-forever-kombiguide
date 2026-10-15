@@ -76,19 +76,19 @@ bags = { [0] = {
   [2] = { id = 6386, n = 1, name = "Gewebte Handschuhe", q = 2 },
 } }
 C_Container = {
-  GetContainerNumSlots = function(bag) if bag == 0 then return 16 end return 0 end,
+  GetContainerNumSlots = function(bag) if bag == 0 then return 16 end if bags[bag] then return 28 end return 0 end,
   GetContainerItemInfo = function(bag, slot)
     local b = bags[bag]
     local it = b and b[slot]
     if not it then return nil end
-    return { itemID = it.id, stackCount = it.n, quality = it.q or 1, itemName = it.name,
+    return { itemID = it.id, stackCount = it.n, quality = it.q or 1, itemName = it.name, isBound = it.bound or false,
              hyperlink = "|cff1eff00|Hitem:" .. it.id .. "::::::::12:::::|h[" .. it.name .. "]|h|r" }
   end,
 }
 spells = { [7751] = "Glänzender Kleinfisch", [13262] = "Entzaubern", [8613] = "Kürschnern", [7620] = "Angeln",
            [5176] = "Zorn", [5177] = "Zorn (Rang 2)", [2152] = "Leichter Rüstungssatz" }
 C_Spell = { GetSpellName = function(id) return spells[id] end }
--- Name, Qualität, Gegenstandsstufe, benötigte Stufe, Klasse (4 = Rüstung)
+-- Name, Qualität, Gegenstandsstufe, benötigte Stufe, Klasse (4 = Rüstung, 7 = Handwerkswaren), Händlerpreis, Bindung
 iteminfo = { [6386] = { "Gewebte Handschuhe", 2, 18, 13, 4 } }
 loot = {}
 lootsrc = nil
@@ -109,8 +109,9 @@ GetLootSourceInfo = function(s) return lootsrc, 1 end
 IsFishingLoot = function() return fishing end
 -- Werte wie im Forever-UI-Code 1.60.1 (PlayerInteractionManagerConstantsDocumentation.lua)
 Enum = { LootSlotType = { None = 0, Item = 1, Money = 2, Currency = 3 },
-         PlayerInteractionType = { QuestGiver = 4, Merchant = 5, TaxiNode = 6, Trainer = 7, MailInfo = 17,
-                                   Auctioneer = 21, Professions = 59 } }
+         PlayerInteractionType = { QuestGiver = 4, Merchant = 5, TaxiNode = 6, Trainer = 7, Banker = 8, MailInfo = 17,
+                                   Auctioneer = 21, Professions = 59, CharacterBanker = 67, AccountBanker = 68 },
+         BankType = { Character = 0, Guild = 1, Account = 2 } }
 -- Version 3.2: laufende Interaktionen und Blizzard-Fenster (AuctionHouseFrame fehlt absichtlich, wie mit einem Ersatz-Addon)
 interacting = {}
 C_PlayerInteractionManager = { IsInteractingWithNpcOfType = function(t) return interacting[t] == true end }
@@ -123,9 +124,89 @@ C_Item = {
     local id = type(x) == "number" and x or tonumber(tostring(x):match("item:(%d+)"))
     local i = iteminfo[id]
     if not i then return nil end
-    return i[1], "link", i[2], i[3], i[4], "Rüstung", "Stoff", 1, "INVTYPE_HAND", 0, 4, i[5], 1
+    return i[1], "link", i[2], i[3], i[4], "Rüstung", "Stoff", 1, "INVTYPE_HAND", 0, i[6] or 4, i[5], 1, i[7] or 0
   end,
+  -- Version 3.6: ItemLocation im Test = { id = … }
+  GetItemID = function(loc) return loc.id end,
+  GetItemLink = function(loc) return "|cffffffff|Hitem:" .. loc.id .. "::::::::12:::::|h[x]|h|r" end,
 }
+-- Version 3.6: Berufsfenster (C_TradeSkillUI wie im Forever-UI 1.60.1), Werte erfunden
+ts = { prof = { professionID = 2810, professionName = "Lederverarbeitung", skillLevel = 55, maxSkillLevel = 150 },
+       recipes = {}, changing = false, linked = false, search = "" }
+C_TradeSkillUI = {
+  GetChildProfessionInfo = function() return ts.prof end,
+  GetBaseProfessionInfo = function() return ts.prof end,
+  GetFilteredRecipeIDs = function()   -- wie im Spiel: nur, was der Filter (hier die Suche) zeigt
+    local ids = {}
+    for id, r in pairs(ts.recipes) do
+      if ts.search == "" or r.name:find(ts.search, 1, true) then ids[#ids + 1] = id end
+    end
+    table.sort(ids)
+    return ids
+  end,
+  GetRecipeInfo = function(id)
+    local r = ts.recipes[id]
+    if not r then return nil end
+    return { recipeID = id, name = r.name, learned = r.learned ~= false, relativeDifficulty = r.diff,
+             isEnchantingRecipe = r.enchant or false, isDummyRecipe = false, isGatheringRecipe = false }
+  end,
+  GetRecipeSchematic = function(id, isRecraft)
+    local r = ts.recipes[id]
+    local slots = {}
+    for i, x in ipairs(r.reag) do slots[i] = { reagents = { { itemID = x[1] } }, quantityRequired = x[2], reagentType = 1, required = true } end
+    return { recipeID = id, name = r.name, quantityMin = r.qmin or 1, quantityMax = r.qmax or 1, outputItemID = r.out,
+             reagentSlotSchematics = slots, isRecraft = false }
+  end,
+  GetRecipeOutputItemData = function(id) return { itemID = ts.recipes[id].out } end,
+  IsDataSourceChanging = function() return ts.changing end,
+  IsTradeSkillLinked = function() return ts.linked end,
+  IsTradeSkillGuild = function() return false end,
+  IsNPCCrafting = function() return false end,
+  GetOnlyShowMakeableRecipes = function() return false end,
+  GetOnlyShowSkillUpRecipes = function() return false end,
+  GetOnlyShowFirstCraftRecipes = function() return false end,
+  AreAnyInventorySlotsFiltered = function() return false end,
+  AnyRecipeCategoriesFiltered = function() return false end,
+  GetShowLearned = function() return true end,
+  GetRecipeItemNameFilter = function() return ts.search end,
+}
+-- Version 3.6: Bank mit Reitern (Enum.BankType laut ItemConstantsDocumentation.lua: Character 0, Account 2)
+C_Bank = { FetchPurchasedBankTabData = function(bt)
+  if bt == 0 then return { { ID = 6, bankType = 0, name = "Reiter 1" } } end
+  if bt == 2 then return { { ID = 15, bankType = 2, name = "Konto 1" } } end
+  return {}
+end }
+-- Version 3.6: Briefkasten (Werte wie GetInboxHeaderInfo und GetInboxInvoiceInfo in MailFrame.lua des Forever-UI 1.60.1);
+-- die Betreff-Texte hier sind Testwerte, nicht die echten des deutschen Clients
+inbox = {}
+GetInboxNumItems = function() return #inbox, #inbox end
+GetInboxHeaderInfo = function(i)
+  local m = inbox[i]
+  if not m then return nil end
+  return nil, nil, m.sender or "Auktionshaus", m.subject, m.money or 0, 0, m.days or 29.5, m.items, false, false, false,
+         false, false, m.qty, m.link
+end
+GetInboxInvoiceInfo = function(i)
+  local m = inbox[i]
+  if not (m and m.inv) then return nil end
+  local v = m.inv
+  return v.type, v.item, "Kaeufername", v.bid, v.buyout, v.deposit, v.cut, 0, 0, 0, v.count, false
+end
+AUCTION_SOLD_MAIL_SUBJECT = "Auktion erfolgreich: %s"
+AUCTION_EXPIRED_MAIL_SUBJECT = "Auktion abgelaufen: %s"
+AUCTION_WON_MAIL_SUBJECT = "Auktion gewonnen: %s"
+AUCTION_OUTBID_MAIL_SUBJECT = "Überboten: %s"
+AUCTION_REMOVED_MAIL_SUBJECT = "Auktion abgebrochen: %s"
+AUCTION_DURATION_ONE, AUCTION_DURATION_TWO, AUCTION_DURATION_THREE = "12 Std.", "24 Std.", "48 Std."
+-- Version 3.6: hooksecurefunc wie im Spiel: erst das Original, dann der Haken
+hooksecurefunc = function(t, name, hook)
+  local orig = t[name]
+  t[name] = function(...)
+    local r = { orig(...) }
+    hook(...)
+    return unpack(r)
+  end
+end
 skills = {
   { name = "Berufe", isHeader = true },
   { name = "Kürschnerei", rank = 10, maxRank = 75, isAbandonable = true },
@@ -161,6 +242,8 @@ GetCurrentRegionName = function() return "EU" end
 auctions = {}
 replicateBase = 0
 replicateCalls = 0
+needsConfirm = false
+posted = {}
 C_AuctionHouse = {
   ReplicateItems = function() replicateCalls = replicateCalls + 1 end,
   GetNumReplicateItems = function() return #auctions end,
@@ -169,6 +252,19 @@ C_AuctionHouse = {
     if not a then return nil end
     return a.name, 0, a.n, 1, true, 1, "", 1, 1, a.buy, 0, nil, nil, "Verkaeufername", "Verkaeufername-Realm", 0, a.id, true
   end,
+  -- Version 3.6: Restlaufzeit-Band (0 kurz … 3 sehr lang) und dessen Grenzen in Sekunden (Testwerte)
+  GetReplicateItemTimeLeft = function(i) local a = auctions[i + 1 - replicateBase] return a and (a.band or 3) or 0 end,
+  GetTimeLeftBandInfo = function(b)
+    local t = { [0] = { 0, 1800 }, [1] = { 1800, 7200 }, [2] = { 7200, 43200 }, [3] = { 43200, 172800 } }
+    return t[b][1], t[b][2]
+  end,
+  -- Version 3.6: Einstellen (PostCommodity meldet, ob eine Bestätigung nötig ist)
+  PostCommodity = function(item, duration, quantity, unitPrice) table.insert(posted, "C") return needsConfirm end,
+  ConfirmPostCommodity = function(item, duration, quantity, unitPrice) table.insert(posted, "CC") return true end,
+  PostItem = function(item, duration, quantity, bid, buyout) table.insert(posted, "I") return needsConfirm end,
+  ConfirmPostItem = function(item, duration, quantity, bid, buyout) table.insert(posted, "IC") return true end,
+  CalculateCommodityDeposit = function(itemID, duration, quantity) return 3 * quantity * duration end,
+  CalculateItemDeposit = function(item, duration, quantity) return 100 * duration end,
 }
 ticker = nil
 C_Timer = { After = function(s, f) f() end, NewTicker = function(s, f) ticker = f return {} end }
@@ -216,11 +312,13 @@ end })
 
 src = open(sys.argv[1], encoding="utf-8").read()
 
-def runtime(unknown=()):
+def runtime(unknown=(), pre=""):
     L = lua51.LuaRuntime(unpack_returned_tuples=True)
     L.execute(PRELUDE)
     for e in unknown:
         L.execute('unknownEvents["%s"] = true' % e)
+    if pre:
+        L.execute(pre)   # z. B. ein geladenes Addon KombiDaten (Version 3.6)
     L.execute(STRICT)
     chunk = L.globals().loadstring(src)
     if chunk is None:
@@ -646,8 +744,12 @@ scans = db.ahScans
 check(scans is not None and len(scans) == 1, "ein Scan gespeichert")
 s1 = scans[1] if scans is not None and len(scans) >= 1 else None
 if s1 is not None:
-    check(s1.stufen[2318] == "48*20,52*5,55*20", "Preisstufen Leichtes Leder (%s)" % s1.stufen[2318])
-    check(s1.stufen[2319] == "200*4", "Preisstufen Mittleres Leder ohne Angebot nur mit Gebot (%s)" % s1.stufen[2319])
+    # alle Rohwerte 3: ob 0–3 oder 1–4 gezählt wird, ist nicht zu erkennen -> lang und sehr lang bleiben 0
+    check(s1.stufen[2318] == "48*20*0*0,52*5*0*0,55*20*0*0", "Preisstufen Leichtes Leder, Restlaufzeit unklar (%s)" % s1.stufen[2318])
+    check(s1.stufen[2319] == "200*4*0*0", "Preisstufen Mittleres Leder ohne Angebot nur mit Gebot (%s)" % s1.stufen[2319])
+    check(s1.bandRoh == "3-3" and s1.bandVersatz is None, "Rohwerte der Restlaufzeit gespeichert, Versatz unklar (%s, %s)" % (s1.bandRoh, s1.bandVersatz))
+    check(s1.baender == "0:0-1800;1:1800-7200;2:7200-43200;3:43200-172800", "Grenzen der Restlaufzeit-Bänder (%s)" % s1.baender)
+    check(s1.abnahme is None, "erster Scan: keine Abnahme")
     check(s1.stufen[4306] is None, "keine Preisstufen für Gegenstände ausserhalb des Plans")
     check(s1.alle == "2318:48:52:45:3;2319:200:200:4:1;4306:500:500:10:1", "alle Gegenstände kompakt (%s)" % s1.alle)
     check(s1.plan == "2318:48:52:45:3;2319:200:200:4:1", "Plan-Gegenstände kompakt (%s)" % s1.plan)
@@ -696,6 +798,316 @@ for _ in range(90):
     L3.execute("now_t = now_t + 1.5"); g3.ticker()
 sc3 = g3.KombiTestlogDB.ahScans
 check(sc3[len(sc3)].alle == "2318:77:77:1:1", "liest nach 120 s auch ohne ruhiges Ereignis (%s)" % sc3[len(sc3)].alle)
+# --- Version 3.6: Rezepte, Bestand, AH-Post, eigene Angebote, Abnahme, Empfehlungen ---
+L4 = runtime()
+g4 = L4.globals()
+slash4 = lambda m: g4.SlashCmdList["KOMBITESTLOG"](m)
+def later4(s):
+    L4.execute("now_t = now_t + %d" % s)
+L4.execute("""
+iteminfo[2318] = { "Leichtes Leder", 1, 10, 0, 7, 15 }
+iteminfo[2934] = { "Fetzen", 0, 5, 0, 7, 1 }
+iteminfo[2304] = { "Leichter Rüstungssatz", 1, 5, 1, 0, 6 }
+iteminfo[783] = { "Leichter Balg", 1, 10, 0, 7, 10 }
+iteminfo[4289] = { "Salz", 1, 5, 0, 7, 12 }
+iteminfo[4231] = { "Geschmeidiger leichter Balg", 1, 10, 0, 7, 50 }
+iteminfo[10940] = { "Seltsamer Staub", 1, 10, 0, 7, 25 }
+iteminfo[2319] = { "Mittleres Leder", 1, 15, 0, 7, 25 }
+iteminfo[6291] = { "Roher glänzender Kleinfisch", 1, 5, 0, 0, 2 }
+iteminfo[6522] = { "Deviatfisch", 1, 18, 0, 0, 10 }
+-- Zeit der Protokollzeilen folgt der Testuhr (für den Wert pro Stunde in tools/markt.py)
+date = function(f, t) return os.date(f, t or (server_t + now_t - 1000)) end
+ts.recipes = {
+  [2881] = { name = "Leichtes Leder", reag = { { 2934, 3 } }, out = 2318, diff = 3 },
+  [2152] = { name = "Leichter Rüstungssatz", reag = { { 2318, 1 } }, out = 2304, diff = 1 },
+  [3816] = { name = "Geschmeidiger leichter Balg", reag = { { 783, 1 }, { 4289, 1 } }, out = 4231, diff = 0 },
+  [2153] = { name = "Handgenähte Lederstiefel", reag = { { 2318, 2 } }, out = 2302, diff = 0, learned = false },
+}
+""")
+g4.fire("ADDON_LOADED", "KombiTestlog")
+g4.fire("PLAYER_ENTERING_WORLD", True, False)
+# Berufsfenster: alle gelernten Rezepte; danach nur Farbwechsel; fremde Liste (verlinkt): nichts
+L4.execute("ProfessionsFrame.shown = true")
+g4.fire("TRADE_SKILL_SHOW")
+L4.execute("ts.recipes[2152].diff = 2; ts.prof.skillLevel = 61")
+g4.fire("TRADE_SKILL_LIST_UPDATE")
+g4.fire("TRADE_SKILL_LIST_UPDATE")                 # unverändert: keine Zeile
+L4.execute("ts.linked = true; ts.recipes[2152].diff = 3")
+g4.fire("TRADE_SKILL_LIST_UPDATE")                 # Liste eines anderen Spielers: keine Zeile
+L4.execute("ts.linked = false; ts.changing = true")
+g4.fire("TRADE_SKILL_LIST_UPDATE")                 # Liste wird gerade neu aufgebaut: warten
+L4.execute("ts.changing = false; ProfessionsFrame.shown = false")
+g4.fire("TRADE_SKILL_CLOSE")
+# Gefiltert (Suche): der gespeicherte Stand bleibt vollständig, nur das sichtbare Rezept ändert sich; Farbwechsel trotzdem
+L4.execute("ProfessionsFrame.shown = true; ts.recipes[2152].diff = 2; ts.recipes[3816].diff = 1; ts.search = 'Balg'")
+g4.fire("TRADE_SKILL_SHOW")
+L4.execute("ts.search = ''; ProfessionsFrame.shown = false")
+g4.fire("TRADE_SKILL_CLOSE")
+# Ein zweiter Beruf, zuerst gefiltert gesehen: kurze Zeile, dann ohne Filter die ganze Liste
+L4.execute("""ProfessionsFrame.shown = true
+ts.prof = { professionID = 2811, professionName = "Verzauberkunst", skillLevel = 12, maxSkillLevel = 75 }
+ts.recipes = {
+  [7418] = { name = "Armschiene - Schwache Gesundheit", reag = { { 10940, 1 } }, enchant = true, diff = 0 },
+  [14293] = { name = "Kleiner Zauberstab", reag = { { 4470, 1 }, { 10938, 1 } }, out = 11287, diff = 1 },
+}
+ts.search = "Zauberstab" """)
+g4.fire("TRADE_SKILL_SHOW")
+L4.execute("ts.search = ''")
+g4.fire("TRADE_SKILL_LIST_UPDATE")
+L4.execute("ProfessionsFrame.shown = false")
+g4.fire("TRADE_SKILL_CLOSE")
+g4.fire("TRADE_SKILL_LIST_UPDATE")                 # Fenster zu: nichts
+# Bank: Reiter des Charakters und Kontobank; dasselbe nochmals über den Interaktions-Manager: keine zweite Zeile
+L4.execute("""bags[6] = { [1] = { id = 2318, n = 40, name = 'Leichtes Leder' }, [2] = { id = 4234, n = 7, name = 'Schweres Leder' },
+  [3] = { id = 2934, n = 6, name = 'Fetzen', bound = true } }
+bags[15] = { [1] = { id = 10940, n = 12, name = 'Seltsamer Staub' } }""")
+g4.fire("BANKFRAME_OPENED")
+g4.fire("PLAYER_INTERACTION_MANAGER_FRAME_SHOW", 8)
+L4.execute("bags[6][1].n = 30")
+g4.fire("BANKFRAME_CLOSED")
+g4.fire("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", 8)   # gleich wie eben: keine Zeile
+# Briefkasten mit Briefen des Auktionshauses (und einem privaten Brief, der nicht zählt)
+L4.execute("""inbox = {
+  { subject = "Auktion erfolgreich: Leichtes Leder", money = 1140,
+    inv = { type = "seller", item = "Leichtes Leder", bid = 1200, buyout = 1200, deposit = 0, cut = 60, count = 20 } },
+  { subject = "Auktion erfolgreich: Silberblatt (12)", money = 300 },
+  { subject = "Auktion abgelaufen: Seltsamer Staub (5)", items = 1, qty = 5,
+    link = "|cffffffff|Hitem:10940::::::::12:::::|h[Seltsamer Staub]|h|r" },
+  { subject = "Auktion gewonnen: Mittleres Leder", items = 1, qty = 10,
+    link = "|cffffffff|Hitem:2319::::::::12:::::|h[Mittleres Leder]|h|r",
+    inv = { type = "buyer", item = "Mittleres Leder", bid = 2500, count = 10 } },
+  { sender = "Freund", subject = "Hallo", money = 100 },
+}""")
+L4.execute("MailFrame.shown = true; interacting[17] = true")
+g4.fire("MAIL_SHOW")
+g4.fire("MAIL_INBOX_UPDATE")                        # dieselben Briefe: keine zweite Zeile
+L4.execute("table.remove(inbox, 1)")                # Geld genommen: Brief weg
+g4.fire("MAIL_INBOX_UPDATE")
+# Die Rechnung wird erst lesbar, nachdem der Brief einmal geöffnet war: ergänzen statt neu
+L4.execute("inbox[1].inv = { type = 'seller', item = 'Silberblatt', bid = 300, buyout = 300, deposit = 0, cut = 15, count = 12 }; "
+           "inbox[1].days = 29.49")
+g4.fire("MAIL_INBOX_UPDATE")
+L4.execute("for _, m in ipairs(inbox) do m.days = (m.days or 29.5) - 0.02 end")   # Ablauf rückt nach: kein neuer Eintrag
+g4.fire("MAIL_INBOX_UPDATE")
+# Abgeholt, danach kommt ein gleicher Brief (Ablauf 2 Stunden später): ein neuer Eintrag, nicht der alte
+L4.execute("for i, m in ipairs(inbox) do if m.subject:find('abgelaufen', 1, true) then table.remove(inbox, i) break end end")
+g4.fire("MAIL_INBOX_UPDATE")
+L4.execute("table.insert(inbox, { subject = 'Auktion abgelaufen: Seltsamer Staub (5)', items = 1, qty = 5, days = 29.5625, "
+           "link = '|cffffffff|Hitem:10940::::::::12:::::|h[Seltsamer Staub]|h|r' })")
+g4.fire("MAIL_INBOX_UPDATE")
+L4.execute("MailFrame.shown = false; interacting[17] = false")
+g4.fire("MAIL_CLOSED")
+L4.execute("inbox = {}")                            # Client leert die Liste nach dem Weggehen: kein Brief gilt als abgeholt
+g4.fire("MAIL_INBOX_UPDATE")
+# Eigene Angebote: Ware ohne Bestätigung, Ware mit Bestätigung (nur eine Zeile), Gegenstand; dann ohne Ereignis:
+# einmal mit weniger in den Taschen (Zeile), einmal nie zustande gekommen (keine Zeile). AH-Scan dabei aus.
+slash4("ah aus")
+L4.execute("interacting[21] = true; counts[2318] = 50")
+g4.fire("AUCTION_HOUSE_SHOW")
+L4.execute("C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 20, 600)")
+g4.fire("AUCTION_HOUSE_AUCTION_CREATED", 101)
+L4.execute("needsConfirm = true; C_AuctionHouse.PostCommodity({ id = 2318 }, 1, 5, 700)")
+g4.fire("AUCTION_HOUSE_POST_WARNING")              # der Server will eine Bestätigung (Fenster im UI)
+L4.execute("C_AuctionHouse.ConfirmPostCommodity({ id = 2318 }, 1, 5, 700)")
+g4.fire("AUCTION_HOUSE_AUCTION_CREATED", 102)
+L4.execute("needsConfirm = false; C_AuctionHouse.PostItem({ id = 6386 }, 3, 1, nil, 5000)")
+g4.fire("AUCTION_HOUSE_AUCTION_CREATED", 103)
+L4.execute("counts[2318] = 50; C_AuctionHouse.PostCommodity({ id = 2318 }, 3, 10, 650); counts[2318] = 40")
+L4.execute("C_AuctionHouse.PostCommodity({ id = 10940 }, 2, 3, 900)")
+later4(31); g4.ticker()
+# Bestätigung abgebrochen, gleich danach ein anderes Angebot: das Ereignis gehört zum neuen; abgelehntes Angebot: nichts
+L4.execute("needsConfirm = true; C_AuctionHouse.PostCommodity({ id = 10940 }, 2, 5, 800)")
+g4.fire("AUCTION_HOUSE_POST_WARNING")
+later4(1)
+L4.execute("needsConfirm = false; C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 3, 610)")
+g4.fire("AUCTION_HOUSE_AUCTION_CREATED", 104)
+L4.execute("C_AuctionHouse.PostCommodity({ id = 2934 }, 1, 1, 100)")
+g4.fire("AUCTION_HOUSE_POST_ERROR")
+# Langsamer Server: das zweite Angebot kommt, bevor das erste bestätigt ist; die Ereignisse kommen der Reihe nach
+L4.execute("C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 2, 620)")
+later4(5)
+L4.execute("C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 4, 630)")
+g4.fire("AUCTION_HOUSE_AUCTION_CREATED", 105)
+g4.fire("AUCTION_HOUSE_AUCTION_CREATED", 106)
+later4(31); g4.ticker()
+L4.execute("interacting[21] = false")
+g4.fire("AUCTION_HOUSE_CLOSED")
+slash4("ah an")
+# Zwei AH-Scans 30 Minuten auseinander: Abnahme der billigsten Angebote
+L4.execute("""auctions = {
+  { id = 2318, n = 20, buy = 960, band = 3, name = 'Leichtes Leder' },
+  { id = 2318, n = 5, buy = 260, band = 2, name = 'Leichtes Leder' },
+  { id = 2318, n = 20, buy = 1100, band = 1, name = 'Leichtes Leder' },
+  { id = 2319, n = 4, buy = 800, band = 3, name = 'Mittleres Leder' },
+  { id = 4231, n = 2, buy = 300, band = 0, name = 'Geschmeidiger leichter Balg' },
+}""")
+def scan4():
+    L4.execute("interacting[21] = true")
+    g4.fire("AUCTION_HOUSE_SHOW")
+    later4(2); g4.ticker()
+    g4.fire("REPLICATE_ITEM_LIST_UPDATE")
+    later4(3); g4.ticker()
+    L4.execute("interacting[21] = false")
+    g4.fire("AUCTION_HOUSE_CLOSED")
+scan4()
+L4.execute("""server_t = server_t + 1800
+auctions = {
+  { id = 2318, n = 10, buy = 470, band = 3, name = 'Leichtes Leder' },
+  { id = 2318, n = 3, buy = 156, band = 2, name = 'Leichtes Leder' },
+  { id = 2318, n = 20, buy = 1100, band = 1, name = 'Leichtes Leder' },
+}""")
+scan4()
+# Angeln: 6 Fänge im Abstand von 60 s (Wert pro Stunde in tools/markt.py)
+for k in range(6):
+    later4(50)
+    g4.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-F%d" % k, 7620)
+    later4(10)
+    L4.execute("fishing = true; loot = { { type = 1, name = 'Deviatfisch', id = 6522, n = 1 } }; "
+               "lootsrc = 'GameObject-0-3299-1-12345-35591-0000ABCDEF'")
+    g4.fire("LOOT_OPENED", True, False)
+    g4.fire("LOOT_CLOSED")
+    L4.execute("fishing = false")
+slash4("tipp")                                      # ohne KombiDaten: Hinweis
+slash4("status")
+L4.execute("logout = true")
+g4.fire("PLAYER_LOGOUT")
+L4.execute("logout = false")
+db4 = g4.KombiTestlogDB
+lines4 = [db4.log[i] for i in range(1, len(db4.log) + 1)]
+msgs4 = [g4.messages[i] for i in range(1, len(g4.messages) + 1)]
+print("=== Protokoll 3.6 (%d Einträge) ===" % len(lines4))
+for l in lines4:
+    print(l)
+def one4(kind, *parts):
+    hits = [l for l in lines4 if (" | %s | " % kind) in l and all(p in l for p in parts)]
+    check(len(hits) == 1, "3.6: %s mit %s (%d Treffer)" % (kind, ", ".join(parts), len(hits)))
+check(not any(" | FEHLER | " in l for l in lines4), "3.6: keine FEHLER (%s)" % [l for l in lines4 if " | FEHLER | " in l])
+rez = [l for l in lines4 if " | REZEPTE | " in l]
+check(len(rez) == 5, "3.6: fünf REZEPTE-Zeilen: Liste, zwei Farbwechsel, gefiltert, Liste des zweiten Berufs (%d)" % len(rez))
+one4("REZEPTE", "Lederverarbeitung 55/150 | 3 Rezepte (Liste des Fensters)",
+     "Leichter Rüstungssatz (2152): 1x Leichtes Leder (2318) -> 1x Leichter Rüstungssatz (2304), gelb",
+     "Geschmeidiger leichter Balg (3816): 1x Leichter Balg (783) + 1x Salz (4289) -> 1x Geschmeidiger leichter Balg (4231), orange",
+     "Leichtes Leder (2881): 3x Fetzen (2934) -> 1x Leichtes Leder (2318), grau")
+check(not any("Handgenähte" in l for l in rez), "3.6: nicht gelernte Rezepte fehlen")
+one4("REZEPTE", "Lederverarbeitung 61/150 | Farbe: Leichter Rüstungssatz gelb -> grün")
+one4("REZEPTE", "Lederverarbeitung 61/150 | Farbe: Geschmeidiger leichter Balg orange -> gelb")
+one4("REZEPTE", "Verzauberkunst 12/75 | Liste gefiltert (Suche «Zauberstab»): 1 Rezept sichtbar, gespeicherter Stand ergänzt")
+one4("REZEPTE", "Verzauberkunst 12/75 | 2 Rezepte (Liste des Fensters) | Armschiene - Schwache Gesundheit (7418): "
+     "1x Seltsamer Staub (10940) -> Verzauberung, orange; Kleiner Zauberstab (14293)")
+char4 = db4.chars["Testheld-Testrealm"]
+r4 = char4.rezepte["Lederverarbeitung"] if char4 is not None and char4.rezepte is not None else None
+check(r4 is not None and r4.liste == "2152:2304:1:1:2:2318*1;2881:2318:1:1:3:2934*3;3816:4231:1:1:1:783*1,4289*1"
+      and r4.stufe == 61 and r4.max == 150 and r4.filter is None,
+      "3.6: Rezepte in der Datei, gefilterte Ansicht ergänzt nur (%s)" % (r4.liste if r4 is not None else None))
+v4 = char4.rezepte["Verzauberkunst"]
+check(v4.liste == "7418:0:1:1:0:10940*1;14293:11287:1:1:1:4470*1,10938*1" and v4.filter is None,
+      "3.6: zweiter Beruf vollständig, Verzauberung ohne Ergebnis (%s, %s)" % (v4.liste, v4.filter))
+check(all(db4.beobachten[i] for i in (2318, 2934, 2304, 783, 4289, 4231)), "3.6: Reagenzien und Ergebnisse werden beobachtet")
+check(db4.rezeptNamen[3816] == "Geschmeidiger leichter Balg", "3.6: Rezeptnamen gespeichert")
+one4("INVENTAR", "Taschen beim Einloggen: 2 Gegenstände, 6 Stück", "Plan: Roher glänzender Kleinfisch 5")
+one4("INVENTAR", "Bank geöffnet | Bank: 2 Gegenstände, Plan: Leichtes Leder 40, Schweres Leder 7 | Kontobank: 1 Gegenstände, Plan: Seltsamer Staub 12")
+one4("INVENTAR", "Bank geschlossen | Bank: 2 Gegenstände, Plan: Leichtes Leder 30, Schweres Leder 7")
+check(sum(1 for l in lines4 if " | INVENTAR | " in l and "Bank" in l) == 2, "3.6: Bank nur bei Änderung neu")
+one4("INVENTAR", "Taschen beim Ausloggen")
+check(char4.bank.liste == "2318:30;4234:7" and db4.kontobank.liste == "10940:12" and char4.taschen.liste == "6291:5;6386:1",
+      "3.6: Bestand in der Datei (%s / %s / %s)" % (char4.bank.liste, db4.kontobank.liste, char4.taschen.liste))
+check(char4.bank.gebunden == "2934:6" and char4.taschen.gebunden is None, "3.6: gebundene Stücke getrennt (%s)" % char4.bank.gebunden)
+check(db4.info[2318].n == "Leichtes Leder" and db4.info[2318].s == 15 and db4.info[6386].q == 2, "3.6: Gegenstands-Infos gespeichert")
+post = [l for l in lines4 if " | AH-POST | " in l]
+check(len(post) == 3, "3.6: drei AH-POST-Zeilen: die Briefe, die ergänzte Rechnung, der neue gleiche Brief (%d)" % len(post))
+one4("AH-POST", "verkauft: 20x Leichtes Leder für 12s (Stück 60c), Gebühr 60c, 12x Silberblatt",
+     "abgelaufen: 5x Seltsamer Staub (10940)", "gekauft: 10x Mittleres Leder (2319) für 25s")
+one4("AH-POST", "Rechnung ergänzt: 12x Silberblatt für 3s (Stück 25c), Gebühr 15c")
+check(sum(1 for l in post if l.endswith("| abgelaufen: 5x Seltsamer Staub (10940)")) == 1,
+      "3.6: gleicher Brief nach dem Abholen ist ein neuer Eintrag")
+check(not any("Hallo" in l or "Freund" in l for l in lines4), "3.6: private Briefe zählen nicht")
+ap = db4.ahPost
+arten = [ap[i].art for i in range(1, len(ap) + 1)]
+check(arten.count("verkauft") == 2 and arten.count("abgelaufen") == 2 and arten.count("gekauft") == 1,
+      "3.6: AH-Post in der Datei, kein Brief doppelt, keiner verschluckt (%s)" % arten)
+weg4 = [ap[i].art for i in range(1, len(ap) + 1) if ap[i].weg]
+check(sorted(weg4) == ["abgelaufen", "verkauft"], "3.6: abgeholte Briefe als weg markiert (%s)" % weg4)
+sold = {ap[i].name: ap[i] for i in range(1, len(ap) + 1) if ap[i].art == "verkauft"}
+check(sold["Leichtes Leder"].preis == 1200 and sold["Leichtes Leder"].gebuehr == 60 and sold["Leichtes Leder"].menge == 20
+      and sold["Silberblatt"].preis == 300 and sold["Silberblatt"].menge == 12 and sold["Silberblatt"].ablauf is not None,
+      "3.6: Verkauf mit Preis und Gebühr, Rechnung nachträglich ergänzt")
+one4("AH-ANGEBOT", "20x Leichtes Leder (2318) zu 6s je Stück | Dauer 24 Std. | Pfand 1s 20c | erstellt")
+one4("AH-ANGEBOT", "5x Leichtes Leder (2318) zu 7s je Stück | Dauer 12 Std. | Pfand 15c | erstellt")
+one4("AH-ANGEBOT", "1x Gewebte Handschuhe (6386) zu 50s je Angebot | Dauer 48 Std. | Pfand 3s | erstellt")
+one4("AH-ANGEBOT", "10x Leichtes Leder (2318) zu 6s 50c je Stück | Dauer 48 Std. | Pfand 90c | Taschen weniger, ohne Bestätigung")
+one4("AH-ANGEBOT", "3x Leichtes Leder (2318) zu 6s 10c je Stück | Dauer 24 Std. | Pfand 18c | erstellt")
+one4("AH-ANGEBOT", "2x Leichtes Leder (2318) zu 6s 20c je Stück | Dauer 24 Std. | Pfand 12c | erstellt")
+one4("AH-ANGEBOT", "4x Leichtes Leder (2318) zu 6s 30c je Stück | Dauer 24 Std. | Pfand 24c | erstellt")
+check(sum(1 for l in lines4 if " | AH-ANGEBOT | " in l) == 7,
+      "3.6: sieben AH-ANGEBOT-Zeilen (bestätigtes nicht doppelt, abgebrochenes und abgelehntes nicht)")
+check(not any(" | AH-ANGEBOT | " in l and ("10940" in l or "2934" in l) for l in lines4),
+      "3.6: nie erstellte, abgebrochene und abgelehnte Angebote: keine Zeile")
+posted4 = [g4.posted[i] for i in range(1, len(g4.posted) + 1)]
+check(posted4 == ["C", "C", "CC", "I", "C", "C", "C", "C", "C", "C", "C"],
+      "3.6: die Haken lassen die Blizzard-Aufrufe durch (%s)" % posted4)
+sc4 = db4.ahScans
+check(sc4 is not None and len(sc4) == 2, "3.6: zwei Scans")
+if sc4 is not None and len(sc4) == 2:
+    check(sc4[1].stufen[2318] == "48*20*20*20,52*5*5*0,55*20*0*0" and sc4[1].bandVersatz == 0 and sc4[1].bandRoh == "0-3",
+          "3.6: Preisstufen mit Restlaufzeit, Bänder 0–3 erkannt (%s, %s)" % (sc4[1].stufen[2318], sc4[1].bandVersatz))
+    check(sc4[1].stufen[4231] == "150*2*0*0", "3.6: Ergebnis eines Rezepts wird beobachtet (%s)" % sc4[1].stufen[4231])
+    # 2319 und 4231 sind ganz verschwunden: gekauft oder zurückgezogen, unbekannt
+    check(sc4[2].abnahme == "2318:22:12" and sc4[2].abstand == 1800,
+          "3.6: Abnahme seit dem letzten Scan (%s, %s)" % (sc4[2].abnahme, sc4[2].abstand))
+one4("AH-SCAN", "Abnahme seit dem letzten Scan (30 Min): 1 Gegenstand verglichen, geschätzt gekauft: Leichtes Leder (2318) 12")
+check(any("Keine Empfehlungen geladen" in m for m in msgs4), "3.6: /tl tipp ohne KombiDaten: Hinweis")
+check(any("Rezepte: Lederverarbeitung, Verzauberkunst" in m and "AH-Post: 12 Einträge" in m for m in msgs4),
+      "3.6: Status mit Rezepten und AH-Post (%s)" % [m for m in msgs4 if "Rezepte:" in m])
+sv4 = L4.execute(SERIALIZE)("KombiTestlogDB", db4)
+if os.environ.get("TESTLOG_DATEI"):   # zum Ausprobieren der Werkzeuge: Testdatei schreiben
+    open(os.environ["TESTLOG_DATEI"], "w", encoding="utf-8").write(sv4)
+check("Kaeufername" not in sv4 and "Freund" not in sv4 and "Verkaeufername" not in sv4, "3.6: keine Namen anderer Spieler gespeichert")
+# Empfehlungen geladen (Addon KombiDaten)
+L5 = runtime(pre="""KombiDaten = { stand = "15.10. 20:15", zeit = server_t - 7200, markt = "EU Horde R1a2b Beta",
+  tipps = { "Tipp 1", "Tipp 2", "Tipp 3", "Tipp 4", "Tipp 5", "Tipp 6", "Tipp 7" }, hinweise = { "Preise der Beta" } }""")
+g5 = L5.globals()
+g5.fire("ADDON_LOADED", "KombiTestlog")
+g5.fire("PLAYER_ENTERING_WORLD", True, False)
+g5.SlashCmdList["KOMBITESTLOG"]("tipp")
+g5.SlashCmdList["KOMBITESTLOG"]("tipp alle")
+msgs5 = [g5.messages[i] for i in range(1, len(g5.messages) + 1)]
+log5 = [g5.KombiTestlogDB.log[i] for i in range(1, len(g5.KombiTestlogDB.log) + 1)]
+check(any("Empfehlungen geladen: 7 Tipps vom 15.10. 20:15" in m for m in msgs5), "3.6: Hinweis beim Einloggen auf die Empfehlungen")
+check(any(" | SITZUNG | " in l and "KombiDaten 15.10. 20:15, 7 Tipps" in l for l in log5), "3.6: SITZUNG nennt den Stand der Empfehlungen")
+check(any("Empfehlungen vom 15.10. 20:15, vor 2 Std (EU Horde R1a2b Beta):" in m for m in msgs5), "3.6: /tl tipp Kopf mit Alter")
+check(sum(1 for m in msgs5 if m.endswith("5. Tipp 5")) == 1 and not any(m.endswith("6. Tipp 6") for m in msgs5)
+      and any("2 weitere: /tl tipp alle" in m for m in msgs5), "3.6: /tl tipp zeigt 5 Tipps und den Rest als Hinweis")
+exp5 = [f.text for f in g5.frames.values() if f.text]
+check(exp5 and "7. Tipp 7" in exp5[0] and "Hinweis: Preise der Beta" in exp5[0], "3.6: /tl tipp alle im Fenster zum Kopieren")
+# Restlaufzeit gezählt wie die alte API (1–4): ein Wert 4 zeigt es, der Versatz gilt danach auch für unklare Scans
+L7 = runtime()
+g7 = L7.globals()
+g7.fire("ADDON_LOADED", "KombiTestlog")
+g7.fire("PLAYER_ENTERING_WORLD", True, False)
+def scan7(auktionen):
+    L7.execute("server_t = server_t + 1800; interacting[21] = true; auctions = " + auktionen)
+    g7.fire("AUCTION_HOUSE_SHOW")
+    L7.execute("now_t = now_t + 2"); g7.ticker()
+    g7.fire("REPLICATE_ITEM_LIST_UPDATE")
+    L7.execute("now_t = now_t + 3"); g7.ticker()
+    L7.execute("interacting[21] = false")
+    g7.fire("AUCTION_HOUSE_CLOSED")
+scan7("{ { id = 2318, n = 5, buy = 300, band = 4, name = 'x' }, { id = 2318, n = 5, buy = 350, band = 2, name = 'x' } }")
+scan7("{ { id = 2318, n = 5, buy = 350, band = 3, name = 'x' } }")
+sc7 = g7.KombiTestlogDB.ahScans
+check(sc7[1].stufen[2318] == "60*5*5*5,70*5*0*0" and sc7[1].bandVersatz == -1 and sc7[1].bandRoh == "2-4",
+      "Restlaufzeit 1–4 erkannt: 4 = sehr lang, 2 = mittel (%s, %s)" % (sc7[1].stufen[2318], sc7[1].bandVersatz))
+check(sc7[2].stufen[2318] == "70*5*5*0" and sc7[2].bandVersatz == -1 and sc7[2].abnahme == "2318:5:5",
+      "Versatz bleibt für einen unklaren Scan; Abnahme bis zur Stufe, auf der noch etwas liegt (%s, %s)" %
+      (sc7[2].stufen[2318], sc7[2].abnahme))
+# Werte, die zu keiner Zählung passen (z. B. Sekunden): kein Versatz mehr, auch nicht der gespeicherte; keine Abnahme danach
+scan7("{ { id = 2318, n = 5, buy = 350, band = 600, name = 'x' }, { id = 2318, n = 5, buy = 400, band = 170000, name = 'x' } }")
+scan7("{ { id = 2318, n = 5, buy = 350, band = 2, name = 'x' } }")
+sc7 = g7.KombiTestlogDB.ahScans
+check(sc7[3].bandVersatz is None and sc7[3].bandRoh == "600-170000" and sc7[3].stufen[2318] == "70*5*0*0,80*5*0*0"
+      and sc7[4].bandVersatz is None and sc7[4].abnahme is None and g7.KombiTestlogDB.ahBandVersatz is None,
+      "unpassende Restlaufzeit-Werte: kein Versatz, keine Abnahme (%s, %s, %s)" % (sc7[3].bandVersatz, sc7[3].stufen[2318], sc7[4].abnahme))
+
 # Format-Kopplung: tools/ah_aus_testlog.py liest die SavedVariables-Datei und den Text von /tl zeigen
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ah_aus_testlog as at
@@ -758,5 +1170,97 @@ check(als_lua == als_text, "karte_aus_testlog liest KARTE aus der Lua-Datei glei
 r = als_text.get("1412", {})
 check((r.get("a0"), r.get("b0"), r.get("a1"), r.get("b1")) == ("2448.20", "241.30", "-3643.30", "-3819.80"),
       "Achsen: a0 = Welt-Y(0,0), b0 = Welt-X(0,0), a1 = Welt-Y(1,1), b1 = Welt-X(1,1) (%s)" % r)
+
+# --- Version 3.6: tools/ah_aus_testlog.py liest die Abnahme, tools/markt.py rechnet Empfehlungen ---
+aus4 = at.lese(sv4)
+check(len(aus4) == 2 and aus4[1]["abnahme"] == {2318: (22, 12)} and aus4[1]["abstand"] == 1800,
+      "ah_aus_testlog liest die Abnahme (%s)" % [(s["abnahme"], s["abstand"]) for s in aus4])
+check(aus4[0]["namen"].get(4231) == "Geschmeidiger leichter Balg", "ah_aus_testlog: Namen aus den Gegenstands-Infos")
+check(at._stufen("48*20*20*20,52*5*5*0") == [(48, 20), (52, 5)] and at._stufen("48*20") == [(48, 20)],
+      "Preisstufen mit und ohne Restlaufzeit")
+import markt as mk
+m4 = "EU Horde %s Beta" % at.kennung("Testrealm")
+with tempfile.TemporaryDirectory() as tmp:
+    at.EIGEN = os.path.join(tmp, "ah_eigen.csv")
+    at.ABNAHME = os.path.join(tmp, "ah_abnahme.csv")
+    # Verlauf der Woche davor (erfundene Testwerte): ein Scan pro Tag
+    verlauf = {2318: (0.80, 300), 4231: (3.00, 40), 783: (0.40, 120), 10940: (1.20, 500), 6522: (5.00, 90), 6291: (1.10, 60)}
+    hist = [{"datum": "2026-10-%02d 12:00" % d, "markt": m4, "item_id": i, "tiefstpreis_s": "%.2f" % p,
+             "median_s": "%.2f" % (p * 1.2), "menge": n, "angebote": 5, "hinweis": "", "quelle": "Test"}
+            for d in range(8, 14) for i, (p, n) in verlauf.items()]
+    at._write(at.EIGEN, at.F_EIGEN, hist)
+    abn_test = [{"datum": "2026-10-13 %02d:00" % h, "markt": m4, "item_id": i, "stunden": "%.2f" % st, "weg": w, "gekauft": g,
+                 "quelle": "Test"} for h in (10, 12) for i, st, w, g in ((2318, 1.0, 35, 30), (4231, 2.0, 6, 5), (6291, 2.0, 9, 8))]
+    at._write(at.ABNAHME, at.F_ABNAHME, abn_test)
+    erg = mk.rechne(sv4, aus=os.path.join(tmp, "markt"))
+    mm = erg["markt"]
+    check(mm.markt == m4 and mm.letzter["datum"] == "2026-10-14 18:16", "markt: Markt und letzter Scan (%s, %s)" % (mm.markt, mm.letzter["datum"]))
+    h = {e["id"]: e for e in erg["handel"]}
+    h2318 = {k: h[2318][k] for k in ("menge", "kosten", "gewinn")} if 2318 in h else str(erg["ohne"])
+    check(2318 in h and h[2318]["menge"] == 33 and round(h[2318]["kosten"]) == 1726 and round(h[2318]["gewinn"]) == 782,
+          "markt: Leichtes Leder unter dem 7-Tage-Tiefstpreis kaufen (%s)" % (h2318,))
+    her = {e["id"]: e for e in erg["herstellen"]}
+    check(round(her[3816]["wert"]) == 285 and her[3816]["kosten"] == 90 and round(her[3816]["gewinn"]) == 195 and her[3816]["absatz"],
+          "markt: Geschmeidiger leichter Balg (Wert 285, Kosten 90 aus Balg 7 Tage und Salz beim Händler) (%s)" %
+          {k: her[3816].get(k) for k in ("wert", "kosten", "gewinn", "herkunft")})
+    check(her[2152]["herkunft"] == "Händler-Ankauf" and round(her[2152]["gewinn"]) == -41, "markt: Rezept ohne AH-Preis mit Händler-Ankauf")
+    check(her[2881]["fehlt"] == ["Fetzen"], "markt: fehlender Reagenzpreis wird genannt (%s)" % her[2881]["fehlt"])
+    vk = {e["id"]: e for e in erg["verkaufen"]}
+    check(vk.get(6291, {}).get("absatz") and not vk[6291]["plan"] and vk[10940]["plan"] and vk[2318]["plan"],
+          "markt: Bestand verkaufen, Plan-Material markiert (%s)" % sorted(vk))
+    check(mm.gebuehr_eigen == (0.05, 1500), "markt: Gebühr aus den eigenen Verkäufen (%s)" % (mm.gebuehr_eigen,))
+    check(mm.eigen[2318]["verkauft"] == 20 and mm.eigen[2318]["verkauft_72h"] == 20 and mm.eigen[2318]["angeboten"] == 44,
+          "markt: eigene Verkäufe und Angebote (%s)" % mm.eigen.get(2318))
+    check(her[2881]["aus_bestand"] == 2, "markt: gebundene Stücke zählen zum Herstellen (%s)" % her[2881]["aus_bestand"])
+    # Vorläufige Rechnung (mit Preis) und endgültiger Brief ohne lesbare Rechnung, 10 Stunden später: ein Verkauf
+    mt = mk.Markt({"ahPost": [
+        {"art": "verkauft", "name": "X", "menge": 20, "preis": 1000, "vorlaeufig": True, "ablauf": 100000, "zeit": 1},
+        {"art": "verkauft", "name": "X", "menge": 20, "ablauf": 136000, "zeit": 2},
+        {"art": "verkauft", "name": "X", "preis": 50, "vorlaeufig": True, "ablauf": 200000, "zeit": 3}]}, [], {77: "X"})
+    check(mt.eigen[77]["verkauft"] == 21 and mt.eigen[77]["n"] == 2,
+          "markt: vorläufige Rechnung nicht doppelt, ohne endgültige gezählt (%s)" % mt.eigen.get(77))
+    check(mm.absatz(2318) == 72 and mm.absatz(4231) == 10 and mm.absatz(2319) == 0,
+          "markt: Absatz mit Beleg nie hochgerechnet (%s, %s, %s)" % (mm.absatz(2318), mm.absatz(4231), mm.absatz(2319)))
+    fa = erg["farmen"]
+    check(fa and fa[0]["art"] == "Angeln" and fa[0]["gebiet"] == "Mulgore" and round(fa[0]["pro_stunde"]) == 28500,
+          "markt: Angeln pro Stunde (%s)" % fa)
+    tp = erg["tipps"]
+    check(len(tp) == 4 and tp[0].startswith("Kaufen: 33x Leichtes Leder bis 58c (zusammen 17s 26c), wieder einstellen um 80c")
+          and tp[1].startswith("Herstellen (Testheld, Lederverarbeitung): Geschmeidiger leichter Balg bringt je 1s 95c (217 %)")
+          and tp[2].startswith("Verkaufen: 5x Roher glänzender Kleinfisch (Testheld 5) im AH um 1s 10c")
+          and tp[3].startswith("Farmen: Angeln (Mulgore) brachte 2g 85s pro Stunde"), "markt: Tipps (%s)" % tp)
+    daten = open(os.path.join(tmp, "markt", "KombiDaten", "Daten.lua"), encoding="utf-8").read()
+    toc = open(os.path.join(tmp, "markt", "KombiDaten", "KombiDaten.toc"), encoding="utf-8").read()
+    bericht_md = open(os.path.join(tmp, "markt", "markt.md"), encoding="utf-8").read()
+    print("=== markt.py: Daten.lua ===")
+    print(daten)
+    if os.environ.get("MARKT_BERICHT"):
+        open(os.environ["MARKT_BERICHT"], "w", encoding="utf-8").write(bericht_md)
+    check("## Interface: 16001" in toc and "Daten.lua" in toc, "markt: KombiDaten.toc")
+    check("## Quellen" in bericht_md.split("## Kurz")[0] and "https://ahledger.com/wow-forever/auction-house" in bericht_md,
+          "markt: Bericht beginnt mit den Quellen")
+    # Die erzeugte Datei lädt im Spiel und /tl tipp zeigt die Tipps
+    L6 = runtime(pre=daten)
+    g6 = L6.globals()
+    g6.fire("ADDON_LOADED", "KombiTestlog")
+    g6.fire("PLAYER_ENTERING_WORLD", True, False)
+    g6.SlashCmdList["KOMBITESTLOG"]("tipp")
+    msgs6 = [g6.messages[i] for i in range(1, len(g6.messages) + 1)]
+    check(any("Empfehlungen vom 14.10. 18:16" in m for m in msgs6) and any("1. Kaufen: 33x Leichtes Leder" in m for m in msgs6),
+          "markt: Daten.lua lädt und /tl tipp zeigt sie (%s)" % msgs6[-6:])
+    check(mk.naechstes([(47, 10), (52, 3), (55, 20)], 12) == 52 and mk.naechstes([(47, 10), (52, 3)], 13) is None
+          and mk.naechstes([(47, 10), (52, 3)], 10) == 52, "markt: nächstes Angebot nach dem Kauf")
+    # Nur eigene Verkäufe als Beleg (20 Stück): Nach dem Kauf der billigsten 20 liegen noch 13 zu 55c im Angebot,
+    # wieder einstellen ginge nur um 54c -> keine Empfehlung
+    at._write(at.ABNAHME, at.F_ABNAHME, [r for r in abn_test if r["item_id"] != 2318])
+    erg2 = mk.rechne(sv4, aus=os.path.join(tmp, "markt2"))
+    o2 = {e["id"]: e for e in erg2["ohne"]}
+    check(not erg2["handel"] and 2318 in o2 and o2[2318]["menge"] == 20 and o2[2318]["um"] == 54
+          and o2[2318]["grund"] == "nächstes Angebot 55c liegt zu tief",
+          "markt: billigeres Angebot nach dem Kauf verhindert die Empfehlung (%s)" %
+          ({k: o2[2318][k] for k in ("menge", "um", "grund")} if 2318 in o2 else erg2["handel"]))
+    check("Achtung: Tiefstpreis fällt (-20 % in den letzten 3 Tagen)." in tp[0], "markt: Warnung bei fallendem Preis")
+    # Sonderzeichen in Texten bleiben gültiges Lua
+    check(mk.lua_str('a "b" \\ c\nd') == '"a \\"b\\" \\\\ c\\nd"', "markt: Lua-Text mit Anführungszeichen und Zeilenumbruch")
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)

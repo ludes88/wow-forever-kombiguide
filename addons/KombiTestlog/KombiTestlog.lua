@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 15.10.2026, Version 3.5
+-- Stand 15.10.2026, Version 3.6
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -11,6 +11,7 @@
 --   /tl karte         Kartengrenzen der aktuellen Karte nochmals festhalten
 --   /tl ah            AH-Preise jetzt lesen (läuft beim Öffnen des Auktionshauses von selbst, höchstens alle 15 Minuten)
 --   /tl ah aus | an   AH-Scan beim Öffnen des Auktionshauses aus- oder einschalten
+--   /tl tipp [alle]   Empfehlungen von Claude (Addon KombiDaten, erzeugt von tools/markt.py)
 --   /tl status        Überblick
 --   /tl leeren ja     Protokoll löschen (die AH-Scans bleiben)
 --   /tl hilfe         diese Hilfe
@@ -35,7 +36,15 @@
 --               «ID:Tiefstpreis:Median:Menge:Angebote» in Kupfer), plan (dasselbe für die Gegenstände des Plans),
 --               stufen (Preisstufen «Kupfer*Stück» der Plan-Gegenstände). Die 10 neuesten Scans behalten alle und
 --               stufen, ältere nur plan; höchstens 60 Scans. Ohne Verkäufernamen.
+--               Version 3.6: Preisstufen «Kupfer*Stück*davon lang*davon sehr lang» (Restlaufzeit-Band), dazu abnahme:
+--               was seit dem letzten Scan von den billigsten Angeboten fehlt («ID:weg:geschätzt gekauft»)
+--   REZEPTE     beim Öffnen des Berufsfensters: gelernte Rezepte mit Reagenzien, Ergebnis und Farbe; danach nur
+--               Farbwechsel (Version 3.6). Daten in KombiTestlogDB.chars[Charakter].rezepte
+--   INVENTAR    Taschen beim Ein- und Ausloggen, Bank beim Öffnen und Schliessen (Version 3.6); Daten in chars, kontobank
+--   AH-POST     Briefe des Auktionshauses beim Öffnen des Briefkastens: verkauft, abgelaufen, gekauft (Version 3.6)
+--   AH-ANGEBOT  eigenes Angebot im Auktionshaus: Menge, Preis, Dauer, Pfand (Version 3.6). Daten in KombiTestlogDB.ahPost
 --
+-- Version 3.6: Rezepte, Bestand (Taschen, Bank), AH-Post, eigene Angebote, Abnahme zwischen zwei AH-Scans, /tl tipp.
 -- Version 3.5: AH-Preisscan beim Öffnen des Auktionshauses (höchstens alle 15 Minuten) oder mit /tl ah.
 -- Version 3.4: Lehrerliste. Damit alle Einträge erscheinen, im Lehrerfenster den Filter auf alle drei Arten stellen
 -- (verfügbar, nicht verfügbar, bereits bekannt); die Zeile nennt den Filter.
@@ -48,7 +57,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.5"
+local VERSION = "3.6"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -161,6 +170,14 @@ local fishCasts, fishLast = 0, 0   -- Würfe seit dem letzten Fang (Version 3.2)
 local missingEvents = {}   -- Ereignisse, die der Client nicht kennt (Version 3.2)
 local ahScan               -- laufender AH-Scan (Version 3.5)
 local ahWanted             -- Auktionshaus geöffnet: Scan beim nächsten Takt prüfen (Version 3.5)
+-- Version 3.6
+local recipeToken = 0      -- Rezepte: nur der zuletzt geplante Lauf zählt
+local recipeSeen = {}      -- Beruf -> { sig = gelernte Rezepte und Filter, farben = Rezept-ID -> Farbe } (diese Sitzung)
+local bankToken = 0
+local bankLast = {}        -- «Bank»/«Kontobank» -> zuletzt geschriebene Liste (keine doppelten Zeilen)
+local mailToken = 0
+local postQueue = {}       -- eigene Angebote, die noch auf die Bestätigung warten
+local postWarnings = false -- AUCTION_HOUSE_POST_WARNING liess sich registrieren (Bestätigungsfenster erkennbar)
 
 local function say(msg)
     DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg)
@@ -330,10 +347,65 @@ local function spellName(id)
     return nil
 end
 
+local function num(v)
+    if type(v) == "number" and not isSecret(v) then return v end
+    return nil
+end
+
+-- Version 3.6: Charakter als «Name-Realm» (nur in der SavedVariables-Datei, nie im Repo)
+local function charKey()
+    local okN, n = pcall(UnitName, "player")
+    if not okN or type(n) ~= "string" or isSecret(n) then n = "?" end
+    local r = GetRealmName and GetRealmName()
+    if type(r) ~= "string" or isSecret(r) then r = "?" end
+    return n .. "-" .. r
+end
+
+local function charDB()
+    db.chars = db.chars or {}
+    local k = charKey()
+    if not db.chars[k] then db.chars[k] = {} end
+    return db.chars[k]
+end
+
+-- Version 3.6: Gegenstands-Infos für tools/markt.py: Name (deutsch), Qualität, Händlerpreis, Klasse, Unterklasse,
+-- Gegenstandsstufe, Bindung (C_Item.GetItemInfo, 1., 3., 11.–13., 4. und 14. Wert laut ItemDocumentation.lua,
+-- Forever-UI 1.60.1). Gebundene Teile (Bindung 1) gehen nicht ins Auktionshaus. Abgefragt über die Item-ID, nicht
+-- über den Link: sonst stünde ein Name mit Zufallsendung («… des Bären») unter der ID des Grundgegenstands.
+local function remember(id)
+    if not db or type(id) ~= "number" or isSecret(id) then return end
+    db.info = db.info or {}
+    local e = db.info[id]
+    if e and e.n then return end
+    if not (C_Item and C_Item.GetItemInfo) then return end
+    local ok, name, _, q, ilvl, _, _, _, _, _, _, sell, class, sub, bind = pcall(C_Item.GetItemInfo, id)
+    if not ok or type(name) ~= "string" or isSecret(name) then return end
+    db.info[id] = { n = name, q = num(q), s = num(sell), k = num(class), u = num(sub), l = num(ilvl), b = num(bind) }
+end
+
+local function idLabel(id)
+    remember(id)
+    local e = db and db.info and db.info[id]
+    local n = (e and e.n) or (C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(id))
+    if type(n) == "string" and not isSecret(n) then return n .. " (" .. id .. ")" end
+    return "Item " .. id
+end
+
+-- Version 3.6: Gegenstände mit Preisstufen und Abnahme im AH-Scan: Plan (AH_WATCH), /tl item und alles, was in den
+-- gelernten Rezepten vorkommt (Reagenzien und Ergebnis, KombiTestlogDB.beobachten)
+local function watched(id)
+    if AH_WATCH_SET[id] then return true end
+    if not db then return false end
+    if db.items[id] then return true end
+    return db.beobachten ~= nil and db.beobachten[id] == true
+end
+
 -- Taschen ganz lesen (Version 3): Grundlage, um Änderungen einer Handlung zuzuordnen
+local bagBound = {}        -- Version 3.6: gebundene Stücke in den Taschen (Item-ID -> Anzahl), beim Bestand ausgenommen
+
 local function scanBags()
     if not (C_Container and C_Container.GetContainerNumSlots and C_Container.GetContainerItemInfo) then return nil end
-    local counts = {}
+    local counts, bound = {}, {}
     local last = (NUM_BAG_SLOTS or 4) + (NUM_REAGENTBAG_SLOTS or 0)
     for bag = 0, last do
         local n = C_Container.GetContainerNumSlots(bag) or 0
@@ -345,11 +417,14 @@ local function scanBags()
                 local c = info.stackCount
                 if not c or isSecret(c) then c = 1 end
                 counts[id] = (counts[id] or 0) + c
+                if not isSecret(info.isBound) and info.isBound == true then bound[id] = (bound[id] or 0) + c end   -- isBound: ContainerItemInfo
                 if info.hyperlink and not isSecret(info.hyperlink) then bagLinks[id] = info.hyperlink end
                 if info.quality and not isSecret(info.quality) then bagQuality[id] = info.quality end
+                remember(id)
             end
         end
     end
+    bagBound = bound
     return counts
 end
 
@@ -483,6 +558,13 @@ local function guideAddon(name)
     return "nicht geladen"
 end
 
+-- Version 3.6: Empfehlungen aus dem Addon KombiDaten (schreibt Claude mit tools/markt.py, nie aus dem Repo)
+local function tipsData()
+    local d = rawget(_G, "KombiDaten")
+    if type(d) ~= "table" or type(d.tipps) ~= "table" then return nil end
+    return d
+end
+
 local function sessionStart()
     local build = "-"
     if GetBuildInfo then
@@ -491,9 +573,11 @@ local function sessionStart()
     end
     local who = (UnitName("player") or "?") .. "-" .. (GetRealmName() or "?")
     local m = getMoney()
-    add("SITZUNG", string.format("%s | Client %s | RXP %s | Kombi-Test %s | Kombiguide %s | Testlog %s | Geld %s",
+    local tips = tipsData()
+    add("SITZUNG", string.format("%s | Client %s | RXP %s | Kombi-Test %s | Kombiguide %s | Testlog %s | Geld %s | KombiDaten %s",
         who, build, addonVersion("RXPGuides"),
-        guideAddon("RXPGuides_Kombi"), guideAddon("RXPGuides_KombiGuide"), VERSION, m and money(m) or "?"))
+        guideAddon("RXPGuides_Kombi"), guideAddon("RXPGuides_KombiGuide"), VERSION, m and money(m) or "?",
+        tips and (tostring(tips.stand or "?") .. ", " .. #tips.tipps .. " Tipps") or "-"))
 end
 
 -- Kartengrenzen: Weltkoordinaten der Kartenecken (0,0) und (1,1) und Grösse in Yards.
@@ -627,6 +711,7 @@ local function readLoot()
             local link = GetLootSlotLink and GetLootSlotLink(slot)
             local name = linkName(link) or ((ok and type(item) == "string" and not isSecret(item)) and item) or "?"
             local id = (type(link) == "string" and not isSecret(link)) and link:match("item:(%d+)") or nil
+            if id then remember(tonumber(id)) end   -- Version 3.6: Händlerpreis für den Wert pro Stunde
             local q = (ok and type(quantity) == "number" and not isSecret(quantity)) and quantity or 1
             table.insert(parts, string.format("%dx %s%s", q, name, id and (" (" .. id .. ")") or ""))
         end
@@ -750,6 +835,13 @@ local function plain(v)
     return (v ~= nil) and not isSecret(v)
 end
 
+-- Serverzeit in Sekunden (Version 3.5; seit 3.6 auch für Rezepte, Bestand und AH-Post)
+local function epoch()
+    local ok, t = callApi("GetServerTime")
+    if ok and type(t) == "number" and plain(t) then return t end
+    return (time and time()) or 0
+end
+
 local function npcInfo()
     local okN, name = pcall(UnitName, "npc")
     if not okN or type(name) ~= "string" or isSecret(name) then name = "?" end
@@ -818,6 +910,207 @@ local function scheduleTrainerDump()
     else
         trainerDump()
     end
+end
+
+-- Version 3.6: Rezepte beim Öffnen des Berufsfensters. API wie im Forever-UI 1.60.1 (70374), C_TradeSkillUI:
+-- GetChildProfessionInfo, sonst GetBaseProfessionInfo (Professions.GetProfessionInfo); GetFilteredRecipeIDs (das
+-- Forever-UI zeigt nur gelernte Rezepte: Camelot/Blizzard_Professions.lua, GetDefaultShowUnlearned = false);
+-- GetRecipeInfo (learned, relativeDifficulty 0 orange, 1 gelb, 2 grün, 3 grau); GetRecipeSchematic (Reagenzien,
+-- Menge, Ergebnis); GetRecipeOutputItemData; IsDataSourceChanging, IsTradeSkillLinked, IsTradeSkillGuild, IsNPCCrafting.
+-- GetAllRecipeIDs benutzt das Forever-UI nicht: nur, wenn vorhanden (ungeprüft). Ein Rezept in der Datei:
+-- «Rezept-ID:Ergebnis-ID:Menge min:Menge max:Farbe:Reagenzien», Ergebnis 0 = Verzauberung ohne Gegenstand,
+-- Reagenzien «ID*Anzahl,…». Danach nur Farbwechsel (mit der Fertigkeit: zeigt, ab wann ein Rezept die Farbe wechselt).
+local DIFF_NAMES = { [0] = "orange", [1] = "gelb", [2] = "grün", [3] = "grau" }
+
+local function tsCall(name, ...)
+    local api = C_TradeSkillUI
+    local f = api and api[name]
+    if type(f) ~= "function" then return false end
+    return pcall(f, ...)
+end
+
+local function profInfo()
+    local ok, p = tsCall("GetChildProfessionInfo")
+    if not ok or type(p) ~= "table" or not p.professionID or p.professionID == 0 then
+        ok, p = tsCall("GetBaseProfessionInfo")
+    end
+    if not ok or type(p) ~= "table" then return nil end
+    local name = p.parentProfessionName
+    if type(name) ~= "string" or name == "" or isSecret(name) then name = p.professionName end
+    if type(name) ~= "string" or name == "" or isSecret(name) then return nil end
+    return name, num(p.skillLevel), num(p.maxSkillLevel)
+end
+
+-- Filter des Berufsfensters wie Professions.IsUsingDefaultFilters (Blizzard_ProfessionsTemplates/Blizzard_Professions.lua),
+-- aber ohne «nicht gelernte zeigen»: Das Forever-UI blendet nicht gelernte Rezepte von sich aus aus
+-- (Camelot/Blizzard_Professions.lua). Ist einer an, fehlen Rezepte in der Liste.
+local function recipeFilters()
+    local filt = {}
+    local function on(fn, label)
+        local ok, v = tsCall(fn)
+        if ok and plain(v) and v == true then filt[#filt + 1] = label end
+    end
+    on("GetOnlyShowMakeableRecipes", "nur herstellbar")
+    on("GetOnlyShowSkillUpRecipes", "nur mit Punkten")
+    on("GetOnlyShowFirstCraftRecipes", "nur erstes Herstellen")
+    on("AreAnyInventorySlotsFiltered", "Platz")
+    on("AnyRecipeCategoriesFiltered", "Kategorie")
+    local okL, learned = tsCall("GetShowLearned")
+    if okL and plain(learned) and learned == false then filt[#filt + 1] = "gelernte ausgeblendet" end
+    local P = rawget(_G, "Professions")
+    if type(P) == "table" and type(P.AreAllSourcesUnfiltered) == "function" then
+        local ok, v = pcall(P.AreAllSourcesUnfiltered)
+        if ok and v == false then filt[#filt + 1] = "Quelle" end
+    end
+    local okT, txt = tsCall("GetRecipeItemNameFilter")
+    if okT and type(txt) == "string" and not isSecret(txt) and txt ~= "" then filt[#filt + 1] = "Suche «" .. txt .. "»" end
+    return filt
+end
+
+local function recipeEntry(r)
+    local rg = {}
+    for j, x in ipairs(r.reag) do rg[j] = x[1] .. "*" .. x[2] end
+    return string.format("%d:%d:%d:%d:%s:%s", r.id, r.out or 0, r.qmin, r.qmax, r.diff and tostring(r.diff) or "-",
+        table.concat(rg, ","))
+end
+
+local function recipeRecord(id)
+    local okR, info = tsCall("GetRecipeInfo", id)
+    if not okR or type(info) ~= "table" or info.learned ~= true or info.isDummyRecipe or info.isGatheringRecipe
+        or info.isSalvageRecipe or info.isRecraft then
+        return nil
+    end
+    local okS, sch = tsCall("GetRecipeSchematic", id, false)
+    if not okS or type(sch) ~= "table" then sch = {} end
+    local reag = {}
+    for _, slot in ipairs(type(sch.reagentSlotSchematics) == "table" and sch.reagentSlotSchematics or {}) do
+        local first = type(slot.reagents) == "table" and slot.reagents[1] or nil
+        local basic = slot.reagentType == nil or slot.reagentType == 1 or slot.required == true
+        local q = num(slot.quantityRequired) or 1
+        if first and num(first.itemID) and basic and q > 0 then
+            reag[#reag + 1] = { first.itemID, q }
+        end
+    end
+    local out = num(sch.outputItemID)
+    if not out and not info.isEnchantingRecipe then
+        local okO, o = tsCall("GetRecipeOutputItemData", id)
+        if okO and type(o) == "table" then out = num(o.itemID) end
+    end
+    local name = (type(info.name) == "string" and not isSecret(info.name)) and info.name or "?"
+    return { id = id, name = name, out = out, qmin = num(sch.quantityMin) or 1, qmax = num(sch.quantityMax) or 1,
+             diff = num(info.relativeDifficulty), reag = reag }
+end
+
+local function recipeDump()
+    if not db or not db.auto or not ready then return end
+    local okD, changing = tsCall("IsDataSourceChanging")
+    if okD and plain(changing) and changing then return end   -- das nächste TRADE_SKILL_LIST_UPDATE abwarten
+    for _, fn in ipairs({ "IsTradeSkillLinked", "IsTradeSkillGuild", "IsNPCCrafting" }) do
+        local ok, v = tsCall(fn)
+        if ok and plain(v) and v then return end   -- fremde Liste oder Herstellen beim NPC: nicht die eigenen Rezepte
+    end
+    local pname, skill, maxSkill = profInfo()
+    if not pname then return end
+    local source = "alle"
+    local okI, ids = tsCall("GetAllRecipeIDs")
+    if not okI or type(ids) ~= "table" then
+        source = "Liste des Fensters"
+        okI, ids = tsCall("GetFilteredRecipeIDs")
+    end
+    if not okI or type(ids) ~= "table" then return end
+    local recs = {}
+    for _, id in ipairs(ids) do
+        if num(id) then
+            local r = recipeRecord(id)
+            if r then recs[#recs + 1] = r end
+        end
+    end
+    if #recs == 0 then return end
+    table.sort(recs, function(a, b) return a.id < b.id end)
+    local filt = (source == "alle") and {} or recipeFilters()
+    db.beobachten = db.beobachten or {}
+    db.rezeptNamen = db.rezeptNamen or {}
+    local sigParts = {}
+    for i, r in ipairs(recs) do
+        sigParts[i] = r.id
+        for _, x in ipairs(r.reag) do db.beobachten[x[1]] = true end
+        if r.out then db.beobachten[r.out] = true end
+        db.rezeptNamen[r.id] = r.name
+    end
+    local skillText = (skill and maxSkill) and string.format("%s %d/%d", pname, skill, maxSkill) or pname
+    local c = charDB()
+    c.rezepte = c.rezepte or {}
+    local old = c.rezepte[pname]
+    local map = {}
+    if #filt > 0 and old and old.liste then
+        -- gefiltert: nur die sichtbaren Rezepte im gespeicherten Stand ersetzen, die übrigen bleiben
+        for e in string.gmatch(old.liste, "[^;]+") do
+            local id = tonumber(e:match("^(%d+):"))
+            if id then map[id] = e end
+        end
+    end
+    for _, r in ipairs(recs) do map[r.id] = recipeEntry(r) end
+    local ids, entries = {}, {}
+    for id in pairs(map) do ids[#ids + 1] = id end
+    table.sort(ids)
+    for i, id in ipairs(ids) do entries[i] = map[id] end
+    -- filter: die gespeicherte Liste kann unvollständig sein (bisher nur gefiltert gesehen)
+    local incomplete
+    if #filt > 0 then
+        if old and old.liste then incomplete = old.filter else incomplete = table.concat(filt, ", ") end
+    end
+    c.rezepte[pname] = { zeit = epoch(), stufe = skill, max = maxSkill, quelle = source, filter = incomplete,
+                         liste = table.concat(entries, ";") }
+    -- Farbwechsel der sichtbaren Rezepte
+    local seen = recipeSeen[pname]
+    local sig = table.concat(sigParts, ",")
+    if seen and (seen.sig == sig or #filt > 0) then
+        local changes = {}
+        for _, r in ipairs(recs) do
+            local before = seen.farben[r.id]
+            if before ~= nil and before ~= (r.diff or -1) then
+                changes[#changes + 1] = string.format("%s %s -> %s", r.name, DIFF_NAMES[before] or "?", DIFF_NAMES[r.diff] or "?")
+            end
+            seen.farben[r.id] = r.diff or -1
+        end
+        if #changes > 0 then add("REZEPTE", skillText .. " | Farbe: " .. table.concat(changes, ", ")) end
+        return
+    end
+    if #filt > 0 then
+        -- gefiltert und in dieser Sitzung noch keine ganze Liste: kurz melden, die ganze Liste kommt ohne Filter
+        local farben = {}
+        for _, r in ipairs(recs) do farben[r.id] = r.diff or -1 end
+        recipeSeen[pname] = { sig = nil, farben = farben }
+        add("REZEPTE", string.format("%s | Liste gefiltert (%s): %d %s sichtbar, gespeicherter Stand ergänzt", skillText,
+            table.concat(filt, ", "), #recs, (#recs == 1) and "Rezept" or "Rezepte"))
+        return
+    end
+    local colors = {}
+    for _, r in ipairs(recs) do colors[r.id] = r.diff or -1 end
+    recipeSeen[pname] = { sig = sig, farben = colors }
+    local parts = {}
+    for _, r in ipairs(recs) do
+        local rg = {}
+        for j, x in ipairs(r.reag) do rg[j] = string.format("%dx %s", x[2], idLabel(x[1])) end
+        local res = "Verzauberung"
+        if r.out then
+            res = ((r.qmin == r.qmax) and tostring(r.qmin) or (r.qmin .. "-" .. r.qmax)) .. "x " .. idLabel(r.out)
+        end
+        parts[#parts + 1] = string.format("%s (%d): %s -> %s, %s", r.name, r.id, (#rg > 0) and table.concat(rg, " + ") or "-",
+            res, DIFF_NAMES[r.diff] or "?")
+    end
+    add("REZEPTE", string.format("%s | %d Rezepte (%s) | %s", skillText, #recs, source, table.concat(parts, "; ")))
+end
+
+local function scheduleRecipeDump()
+    recipeToken = recipeToken + 1
+    local token = recipeToken
+    local function run()
+        if token ~= recipeToken or not windows.profession then return end   -- Fenster inzwischen zu: nichts lesen
+        local ok, err = pcall(recipeDump)
+        if not ok then add("FEHLER", "Rezepte: " .. tostring(err), false) end
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(1, run) else run() end
 end
 
 -- Geld (Version 3): Kontext aus offenen Fenstern
@@ -907,12 +1200,6 @@ local AH_KEEP = 60        -- gespeicherte Scans (der älteste fällt weg)
 local AH_KEEP_FULL = 10   -- so viele neueste Scans behalten alle Gegenstände und die Preisstufen; ältere nur die
                           -- Plan-Gegenstände (hält die Datei klein; Claude übernimmt jeden Scan ins Repo)
 
-local function epoch()
-    local ok, t = callApi("GetServerTime")
-    if ok and type(t) == "number" and plain(t) then return t end
-    return (time and time()) or 0
-end
-
 local function ahIsOpen()
     local s = liveSession()
     if s and s.kind == "AUKTIONSHAUS" then return true end
@@ -954,23 +1241,110 @@ local function ahStats(list)
     return list[1][1], med, total
 end
 
--- Preisstufen «Preis*Stück» der billigsten Angebote (Kupfer pro Stück), gleiche Preise zusammengefasst
-local function ahSteps(list)
+-- Preisstufen der billigsten Angebote (Kupfer pro Stück), gleiche Preise zusammengefasst. Version 3.6:
+-- «Preis*Stück*davon lang*davon sehr lang» (Restlaufzeit-Band 2 bzw. 3 von Enum.AuctionHouseTimeLeftBand 0–3).
+-- GetReplicateItemTimeLeft liefert laut Doku nur «number»; die alte API (GetAuctionItemTimeLeft) zählte 1–4. Darum:
+-- Rohwert + Versatz (0 oder -1, erkannt in ahFinish); unbekannter Versatz: lang und sehr lang = 0.
+local function ahSteps(list, offset)
     local steps = {}
     for _, e in ipairs(list) do
         local u = math.floor(e[1] + 0.5)
+        local band = (offset and e[3] and e[3] >= 0) and (e[3] + offset) or -1
+        local l = (band >= 2) and e[2] or 0
+        local v = (band == 3) and e[2] or 0
         local last = steps[#steps]
         if last and last[1] == u then
-            last[2] = last[2] + e[2]
+            last[2], last[3], last[4] = last[2] + e[2], last[3] + l, last[4] + v
         elseif #steps < AH_STEPS then
-            steps[#steps + 1] = { u, e[2] }
+            steps[#steps + 1] = { u, e[2], l, v }
         else
             break
         end
     end
     local parts = {}
-    for i, st in ipairs(steps) do parts[i] = st[1] .. "*" .. st[2] end
+    for i, st in ipairs(steps) do parts[i] = st[1] .. "*" .. st[2] .. "*" .. st[3] .. "*" .. st[4] end
     return table.concat(parts, ",")
+end
+
+-- Version 3.6: Grenzen der Restlaufzeit-Bänder in Sekunden laut Client (C_AuctionHouse.GetTimeLeftBandInfo:
+-- timeLeftMinSeconds, timeLeftMaxSeconds), «Band:min-max;…»
+local function ahBands()
+    local api = C_AuctionHouse
+    if not (api and api.GetTimeLeftBandInfo) then return nil end
+    local parts = {}
+    for b = 0, 3 do
+        local ok, lo, hi = pcall(api.GetTimeLeftBandInfo, b)
+        if ok and num(lo) and num(hi) then parts[#parts + 1] = string.format("%d:%d-%d", b, lo, hi) end
+    end
+    return (#parts > 0) and table.concat(parts, ";") or nil
+end
+
+local function parseBands(text)
+    local out = {}
+    for b, lo, hi in string.gmatch(text or "", "(%d+):(%d+)%-(%d+)") do out[tonumber(b)] = { tonumber(lo), tonumber(hi) } end
+    return out
+end
+
+local function parseSteps(text)
+    local out = {}
+    for u, n, l, v in string.gmatch(text or "", "(%d+)%*(%d+)%*(%d+)%*(%d+)") do
+        out[#out + 1] = { tonumber(u), tonumber(n), tonumber(l), tonumber(v) }
+    end
+    return out
+end
+
+-- Version 3.6: Abnahme seit dem letzten Scan, eine Schätzung. Von den billigsten Angeboten des letzten Scans zählen nur
+-- die, die bis jetzt nicht ablaufen konnten (Band «lang», wenn der Abstand kürzer ist als dessen Untergrenze, sonst
+-- «sehr lang»). Annahme: Käufer nehmen die billigsten zuerst (so verkauft der Server Waren; bei Ausrüstung ungenau).
+-- Von unten nach oben: was davon jetzt fehlt, ist weg (gekauft oder zurückgezogen); die erste Stufe, auf der jetzt noch
+-- etwas liegt, beendet die Zählung (weiter oben ist kein Käufer gegangen). «gekauft» = weg minus neue Angebote bis zu
+-- dieser Stufe (sonst sähe Umstellen auf einen tieferen Preis aus wie ein Kauf). Nicht erkennbar bleibt, wer zurückzieht
+-- und höher neu einstellt: dann ist die Schätzung zu hoch. Gibt weg, gekauft zurück oder nil (unbekannt): Abstand zu
+-- gross, Gegenstand ganz verschwunden (gekauft oder zurückgezogen?) oder keine Angebote, die nicht ablaufen konnten.
+local function ahDemand(prevSteps, cur, dt, bands)
+    local long, vlong = bands[2] and bands[2][1], bands[3] and bands[3][1]
+    local mode
+    if long and dt < long then mode = 3 elseif vlong and dt < vlong then mode = 4 else return nil end
+    if #cur == 0 then return nil end
+    local curN = {}
+    for _, e in ipairs(cur) do
+        local u = math.floor(e[1] + 0.5)
+        curN[u] = (curN[u] or 0) + e[2]
+    end
+    local prevN = {}
+    for _, st in ipairs(prevSteps) do prevN[st[1]] = st[2] end
+    local gone, stopU, anySafe = 0, nil, false
+    for _, st in ipairs(prevSteps) do
+        local safe = st[mode]
+        local still = curN[st[1]] or 0
+        if safe > 0 then anySafe = true end
+        gone = gone + math.max(0, safe - still)
+        stopU = st[1]
+        if still > 0 then break end
+    end
+    if not anySafe then return nil end
+    local new = 0
+    for u, n in pairs(curN) do
+        if u <= stopU then new = new + math.max(0, n - (prevN[u] or 0)) end
+    end
+    return gone, math.max(0, gone - new)
+end
+
+-- Version 3.6: Rohwerte von GetReplicateItemTimeLeft -> Versatz zu Enum.AuctionHouseTimeLeftBand (0–3).
+-- Werte 1 bis 4 mit einer 4: Versatz -1 (wie die alte API); Werte 0 bis 3 mit einer 0: Versatz 0. Nur 1 bis 3: der
+-- zuletzt erkannte Versatz. Alles andere (z. B. Sekunden, oder 0 und 4 zusammen) passt zu keiner Zählung: kein Versatz,
+-- auch der gespeicherte gilt nicht mehr. Ohne Versatz zählen lang und sehr lang nicht (keine Abnahme).
+local function ahBandOffset(s)
+    local lo, hi = s.bandMin, s.bandMax
+    if lo == nil then return db.ahBandVersatz end
+    if lo >= 1 and hi == 4 then
+        db.ahBandVersatz = -1
+    elseif lo == 0 and hi <= 3 then
+        db.ahBandVersatz = 0
+    elseif lo < 0 or hi > 4 or (lo == 0 and hi == 4) then
+        db.ahBandVersatz = nil
+    end
+    return db.ahBandVersatz
 end
 
 local function ahMarket()
@@ -989,6 +1363,7 @@ local function ahFinish()
     local ids = {}
     for id in pairs(s.items) do ids[#ids + 1] = id end
     table.sort(ids)
+    local offset = ahBandOffset(s)
     local all, plan, steps, stat = {}, {}, {}, {}
     for _, id in ipairs(ids) do
         local list = s.items[id]
@@ -997,9 +1372,9 @@ local function ahFinish()
         stat[id] = { lo, med, total }
         local entry = string.format("%d:%.0f:%.0f:%d:%d", id, lo, med, total, #list)   -- %.0f: Kupfer über 2^31
         all[#all + 1] = entry
-        if AH_WATCH_SET[id] or db.items[id] then
+        if watched(id) then
             plan[#plan + 1] = entry
-            steps[id] = ahSteps(list)
+            steps[id] = ahSteps(list, offset)
         end
     end
     local realm, faction, region = ahMarket()
@@ -1008,12 +1383,47 @@ local function ahFinish()
         local v, b = GetBuildInfo()
         build = tostring(v) .. " (" .. tostring(b) .. ")"
     end
+    local bandsText = ahBands()
     local rec = {
         zeit = s.epoch, datum = date("%Y-%m-%d %H:%M", s.epoch), realm = realm, fraktion = faction, region = region,
         client = build, angebote = s.n, gegenstaende = #ids, nurGebot = s.bidOnly, fehlend = s.missing, geheim = s.secret,
         dauer = math.floor(now() - s.t0 + 0.5), alle = table.concat(all, ";"), plan = table.concat(plan, ";"), stufen = steps,
+        baender = bandsText, bandVersatz = offset,
+        bandRoh = s.bandMin and string.format("%d-%d", s.bandMin, s.bandMax) or nil,
     }
+    -- Version 3.6: Abnahme seit dem letzten Scan desselben Markts. Beide Scans fast vollständig (fehlende Angebote sähen
+    -- aus wie Käufe), der Scan davor mit bekanntem Restlaufzeit-Band.
     db.ahScans = db.ahScans or {}
+    local prev = db.ahScans[#db.ahScans]
+    local demandText = ""
+    local complete = function(r) return (r.fehlend or 0) <= (r.angebote or 0) * 0.005 and (r.geheim or 0) == 0 end
+    if prev and prev.stufen and prev.baender and prev.bandVersatz and prev.zeit and prev.realm == realm
+        and prev.fraktion == faction and prev.region == region and complete(prev) and complete(rec) then
+        local dt = s.epoch - prev.zeit
+        local bands = parseBands(prev.baender)
+        local pids = {}
+        for id in pairs(prev.stufen) do pids[#pids + 1] = id end
+        table.sort(pids)
+        local out, sold = {}, {}
+        for _, id in ipairs(pids) do
+            if dt > 0 and watched(id) then
+                local g, m = ahDemand(parseSteps(prev.stufen[id]), s.items[id] or {}, dt, bands)
+                if g then
+                    out[#out + 1] = string.format("%d:%d:%d", id, g, m)
+                    if m > 0 then sold[#sold + 1] = { id, m } end
+                end
+            end
+        end
+        if #out > 0 then
+            rec.abnahme, rec.abstand = table.concat(out, ";"), dt
+            table.sort(sold, function(a, b) return a[2] > b[2] end)
+            local top = {}
+            for i = 1, math.min(5, #sold) do top[i] = string.format("%s %d", ahLabel(sold[i][1]), sold[i][2]) end
+            demandText = string.format(" | Abnahme seit dem letzten Scan (%d Min): %d %s verglichen, geschätzt gekauft: %s",
+                math.floor(dt / 60 + 0.5), #out, (#out == 1) and "Gegenstand" or "Gegenstände",
+                (#top > 0) and table.concat(top, ", ") or "nichts")
+        end
+    end
     table.insert(db.ahScans, rec)
     while #db.ahScans > AH_KEEP do table.remove(db.ahScans, 1) end
     for i = 1, #db.ahScans - AH_KEEP_FULL do
@@ -1029,8 +1439,9 @@ local function ahFinish()
         warn = string.format(" | unvollständig: %d Angebote ohne Daten (Auktionshaus zu früh geschlossen?)", s.missing)
     end
     if s.secret > 0 then warn = warn .. string.format(" | %d Angebote mit geheimen Werten", s.secret) end
-    add("AH-SCAN", string.format("Scan %s | %s %s | Realm %s | %d Angebote, %d Gegenstände, %d nur mit Gebot, %d s%s | Tiefstpreis / Median / Stück: %s",
-        rec.datum, region, faction, realm, s.n, #ids, s.bidOnly, rec.dauer, warn,
+    -- die Abnahme steht vor der Preisliste (tools/ah_aus_testlog.py liest die Liste bis zum Zeilenende)
+    add("AH-SCAN", string.format("Scan %s | %s %s | Realm %s | %d Angebote, %d Gegenstände, %d nur mit Gebot, %d s%s%s | Tiefstpreis / Median / Stück: %s",
+        rec.datum, region, faction, realm, s.n, #ids, s.bidOnly, rec.dauer, warn, demandText,
         (#parts > 0) and table.concat(parts, "; ") or "keine Plan-Gegenstände im Angebot"))
     local ex = stat[2318]
     say(string.format("AH-Scan fertig: %d Angebote, %d Gegenstände.%s", s.n, #ids,
@@ -1059,7 +1470,18 @@ local function ahBatch()
                 list = {}
                 s.items[id] = list
             end
-            list[#list + 1] = { buyout / count, count }
+            if watched(id) then
+                -- Version 3.6: Restlaufzeit als Rohwert (Versatz zum Band erst in ahFinish) für die Abnahme
+                local okT, band = pcall(C_AuctionHouse.GetReplicateItemTimeLeft, k + s.base)
+                band = (okT and num(band)) or -1
+                if band >= 0 then
+                    s.bandMin = math.min(s.bandMin or band, band)
+                    s.bandMax = math.max(s.bandMax or band, band)
+                end
+                list[#list + 1] = { buyout / count, count, band }
+            else
+                list[#list + 1] = { buyout / count, count }
+            end
         end
     end
     s.i = last
@@ -1146,11 +1568,394 @@ local function ahTick()
     end
 end
 
+-- Version 3.6: Bestand. Taschen beim Ein- und Ausloggen, Bank beim Öffnen und Schliessen. Die Forever-Bank hat Reiter
+-- (C_Bank.FetchPurchasedBankTabData mit Enum.BankType Character und Account, Behälter-ID im Feld ID; Forever-UI 1.60.1,
+-- Blizzard_UIPanels_Game/Camelot/BankFrame.lua und BankDocumentation.lua). Gespeichert als «ID:Anzahl;…» pro Charakter,
+-- die Kontobank für alle; für tools/markt.py, nie im Repo. Gebundene Stücke (isBound) stehen getrennt in «gebunden»:
+-- Sie gehen nicht ins Auktionshaus, aber in ein Rezept.
+local function countsText(counts)
+    local ids = {}
+    for id in pairs(counts) do ids[#ids + 1] = id end
+    table.sort(ids)
+    local parts = {}
+    for i, id in ipairs(ids) do parts[i] = id .. ":" .. counts[id] end
+    return table.concat(parts, ";"), #ids
+end
+
+local function planText(counts)
+    local ids = {}
+    for id in pairs(counts) do
+        if watched(id) then ids[#ids + 1] = id end
+    end
+    table.sort(ids)
+    local parts = {}
+    for i, id in ipairs(ids) do
+        local e = db.info and db.info[id]
+        parts[i] = string.format("%s %d", (e and e.n) or itemLabel(id), counts[id])
+    end
+    return table.concat(parts, ", ")
+end
+
+local function readContainer(bag, out, outBound)
+    local okN, n = pcall(C_Container.GetContainerNumSlots, bag)
+    if not okN or not num(n) then return 0 end
+    for slot = 1, n do
+        local ok, info = pcall(C_Container.GetContainerItemInfo, bag, slot)
+        if ok and type(info) == "table" and num(info.itemID) then
+            local c = num(info.stackCount) or 1
+            local into = (not isSecret(info.isBound) and info.isBound == true) and outBound or out
+            into[info.itemID] = (into[info.itemID] or 0) + c
+            local link = (type(info.hyperlink) == "string" and not isSecret(info.hyperlink)) and info.hyperlink or nil
+            if link then bagLinks[info.itemID] = link end
+            remember(info.itemID)
+        end
+    end
+    return n
+end
+
+local function inventoryBags(why, ctx)
+    if not bagLast or not db then return end
+    local counts = {}
+    for id, c in pairs(bagLast) do
+        local free = c - (bagBound[id] or 0)
+        if free > 0 then counts[id] = free end
+    end
+    local list, n = countsText(counts)
+    local bound = countsText(bagBound)
+    charDB().taschen = { zeit = epoch(), liste = list, gebunden = (bound ~= "") and bound or nil, geld = moneyLast }
+    if not db.auto then return end
+    local total = 0
+    for _, v in pairs(counts) do total = total + v end
+    local plan = planText(counts)
+    add("INVENTAR", string.format("Taschen %s: %d Gegenstände, %d Stück%s | Geld %s", why, n, total,
+        (plan ~= "") and (" | Plan: " .. plan) or "", moneyLast and money(moneyLast) or "?"), true, ctx)
+end
+
+local function readBank(why)
+    if not (db and ready and C_Container and C_Container.GetContainerNumSlots) then return end
+    local found = { Bank = {}, Kontobank = {} }
+    local bound = { Bank = {}, Kontobank = {} }
+    local slots = { Bank = 0, Kontobank = 0 }
+    local BT = Enum and Enum.BankType
+    if C_Bank and C_Bank.FetchPurchasedBankTabData and BT then
+        for name, bankType in pairs({ Bank = BT.Character, Kontobank = BT.Account }) do
+            local ok, tabs = pcall(C_Bank.FetchPurchasedBankTabData, bankType)
+            if ok and type(tabs) == "table" then
+                for _, tab in ipairs(tabs) do
+                    if type(tab) == "table" and num(tab.ID) then
+                        slots[name] = slots[name] + readContainer(tab.ID, found[name], bound[name])
+                    end
+                end
+            end
+        end
+    else
+        -- Rückfall: Behälter-IDs laut BagIndexConstantsDocumentation.lua (CharacterBankTab_1 bis _9)
+        local BI = Enum and Enum.BagIndex
+        for i = 1, 9 do
+            local b = BI and BI["CharacterBankTab_" .. i]
+            if b then slots.Bank = slots.Bank + readContainer(b, found.Bank, bound.Bank) end
+        end
+    end
+    local parts = {}
+    for _, name in ipairs({ "Bank", "Kontobank" }) do
+        if slots[name] > 0 then
+            local list, n = countsText(found[name])
+            local boundList = countsText(bound[name])
+            local rec = { zeit = epoch(), liste = list, gebunden = (boundList ~= "") and boundList or nil }
+            if name == "Bank" then charDB().bank = rec else db.kontobank = rec end
+            if bankLast[name] ~= list .. "|" .. boundList then
+                bankLast[name] = list .. "|" .. boundList
+                local plan = planText(found[name])
+                parts[#parts + 1] = string.format("%s: %d Gegenstände%s", name, n, (plan ~= "") and (", Plan: " .. plan) or "")
+            end
+        end
+    end
+    if #parts > 0 and db.auto then add("INVENTAR", why .. " | " .. table.concat(parts, " | ")) end
+end
+
+local function scheduleBank(why)
+    bankToken = bankToken + 1
+    local token = bankToken
+    local function run()
+        if token ~= bankToken then return end
+        local ok, err = pcall(readBank, why)
+        if not ok then add("FEHLER", "Bank: " .. tostring(err), false) end
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(1, run) else run() end
+end
+
+-- Version 3.6: AH-Post. Beim Öffnen des Briefkastens jeder Brief des Auktionshauses: verkauft, abgelaufen, gekauft,
+-- überboten, zurückgezogen. API wie im Forever-UI 1.60.1 (Blizzard_MailFrame/MailFrame.lua): GetInboxNumItems,
+-- GetInboxHeaderInfo (… Betreff, Geld, Nachnahme, Tage übrig, … , Menge und Link des ersten Anhangs), GetInboxInvoiceInfo
+-- (Art «buyer», «seller» oder «seller_temp_invoice», Gegenstand, Name, Gebot, Sofortkauf, Pfand, Gebühr, …, Anzahl).
+-- Das Blizzard-UI ruft vorher GetInboxText auf (markiert den Brief als gelesen), das Testlog nicht: ob die Rechnung auch
+-- ohne geöffneten Brief kommt, ist ungeprüft (Test T16); sonst bleibt die Betreffzeile (Texte des Clients
+-- AUCTION_SOLD_MAIL_SUBJECT usw., in Forever ungeprüft). Namen von Käufern und Verkäufern speichert das Testlog nicht.
+local MAIL_KINDS = {
+    { "AUCTION_SOLD_MAIL_SUBJECT", "verkauft" },
+    { "AUCTION_EXPIRED_MAIL_SUBJECT", "abgelaufen" },
+    { "AUCTION_WON_MAIL_SUBJECT", "gekauft" },
+    { "AUCTION_OUTBID_MAIL_SUBJECT", "überboten" },
+    { "AUCTION_REMOVED_MAIL_SUBJECT", "zurückgezogen" },
+}
+local AH_POST_KEEP = 1500     -- Einträge in KombiTestlogDB.ahPost (der älteste fällt weg)
+local MAIL_MATCH = 7200       -- Sekunden: derselbe Brief, wenn sein Ablauf (aus «Tage übrig») so nah beim gespeicherten liegt
+
+local function fmtPattern(fmt)
+    if type(fmt) ~= "string" or isSecret(fmt) or not fmt:find("%s", 1, true) then return nil end
+    local p = fmt:gsub("([%(%)%.%+%-%*%?%[%]%^%$%%])", "%%%1")
+    p = p:gsub("%%%%s", "(.+)", 1)
+    return "^" .. p .. "$"
+end
+
+local function mailKind(subject)
+    if type(subject) ~= "string" or isSecret(subject) then return nil end
+    for _, mk in ipairs(MAIL_KINDS) do
+        local pat = fmtPattern(rawget(_G, mk[1]))
+        local name = pat and subject:match(pat)
+        if name then return mk[2], name end
+    end
+    return nil
+end
+
+local function postText(r)
+    local s = (r.menge and (r.menge .. "x ") or "") .. (r.id and idLabel(r.id) or tostring(r.name or "?"))
+    if r.art == "verkauft" and r.preis then
+        s = s .. " für " .. money(r.preis)
+        if r.menge and r.menge > 1 then s = s .. string.format(" (Stück %s)", money(math.floor(r.preis / r.menge + 0.5))) end
+        if r.gebuehr then s = s .. ", Gebühr " .. money(r.gebuehr) end
+        if r.vorlaeufig then s = s .. ", Geld folgt" end
+    elseif r.art == "gekauft" and r.preis then
+        s = s .. " für " .. money(r.preis)
+    end
+    return s
+end
+
+-- Denselben Brief wiederfinden: gleicher Charakter, gleiche Art, gleicher Gegenstand, gleiches Geld, Ablauf höchstens
+-- MAIL_MATCH daneben (der nächste gewinnt), in diesem Durchgang noch nicht vergeben, nicht schon abgeholt. Preis und
+-- Menge zählen nicht: Die Rechnung kann erst später lesbar werden (sobald der Brief einmal geöffnet war).
+local function findMail(k, ablauf, used)
+    local best, bestD
+    for j = #db.ahPost, 1, -1 do
+        local r = db.ahPost[j]
+        if r.k == k and not r.weg and not used[r] then
+            local d
+            if r.ablauf and ablauf then
+                d = math.abs(r.ablauf - ablauf)
+                if d > MAIL_MATCH then d = nil end
+            elseif not r.ablauf and not ablauf then
+                d = 0
+            end
+            if d and (not bestD or d < bestD) then best, bestD = r, d end
+        end
+    end
+    return best
+end
+
+local inboxFresh = false   -- seit dem Öffnen des Briefkastens kam MAIL_INBOX_UPDATE: Die Liste ist die des Servers
+
+local function readInbox()
+    if not db or not ready then return end
+    -- nur am offenen Briefkasten: Danach kann der Client die Liste leeren, das sähe aus wie lauter abgeholte Briefe
+    local open = (session and session.kind == "POST") or interacting(SESSION_INFO["POST"].itype) == true
+    if not open then return end
+    local okN, n, total = callApi("GetInboxNumItems")
+    if not okN or not num(n) then return end
+    db.ahPost = db.ahPost or {}
+    local t = epoch()
+    local who = charKey()
+    -- vollständig: Liste vom Server, alle Briefe angezeigt (mehr als 50 zeigt der Client erst nach und nach) und lesbar
+    local complete = inboxFresh and (not num(total) or total <= n)
+    local used, new, filled = {}, {}, {}
+    for i = 1, n do
+        local okH, _, _, _, subject, mny, _, daysLeft, _, _, _, _, _, _, firstQty, firstLink = callApi("GetInboxHeaderInfo", i)
+        if not okH or type(subject) ~= "string" or isSecret(subject) then complete = false end
+        local kind, name
+        if okH then kind, name = mailKind(subject) end
+        local okI, invType, invItem, _, bid, buyout, deposit, cut, _, _, _, count = callApi("GetInboxInvoiceInfo", i)
+        if not (okI and type(invType) == "string" and not isSecret(invType)) then invType = nil end
+        if invType == "buyer" then
+            kind = "gekauft"
+        elseif invType and invType:find("seller", 1, true) then
+            kind = "verkauft"
+        end
+        if invType and type(invItem) == "string" and not isSecret(invItem) then name = invItem end
+        if okH and kind then
+            local link = (type(firstLink) == "string" and not isSecret(firstLink)) and firstLink or nil
+            local id = link and tonumber(link:match("item:(%d+)")) or nil
+            local qty = (invType and num(count) and count > 0) and count or num(firstQty)
+            if type(name) == "string" then
+                local base, c = name:match("^(.-) %((%d+)%)$")   -- «Name (20)»
+                if base then
+                    name = base
+                    qty = qty or tonumber(c)
+                end
+            end
+            local dl = num(daysLeft)
+            local ablauf = dl and math.floor(t + dl * 86400) or nil
+            local k = table.concat({ who, kind, tostring(name), tostring(num(mny) or 0) }, "|")
+            local rec = findMail(k, ablauf, used)
+            if rec then
+                used[rec] = true
+                -- die Rechnung ist jetzt lesbar (Brief inzwischen geöffnet): ergänzen statt neu
+                if invType and rec.preis == nil and num(bid) then
+                    rec.preis, rec.sofort, rec.pfand, rec.gebuehr = num(bid), num(buyout), num(deposit), num(cut)
+                    rec.menge = rec.menge or qty
+                    rec.vorlaeufig = (invType == "seller_temp_invoice") or nil
+                    filled[#filled + 1] = rec
+                end
+            else
+                rec = { k = k, art = kind, name = name, id = id, menge = qty, preis = invType and num(bid) or nil,
+                        sofort = invType and num(buyout) or nil, pfand = invType and num(deposit) or nil,
+                        gebuehr = invType and num(cut) or nil, geld = num(mny), ablauf = ablauf, zeit = t,
+                        vorlaeufig = (invType == "seller_temp_invoice") or nil }
+                used[rec] = true
+                if id then remember(id) end
+                table.insert(db.ahPost, rec)
+                new[#new + 1] = rec
+            end
+        end
+    end
+    -- Briefe dieses Charakters, die in der vollständigen Liste fehlen, sind abgeholt oder gelöscht: Ein gleicher Brief
+    -- danach ist ein neuer Verkauf
+    if complete then
+        local prefix = who .. "|"
+        for _, r in ipairs(db.ahPost) do
+            if r.k and not r.weg and not used[r] and r.k:sub(1, #prefix) == prefix then r.weg = true end
+        end
+    end
+    while #db.ahPost > AH_POST_KEEP do table.remove(db.ahPost, 1) end
+    if (#new == 0 and #filled == 0) or not db.auto then return end
+    local groups, order = {}, {}
+    local function put(art, r)
+        if not groups[art] then
+            groups[art] = {}
+            order[#order + 1] = art
+        end
+        table.insert(groups[art], postText(r))
+    end
+    for _, r in ipairs(new) do put(r.art, r) end
+    for _, r in ipairs(filled) do put("Rechnung ergänzt", r) end
+    local parts = {}
+    for _, art in ipairs(order) do parts[#parts + 1] = art .. ": " .. table.concat(groups[art], ", ") end
+    add("AH-POST", table.concat(parts, " | "))
+end
+
+local function scheduleInbox()
+    mailToken = mailToken + 1
+    local token = mailToken
+    local function run()
+        if token ~= mailToken then return end
+        local ok, err = pcall(readInbox)
+        if not ok then add("FEHLER", "AH-Post: " .. tostring(err), false) end
+    end
+    if C_Timer and C_Timer.After then C_Timer.After(1, run) else run() end
+end
+
+-- Version 3.6: eigene Angebote (AH-ANGEBOT). Haken an C_AuctionHouse.PostCommodity, PostItem, ConfirmPostCommodity und
+-- ConfirmPostItem (so stellt das Forever-UI ein: Blizzard_AuctionHouseCommoditiesSellFrame.lua und
+-- Blizzard_AuctionHouseItemSellFrame.lua; PostCommodity meldet, ob eine Bestätigung nötig ist, und das Fenster hält
+-- nur ein Angebot zur Bestätigung). Bestätigt durch AUCTION_HOUSE_AUCTION_CREATED (das Forever-UI meldet damit
+-- ERR_AUCTION_STARTED, Blizzard_AuctionHouseFrame.lua) oder nach 30 s, wenn weniger in den Taschen ist; verworfen bei
+-- AUCTION_HOUSE_POST_ERROR und wenn ein neues Angebot kommt, während eines auf die Bestätigung wartet
+-- (AUCTION_HOUSE_POST_WARNING öffnet im Forever-UI das Bestätigungsfenster). Pfand über
+-- CalculateCommodityDeposit bzw. CalculateItemDeposit. Dauer 1 bis 3 wie im Verkaufsfenster (AUCTION_DURATION_ONE bis
+-- _THREE). Ob ein Gegenstand mit Menge 3 drei Angebote ergibt, ist ungeprüft.
+local DURATION_NAMES = { "AUCTION_DURATION_ONE", "AUCTION_DURATION_TWO", "AUCTION_DURATION_THREE" }
+
+local function postRecord(p, how)
+    db.ahPost = db.ahPost or {}
+    table.insert(db.ahPost, { art = "angeboten", id = p.id, menge = p.qty, preis = p.price, je = p.per, dauer = p.duration,
+                              pfand = p.deposit, zeit = epoch(), bestaetigt = how })
+    while #db.ahPost > AH_POST_KEEP do table.remove(db.ahPost, 1) end
+    if not db.auto then return end
+    local dname = p.duration and rawget(_G, DURATION_NAMES[p.duration] or "")
+    add("AH-ANGEBOT", string.format("%sx %s zu %s je %s | Dauer %s | Pfand %s | %s", tostring(p.qty or "?"),
+        p.id and idLabel(p.id) or "?", p.price and money(p.price) or "?", p.per,
+        (type(dname) == "string" and not isSecret(dname)) and dname or tostring(p.duration or "?"),
+        p.deposit and money(p.deposit) or "?", how))
+end
+
+local function onPost(fn, item, duration, quantity, a, b)
+    if not db or not ready then return end
+    local commodity = (fn == "PostCommodity" or fn == "ConfirmPostCommodity")
+    local okI, id = pcall(C_Item.GetItemID, item)
+    id = okI and num(id) or nil
+    if id then remember(id) end
+    local price
+    if commodity then price = num(a) else price = num(b) or num(a) end   -- Ware: Stückpreis; Gegenstand: Sofortkauf, sonst Gebot
+    local okD, dep
+    if commodity then
+        if id then okD, dep = pcall(C_AuctionHouse.CalculateCommodityDeposit, id, duration, quantity) end
+    else
+        okD, dep = pcall(C_AuctionHouse.CalculateItemDeposit, item, duration, quantity)
+    end
+    local p = { id = id, qty = num(quantity), price = price, per = commodity and "Stück" or "Angebot", duration = num(duration),
+                deposit = okD and num(dep) or nil, t = now(), before = id and itemCount(id) or nil,
+                events = commodity and 1 or (num(quantity) or 1) }
+    if fn == "ConfirmPostCommodity" or fn == "ConfirmPostItem" then
+        for i = #postQueue, 1, -1 do
+            local q = postQueue[i]
+            if q.id == p.id and q.qty == p.qty and q.price == p.price and not q.confirmed then
+                q.t, q.confirmed, q.awaiting = now(), true, nil   -- dasselbe Angebot, jetzt bestätigt
+                return
+            end
+        end
+        p.confirmed = true
+    else
+        -- Ein neues Angebot: Wartete ein älteres auf die Bestätigung, hat das Fenster es verworfen (abgebrochen).
+        -- Ohne AUCTION_HOUSE_POST_WARNING im Client: unbestätigte nach 3 s ebenso. Sind dafür weniger in den Taschen,
+        -- wurde es doch erstellt (Ereignis fehlte).
+        for i = #postQueue, 1, -1 do
+            local q = postQueue[i]
+            if q.awaiting or (not postWarnings and not q.confirmed and now() - q.t > 3) then
+                table.remove(postQueue, i)
+                if q.id and q.before and itemCount(q.id) < q.before then postRecord(q, "Taschen weniger, ohne Bestätigung") end
+            end
+        end
+    end
+    postQueue[#postQueue + 1] = p
+end
+
+-- Antworten des Servers kommen der Reihe nach: das älteste Angebot, das nicht auf eine Bestätigung wartet
+local function postOldest()
+    for i, q in ipairs(postQueue) do
+        if not q.awaiting then return i end
+    end
+    return nil
+end
+
+local function postFailed()
+    local i = postOldest()
+    if i then table.remove(postQueue, i) end
+end
+
+local function postTick()
+    local t = now()
+    while postQueue[1] and t - postQueue[1].t > 30 do
+        local p = table.remove(postQueue, 1)
+        if p.id and p.before and itemCount(p.id) < p.before then postRecord(p, "Taschen weniger, ohne Bestätigung") end
+    end
+end
+
+-- Version 3.6: Empfehlungen anzeigen (KombiDaten: stand, zeit, markt, tipps, hinweise)
+local function ageText(sec)
+    if type(sec) ~= "number" or sec < 0 then return nil end
+    if sec < 3600 then return math.floor(sec / 60) .. " Min" end
+    if sec < 172800 then return math.floor(sec / 3600) .. " Std" end
+    return math.floor(sec / 86400) .. " Tagen"
+end
+
 local function tick()
     local okA, errA = pcall(ahTick)
     if not okA then
         ahScan = nil   -- ein Fehler im AH-Scan soll nicht alle 2 Sekunden wiederkommen
         add("FEHLER", "AH-Scan: " .. tostring(errA), false)
+    end
+    local okP, errP = pcall(postTick)
+    if not okP then
+        postQueue = {}
+        add("FEHLER", "AH-Angebot: " .. tostring(errP), false)
     end
     checkRXP()
     lastContext = context()
@@ -1168,7 +1973,7 @@ end
 
 -- Fenster zum Kopieren
 local frame
-local function showExport(count)
+local function showText(text, titleText)
     if not frame then
         frame = CreateFrame("Frame", "KombiTestlogFrame", UIParent, "BasicFrameTemplateWithInset")
         frame:SetSize(780, 480)
@@ -1184,7 +1989,7 @@ local function showExport(count)
             title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
             title:SetPoint("TOP", 0, -5)
         end
-        title:SetText("Testlog: Strg+A, dann Strg+C zum Kopieren")
+        frame.title = title
         local scroll = CreateFrame("ScrollFrame", "KombiTestlogScroll", frame, "UIPanelScrollFrameTemplate")
         scroll:SetPoint("TOPLEFT", 12, -30)
         scroll:SetPoint("BOTTOMRIGHT", -32, 10)
@@ -1198,6 +2003,14 @@ local function showExport(count)
         frame.edit = edit
         if UISpecialFrames then table.insert(UISpecialFrames, "KombiTestlogFrame") end
     end
+    frame.title:SetText(titleText)
+    frame.edit:SetText(text)
+    frame:Show()
+    frame.edit:SetFocus()
+    frame.edit:HighlightText()
+end
+
+local function showExport(count)
     local lines = db.log
     local first = 1
     if count and count > 0 and #lines > count then
@@ -1205,10 +2018,42 @@ local function showExport(count)
     end
     local buf = {}
     for i = first, #lines do buf[#buf + 1] = lines[i] end
-    frame.edit:SetText(table.concat(buf, "\n"))
-    frame:Show()
-    frame.edit:SetFocus()
-    frame.edit:HighlightText()
+    showText(table.concat(buf, "\n"), "Testlog: Strg+A, dann Strg+C zum Kopieren")
+end
+
+-- Version 3.6: /tl tipp [Anzahl|alle]
+local function showTips(arg)
+    local d = tipsData()
+    if not d then
+        say("Keine Empfehlungen geladen. Claude schreibt sie nach der Auswertung ins Addon KombiDaten (tools/markt.py). "
+            .. "Einen neuen Addon-Ordner lädt das Spiel erst nach einem Neustart, spätere Änderungen mit /reload.")
+        return
+    end
+    local age = ageText(num(d.zeit) and (epoch() - d.zeit) or nil)
+    local head = string.format("Empfehlungen vom %s%s%s", tostring(d.stand or "?"), age and (", vor " .. age) or "",
+        d.markt and (" (" .. tostring(d.markt) .. ")") or "")
+    if #d.tipps == 0 then
+        say(head .. ": noch keine Empfehlung mit Beleg.")
+        return
+    end
+    if arg == "alle" then
+        local buf = { head }
+        for i, t in ipairs(d.tipps) do buf[#buf + 1] = i .. ". " .. tostring(t) end
+        if type(d.hinweise) == "table" then
+            for _, h in ipairs(d.hinweise) do buf[#buf + 1] = "Hinweis: " .. tostring(h) end
+        end
+        showText(table.concat(buf, "\n"), "Empfehlungen von Claude (Strg+A, Strg+C zum Kopieren)")
+        return
+    end
+    say(head .. ":")
+    local n = tonumber(arg) or 5
+    for i, t in ipairs(d.tipps) do
+        if i > n then
+            say(string.format("… %d weitere: /tl tipp alle", #d.tipps - n))
+            break
+        end
+        say(i .. ". " .. tostring(t))
+    end
 end
 
 local function help()
@@ -1218,6 +2063,7 @@ local function help()
     say("/tl auto  automatische Einträge an/aus  ·  /tl item <Shift-Klick>  mitzählen")
     say("/tl karte  Kartengrenzen der aktuellen Karte festhalten")
     say("/tl ah  AH-Preise lesen (läuft beim Öffnen des Auktionshauses von selbst, höchstens alle 15 Min)  ·  /tl ah aus|an")
+    say("/tl tipp [alle]  Empfehlungen von Claude (Addon KombiDaten)")
     say("/tl leeren ja  Protokoll löschen (AH-Scans bleiben)")
 end
 
@@ -1287,6 +2133,8 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         else
             ahStart(true)
         end
+    elseif lower == "tipp" or lower == "tipps" then
+        showTips(string.lower(rest))
     elseif lower == "status" then
         local n = 0
         for _ in pairs(db.items) do n = n + 1 end
@@ -1295,6 +2143,14 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         local lastScan = scans[#scans]
         say(string.format("AH-Scans: %d gespeichert%s, beim Öffnen des Auktionshauses %s", #scans,
             lastScan and (", letzter " .. tostring(lastScan.datum)) or "", (db.ahAuto == false) and "aus" or "an"))
+        local c = charDB()
+        local profs = {}
+        for name in pairs(c.rezepte or {}) do profs[#profs + 1] = name end
+        table.sort(profs)
+        say(string.format("Rezepte: %s · Bank gelesen: %s · AH-Post: %d Einträge · Empfehlungen: %s",
+            (#profs > 0) and table.concat(profs, ", ") or "noch keine (Berufsfenster öffnen)",
+            c.bank and date("%d.%m. %H:%M", c.bank.zeit) or "noch nie (Bank öffnen)", #(db.ahPost or {}),
+            tipsData() and tostring(tipsData().stand) or "keine"))
     elseif lower == "leeren" then
         if string.lower(rest) == "ja" then
             wipe(db.log)
@@ -1330,6 +2186,11 @@ end
 local function beginLogging()
     snapshot()
     sessionStart()
+    inventoryBags("beim Einloggen")
+    local tips = tipsData()
+    if tips and #tips.tipps > 0 then
+        say(string.format("Empfehlungen geladen: %d Tipps vom %s. Anzeigen: /tl tipp", #tips.tipps, tostring(tips.stand or "?")))
+    end
     if #missingEvents > 0 then
         table.sort(missingEvents)
         add("FEHLER", "Ereignisse unbekannt, nicht registriert: " .. table.concat(missingEvents, ", "), false)
@@ -1367,6 +2228,7 @@ function handlers.PLAYER_LOGOUT()
     finishPending()
     finishLoot()
     finishSession("Ausloggen")
+    if ready then inventoryBags("beim Ausloggen", lastContext) end   -- Version 3.6: letzter bekannter Taschenbestand
     add("ENDE", nil, true, lastContext)
 end
 
@@ -1447,8 +2309,14 @@ function handlers.UNIT_SPELLCAST_SUCCEEDED(unit, _, spellID)
     end
 end
 
-function handlers.TRADE_SKILL_SHOW() openWindow("profession") end
+function handlers.TRADE_SKILL_SHOW()
+    openWindow("profession")
+    scheduleRecipeDump()   -- Version 3.6
+end
 function handlers.TRADE_SKILL_CLOSE() closeWindow("profession") end
+-- Version 3.6: Liste neu (nach dem Herstellen, Filter, anderer Beruf): Rezepte bzw. Farbwechsel
+function handlers.TRADE_SKILL_LIST_UPDATE() if windows.profession then scheduleRecipeDump() end end
+function handlers.TRADE_SKILL_DATA_SOURCE_CHANGED() if windows.profession then scheduleRecipeDump() end end
 
 -- Version 3: Lootfenster
 function handlers.LOOT_OPENED(_, isFromItem)
@@ -1512,8 +2380,40 @@ end
 
 function handlers.MERCHANT_SHOW() startSession("HÄNDLER") end
 function handlers.MERCHANT_CLOSED() finishSession("MERCHANT_CLOSED") end
-function handlers.MAIL_SHOW() startSession("POST") end
-function handlers.MAIL_CLOSED() finishSession("MAIL_CLOSED") end
+function handlers.MAIL_SHOW()
+    startSession("POST")
+    inboxFresh = false   -- Version 3.6: bis MAIL_INBOX_UPDATE kann die Liste veraltet sein
+    scheduleInbox()
+end
+function handlers.MAIL_CLOSED()
+    finishSession("MAIL_CLOSED")
+    inboxFresh = false
+end
+function handlers.MAIL_INBOX_UPDATE()   -- Version 3.6: AH-Post
+    inboxFresh = true
+    scheduleInbox()
+end
+-- Version 3.6: Bank (BANKFRAME_OPENED/_CLOSED laut BankDocumentation.lua, Forever-UI 1.60.1)
+function handlers.BANKFRAME_OPENED() scheduleBank("Bank geöffnet") end
+function handlers.BANKFRAME_CLOSED() readBank("Bank geschlossen") end
+-- Version 3.6: Angebot abgelehnt bzw. Bestätigung nötig (AuctionHouseDocumentation.lua; das Forever-UI zeigt dann
+-- ein Fenster, bei der Warnung mit «Annehmen» = ConfirmPost…, Blizzard_AuctionHouseFrame.lua)
+function handlers.AUCTION_HOUSE_POST_ERROR() postFailed() end
+function handlers.AUCTION_HOUSE_POST_WARNING()
+    local q = postQueue[#postQueue]
+    if q and not q.confirmed then q.awaiting = true end
+end
+-- Version 3.6: eigenes Angebot erstellt
+function handlers.AUCTION_HOUSE_AUCTION_CREATED()
+    local i = postOldest()
+    if not i then return end
+    local p = postQueue[i]
+    p.events = p.events - 1
+    if p.events <= 0 then
+        table.remove(postQueue, i)
+        postRecord(p, "erstellt")
+    end
+end
 function handlers.AUCTION_HOUSE_SHOW() startSession("AUKTIONSHAUS") end
 function handlers.AUCTION_HOUSE_CLOSED() finishSession("AUCTION_HOUSE_CLOSED") end
 
@@ -1538,6 +2438,9 @@ local WINDOW_BY_ITYPE = {}
 for name, info in pairs(WINDOW_INFO) do
     if not info.free then WINDOW_BY_ITYPE[info.itype] = name end
 end
+-- Version 3.6: Bank auch über den Interaktions-Manager (Banker 8, CharacterBanker 67, AccountBanker 68 laut
+-- PlayerInteractionManagerConstantsDocumentation.lua, Forever-UI 1.60.1)
+local BANK_ITYPES = { [IT.Banker or 8] = true, [IT.CharacterBanker or 67] = true, [IT.AccountBanker or 68] = true }
 
 function handlers.PLAYER_INTERACTION_MANAGER_FRAME_SHOW(itype)
     if isSecret(itype) then return end
@@ -1550,12 +2453,14 @@ function handlers.PLAYER_INTERACTION_MANAGER_FRAME_SHOW(itype)
     end
     if WINDOW_BY_ITYPE[itype] then openWindow(WINDOW_BY_ITYPE[itype]) end
     if WINDOW_BY_ITYPE[itype] == "trainer" then scheduleTrainerDump() end
+    if BANK_ITYPES[itype] then scheduleBank("Bank geöffnet") end
 end
 
 function handlers.PLAYER_INTERACTION_MANAGER_FRAME_HIDE(itype)
     if isSecret(itype) then return end
     if session and SESSION_INFO[session.kind].itype == itype then finishSession("Interaktion zu") end
     if WINDOW_BY_ITYPE[itype] then closeWindow(WINDOW_BY_ITYPE[itype]) end
+    if BANK_ITYPES[itype] then readBank("Bank geschlossen") end
 end
 
 -- Version 3: Gelerntes (Zauber beim Lehrer, Rezepte)
@@ -1569,6 +2474,18 @@ function handlers.NEW_RECIPE_LEARNED(recipeID)
     add("REZEPT", string.format("%s (%s)", spellName(recipeID) or "?", tostring(recipeID)))
 end
 
+-- Version 3.6: Haken für eigene Angebote (nach dem Blizzard-Aufruf, ändern nichts daran)
+if type(hooksecurefunc) == "function" and type(C_AuctionHouse) == "table" then
+    for _, fn in ipairs({ "PostCommodity", "ConfirmPostCommodity", "PostItem", "ConfirmPostItem" }) do
+        if type(C_AuctionHouse[fn]) == "function" then
+            hooksecurefunc(C_AuctionHouse, fn, function(...)
+                local ok, err = pcall(onPost, fn, ...)
+                if not ok and db then add("FEHLER", "AH-Angebot: " .. tostring(err), false) end
+            end)
+        end
+    end
+end
+
 local events = CreateFrame("Frame")
 for event in pairs(handlers) do
     -- Zauber nur vom eigenen Charakter: Werte anderer Einheiten können «secret» sein (Forever-API).
@@ -1580,6 +2497,7 @@ for event in pairs(handlers) do
         ok = pcall(events.RegisterEvent, events, event)
     end
     if not ok then table.insert(missingEvents, event) end
+    if ok and event == "AUCTION_HOUSE_POST_WARNING" then postWarnings = true end
 end
 events:SetScript("OnEvent", function(_, event, ...)
     local h = handlers[event]
