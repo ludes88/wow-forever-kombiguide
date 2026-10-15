@@ -60,7 +60,7 @@ Vor jedem Commit an Guides oder Addons: `validate.py` (handgeschriebene Guides m
 - Guide-Kopf: `#forever`, `#name`, `#group`, `<< Horde` sind Pflicht. Eigene Gruppe `Kombiguide (H)`, kein `#defaultfor`.
 - In Guide-Text: `--` schneidet die Zeile ab, `[[`/`]]` beendet den Lua-String, `.subzone` braucht Text.
 - Nie zwischen einen Schritt mit `#completewith next` und seinen Nachfolger einfügen.
-- Während ein Testcharakter in einem Guide steht: neue Schritte nur nach seiner Stelle einfügen, sonst verschiebt sich die gespeicherte Stelle (RXP merkt sich Zeilennummer und Schrittnummer; Best Practice §6). Stand 14.10.: Tauren-Druide in «6-12 Mulgore» #30, zweiter Testcharakter (Stufe 15, Tauren) in «12-17 The Barrens» #77; vor dem Merge mit `tools/rxp_schritte.py vergleich` prüfen.
+- Während ein Testcharakter in einem Guide steht: neue Schritte nur nach seiner Stelle einfügen, sonst verschiebt sich die gespeicherte Stelle (RXP merkt sich Zeilennummer und Schrittnummer; Best Practice §6). Stand 15.10.: Tauren-Druide (Stufe 7) in «6-12 Mulgore» #45, zweiter Testcharakter (Stufe 15, laut Schrittfolge Druide) in «12-17 The Barrens» #84; vor dem Merge mit `tools/rxp_schritte.py vergleich` prüfen.
 - RXP überspringt leere Argumente (`,,`): `.collect 2318,19,0,1,24` statt `.collect 2318,19,,0,8`.
 - Quest- und NPC-Namen nicht übersetzen: RXP holt Quest-Namen vom Client und übersetzt `.target`/`.mob` selbst.
 - Testlog liest Chat-Text nicht aus (kann im modernen Client «secret» sein), sondern zählt den Taschenbestand. Beim Ausloggen meldet `GetMoney` 0, XP und Karte sind dann ebenfalls unzuverlässig.
