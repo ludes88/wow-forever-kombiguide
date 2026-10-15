@@ -10,6 +10,8 @@ Quelle: die Testlog-Datei des Nutzers, Stand 15.10. 19:38 (Testlog 3.3 und 3.5),
 | 14.10. 20:00–20:09 | Tauren-Druide, Stufe 7 (46 % → 74 %) | «6-12 Mulgore» #30 → #45 | Kombiguide 0.3, Testlog 3.3 |
 | 15.10. 19:21–19:38 | Stufe 15 (70 % → 97 %) | «12-17 The Barrens» #77 → #84 | Kombiguide 0.4, Testlog 3.5 |
 
+Nachtrag: Datei vom 15.10. 20:58 (nach `/reload`), siehe Abschnitt «15.10. 19:48–20:58» unten.
+
 ## Stellen im Kombi-Guide (Best Practice §6)
 
 - «6-12 Mulgore» #45: `.accept 749` (Zeile 510). Von v0.3 zu v0.4 unverändert: `tools/rxp_schritte.py vergleich git:2620af4:addons/RXPGuides_KombiGuide/Kombi_Guide.lua addons/RXPGuides_KombiGuide/Kombi_Guide.lua "6-12 Mulgore" --stelle 45 --klasse druid` meldet «Stelle #45 bleibt».
@@ -51,3 +53,42 @@ Quelle: die Testlog-Datei des Nutzers, Stand 15.10. 19:38 (Testlog 3.3 und 3.5),
 - Geprüft am 15.10.: Im AddOns-Ordner der Beta sind `KombiTestlog`, `RXPGuides_Kombi` und `RXPGuides_KombiGuide` Verknüpfungen (Junction) auf den Repo-Klon, keine Kopien. `KombiTestlog.lua` hat dort dieselbe Grösse und denselben Zeitstempel (auf die Millisekunde) wie im Klon. Im Ordner `_alt_kombi` liegen die alten Kopien, die `addons_verknuepfen.bat` beiseitegelegt hat.
 - Der Klon stand am 15.10. um 19:20 auf `ed47fcf` (Merge #15, Testlog 3.5). Testlog 3.6 (Merge #16) kommt erst mit dem nächsten `aktualisieren.bat`.
 - `Interface\AddOns\KombiDaten` hat Claude am 15.10. erstmals geschrieben (`tools/markt.py`). Darin sind noch keine Tipps, weil Preise fehlen.
+
+## 15.10. 19:48–20:58 (Datei nach `/reload` um 20:58)
+
+Gleicher Charakter (Stufe 15 → 16), Kombiguide 0.4, Testlog 3.5. Der Repo-Klon war weiter auf `ed47fcf` (`.git/FETCH_HEAD` und `.git/logs/HEAD` unverändert seit 19:20); Testlog 3.6 lief also noch nicht.
+
+**Verlauf**
+- 19:49 Stufe 16 an der Sludge Fen (Schlickermoor). Die BERUF-Zeilen beim Stufenaufstieg zeigen Kochkunst 1/75 und Angeln 5/75: Er hat Angeln und Kochen.
+- Quests: 858 «Zündung» abgegeben (1350 XP), 863 angenommen; in Orgrimmar 97246 «Mahlzeit oder Spielzeit» (800 XP) und 97249, 97242.
+- Danach Durotar, Zeppelin nach Tirisfal, Undercity und «Die Ruinen von Lordaeron» (Quests 92421, 92422, 92401, 95204).
+- Stelle im Kombi-Guide um 20:58: «12-17 The Barrens» #103.
+
+**Messwerte**
+- Händler in Orgrimmar (20:10): 9 Posten für zusammen 24s 77c, darunter 5 Grauer Farbstoff (4340) und 7 Einfaches Holz (4470).
+- Post (20:19): ein Brief mit 7 Posten, 30 Leinenstoff sind darin 2 Stapel (Stapelgrösse 20, Risiko 16), also 8 Stapel. Porto 2s 40c; das passt zu 30c je Stapel (gerechnet, nicht gemessen).
+- Erster AH-Scan (20:12, Orgrimmar, Testlog 3.5, T15):
+  - 65 411 Angebote, 3079 Gegenstände, 1 nur mit Gebot, 18 s
+  - kein Angebot ohne Daten, keine geheimen Werte
+  - Übernommen mit `tools/ah_aus_testlog.py`: `data/preise/ah_eigen.csv` (87 beobachtete Gegenstände), `data/preise/ah_alle.csv` (alle 3079), Bericht `docs/plan/ah-preise.md`
+  - Ob der Tiefstpreis im Auktionshaus gleich aussah, ist nicht gemeldet (T15 offen).
+- Die Region liefert der Beta-Client leer (`GetCurrentRegionName` gibt einen leeren Text). Der Scan steht deshalb unter dem Markt «? Horde R2d38 Beta»; Testlog und Werkzeug machen seit 15.10. aus dem leeren Text «?».
+- Der Realm heisst «… PvP …». Der Bericht vergleicht vorerst mit dem AHledger-Median Normal Horde US (offene Entscheidung 4).
+- Plan-Gegenstände im Scan (Tiefstpreis / Median nach Stückzahl / Stück im Angebot; dahinter AHledger NH):
+
+  | Gegenstand | Scan 15.10. | AHledger NH |
+  |---|---|---|
+  | Leichtes Leder (2318) | 73c / 98c / 4310 | 50c |
+  | Verdorbene Lederfetzen (2934) | 24c / 34c / 1674 | 25c |
+  | Mittleres Leder (2319) | 1s 99c / 2s 29c / 5984 | 1s 91c |
+  | Schweres Leder (4234) | 8s 15c / 8s 20c / 2347 | 11s 98c |
+  | Seltsamer Staub (10940) | 63c / 65c / 4716 | 84c |
+  | Geringe Magieessenz (10938) | 89c / 93c / 2638 | 69c |
+  | Grauer Farbstoff (4340) | 4s / 4s 30c / 123 | – |
+  | Deviate Fish (6522) | 5s 96c / 10s 64c / 1096 | – |
+
+  Ein Scan ist ein Zeitpunkt; die 7-Tage-Werte brauchen weitere Scans (`docs/plan/ah-preise.md`).
+- Neue Kartenecken (KARTE, übernommen mit `tools/karte_aus_testlog.py`):
+  - 1411 Durotar: RXPs Kommentare passen genau, 32 Punkte
+  - 1415 Östliche Königreiche, 1420 Tirisfal, 1458 Undercity: ohne RXP-Punkte zum Vergleich
+- Münzbeute: In den Ruinen von Lordaeron und im Brachland schrieb das Testlog Geld aus Beute oft als eigene Zeile GELD «sonst», nicht in der Zeile BEUTE. Seit 15.10. rechnet `tools/markt.py` dieses Geld zur Beute, wenn es während eines Durchgangs im selben Gebiet kam. Ruinen von Lordaeron: 5s 55c in 25 Minuten.

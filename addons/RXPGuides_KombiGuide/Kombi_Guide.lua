@@ -1,4 +1,4 @@
--- Kombi-Guide 0.4 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.4.1 (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Basis RestedXP v4.11.23, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
 if not (RXPGuides and RXPGuides.RegisterGuide) then return end
 if UnitFactionGroup("player") == "Alliance" then return end
@@ -4906,6 +4906,7 @@ step
     .goto 1454/1,-4568.10,1855.20
     >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, The Drag), dazu das Rezept Light Leather. Ohne Berufswechsel: Häkchen setzen.
     .train 2108 >>Lerne Lederverarbeitung
+    .skill leatherworking,1,1
     .target Kamari
 step
     #label Kombi23
@@ -4913,6 +4914,7 @@ step
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Tamar|r (Leatherworking Supplies, gleich bei Kamari) 27 Salt und 42 Coarse Thread.
     .collect 4289,27 >>Salt
     .skill leatherworking,<1,1
+    .skill leatherworking,80,1
     .collect 2320,42 >>Coarse Thread
     .target Tamar
 step
@@ -4968,12 +4970,14 @@ step
     >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, Godan's Runeworks in The Drag), dazu Runed Copper Rod und Enchant Bracer - Inferior Stamina.
     .train 7411 >>Lerne Verzauberkunst
     .skill leatherworking,<1,1
+    .skill enchanting,1,1
     .target Jhag
 step
     #label Kombi31
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Kithas|r (Enchanting Supplies, gleich bei den Lehrern) 1 Copper Rod (1s 24c) und 19 Mote of Magic (10c).
     .collect 6217,1 >>Copper Rod
     .skill enchanting,<1,1
+    .skill enchanting,50,1
     .collect 247786,19 >>Mote of Magic
     .target Kithas
 step
@@ -5038,6 +5042,7 @@ step
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Tamar|r 10 Salt und 38 Coarse Thread.
     .collect 4289,10 >>Salt (Stufe B)
     .skill leatherworking,<1,1
+    .skill leatherworking,100,1
     .collect 2320,38 >>Coarse Thread (Stufe B)
     .itemcount 4232,1,1
     .target Tamar
@@ -7475,6 +7480,7 @@ step
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Mahu|r 10 Salt und 38 Coarse Thread.
     .collect 4289,10 >>Salt (Stufe B)
     .skill leatherworking,<1,1
+    .skill leatherworking,100,1
     .collect 2320,38 >>Coarse Thread (Stufe B)
     .itemcount 4232,1,1
     .target Mahu

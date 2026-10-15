@@ -531,15 +531,33 @@ def verkaufen(m):
 
 
 ZEILE = re.compile(r"^(\d\d)\.(\d\d)\. (\d\d):(\d\d):(\d\d) \| (ANGELN|SAMMELN|BEUTE) \| (.*)$")
+GELD_ZEILE = re.compile(r"^(\d\d)\.(\d\d)\. (\d\d):(\d\d):(\d\d) \| GELD \| (.*)$")
+SONST = re.compile(r"(?:^| \| )sonst \+([\dgsc ]+?)(?: \||$)")
 POSTEN = re.compile(r"(\d+)x ([^,|]+?) \((\d+)\)")
 GELD = re.compile(r"Geld \+([\dgsc ]+)")
+MUENZ_RAND = 60     # Sekunden vor und nach einem Durchgang, in denen Geld «sonst» noch zur Beute zählt
 
 
 def farmen(m):
-    """Wert pro Stunde je Tätigkeit und Gebiet aus ANGELN, SAMMELN und BEUTE (Durchgänge mit Pausen unter 10 Min)."""
+    """Wert pro Stunde je Tätigkeit und Gebiet aus ANGELN, SAMMELN und BEUTE (Durchgänge mit Pausen unter 10 Min).
+    Geld, das das Testlog keinem Beutefenster zuordnen konnte (GELD «sonst»), zählt zu einem Durchgang «Gegner» im
+    selben Gebiet, wenn es währenddessen kam (am 15.10. so bei schnellem Plündern beobachtet)."""
     jahr = int(m.letzter["datum"][:4]) if m.letzter else datetime.now().year
     ereignisse = defaultdict(list)
+    muenzen = defaultdict(list)
     for zeile in m.db.get("log") or []:
+        zg = GELD_ZEILE.match(str(zeile))
+        if zg:
+            felder = zg.group(6).split(" | ")
+            s = SONST.search(zg.group(6))
+            if s and len(felder) >= 2:
+                try:
+                    k = at.kupfer(s.group(1))
+                except ValueError:
+                    continue
+                t = datetime(jahr, int(zg.group(2)), int(zg.group(1)), int(zg.group(3)), int(zg.group(4)), int(zg.group(5)))
+                muenzen[felder[1].split(" > ")[0]].append([t, k, False])
+            continue
         z = ZEILE.match(str(zeile))
         if not z:
             continue
@@ -581,20 +599,28 @@ def farmen(m):
             else:
                 lauf.append(e)
         laeufe.append(lauf)
-        sek, wert, n, anzahl, ohne = 0.0, 0.0, 0, 0, set()
+        sek, wert, n, anzahl, ohne, sonst = 0.0, 0.0, 0, 0, set(), 0
         for l in laeufe:
             if len(l) < MIN_EREIGNISSE:
                 continue
             abst = [(b[0] - a[0]).total_seconds() for a, b in zip(l, l[1:])]
             sek += (l[-1][0] - l[0][0]).total_seconds() + max(30.0, statistics.median(abst))
             wert += sum(x[1] for x in l)
+            if art == "Gegner":
+                von, bis = l[0][0] - timedelta(seconds=MUENZ_RAND), l[-1][0] + timedelta(seconds=MUENZ_RAND)
+                for mz in muenzen.get(gebiet, []):
+                    if not mz[2] and von <= mz[0] <= bis:
+                        mz[2] = True
+                        sonst += mz[1]
             anzahl += len(l)
             for x in l:
                 ohne.update(x[2])
             n += 1
+        wert += sonst
         if n and sek > 0:
             out.append({"art": art, "gebiet": gebiet, "laeufe": n, "stunden": sek / 3600, "wert": wert,
-                        "pro_stunde": wert / (sek / 3600), "ereignisse": anzahl, "ohne_preis": sorted(ohne)})
+                        "pro_stunde": wert / (sek / 3600), "ereignisse": anzahl, "ohne_preis": sorted(ohne),
+                        "geld_sonst": sonst})
     out.sort(key=lambda e: -e["pro_stunde"])
     return out
 
@@ -755,12 +781,15 @@ def bericht(pfad, m, t, hdl, ohne, her, verk, haendler, farm, stand):
           f"{BOUT_PAUSE // 60} Minuten und mindestens {MIN_EREIGNISSE} Ereignissen; Wert = AH netto (nur mit Verlauf) oder "
           "Händler-Ankauf, der höhere, dazu Geld. «ohne Preis» = Beute ohne AH-Verlauf und ohne Händlerpreis (Gegenstands-"
           f"Infos schreibt erst Testlog 3.6); der Wert ist dann zu tief. Ein Tipp erst ab {round(MIN_FARM_STUNDEN * 60)} "
-          "Minuten und ohne solche Beute (Wahl von Claude).", ""]
+          "Minuten und ohne solche Beute (Wahl von Claude). «davon Geld sonst» = Geld, das das Testlog keinem "
+          "Beutefenster zuordnen konnte (Zeile GELD «sonst»); es zählt zu «Gegner», wenn es während eines Durchgangs im "
+          f"selben Gebiet kam (bis {MUENZ_RAND} s davor oder danach).", ""]
     if farm:
-        L += ["| Tätigkeit | Gebiet | pro Stunde | Durchgänge | Dauer | Ereignisse | ohne Preis |",
-              "|---|---|---|---|---|---|---|"]
+        L += ["| Tätigkeit | Gebiet | pro Stunde | Durchgänge | Dauer | Ereignisse | davon Geld sonst | ohne Preis |",
+              "|---|---|---|---|---|---|---|---|"]
         L += [f"| {f['art']} | {f['gebiet']} | {geld(round(f['pro_stunde']))} | {f['laeufe']} | {dauer(f['stunden'])} | "
-              f"{f['ereignisse']} | {', '.join(f['ohne_preis'][:8]) + (' …' if len(f['ohne_preis']) > 8 else '') or '–'} |"
+              f"{f['ereignisse']} | {geld(f['geld_sonst']) if f.get('geld_sonst') else '–'} | "
+              f"{', '.join(f['ohne_preis'][:8]) + (' …' if len(f['ohne_preis']) > 8 else '') or '–'} |"
               for f in farm]
     else:
         L.append("Noch keine Durchgänge im Protokoll.")
