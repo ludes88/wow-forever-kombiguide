@@ -1201,6 +1201,7 @@ check(aus4[0]["namen"].get(4231) == "Geschmeidiger leichter Balg", "ah_aus_testl
 check(at._stufen("48*20*20*20,52*5*5*0") == [(48, 20), (52, 5)] and at._stufen("48*20") == [(48, 20)],
       "Preisstufen mit und ohne Restlaufzeit")
 import markt as mk
+mk.ANKAUF_CSV = os.path.join(tempfile.gettempdir(), "kombi-test-gibt-es-nicht.csv")   # nur die Händlerpreise der Testdaten
 m4 = "EU Horde %s Beta" % at.kennung("Testrealm")
 with tempfile.TemporaryDirectory() as tmp:
     at.EIGEN = os.path.join(tmp, "ah_eigen.csv")
@@ -1332,5 +1333,176 @@ with tempfile.TemporaryDirectory() as tmp:
           "markt: ohne Scan Stand aus dem Protokoll (%s)" % daten3.splitlines()[3:6])
     # Sonderzeichen in Texten bleiben gültiges Lua
     check(mk.lua_str('a "b" \\ c\nd') == '"a \\"b\\" \\\\ c\\nd"', "markt: Lua-Text mit Anführungszeichen und Zeilenumbruch")
+
+# --- Version 3.7: Laufweg, XP pro Quelle, Dungeon-Läufe, Pfand aus dem Geldabzug ---
+PRE7 = r"""
+xpNow, xpMax, lvlNow, rest, tlvl, tdead = 100, 1000, 12, 0, 13, false
+tguid = "Creature-0-3110-0-12345-3244-00004A1B2C"
+UnitXP = function() return xpNow end
+UnitXPMax = function() return xpMax end
+UnitLevel = function(u) if u == "player" then return lvlNow end return tlvl end
+UnitGUID = function(u) if u == "target" then return tguid end if u == "npc" then return npcGuid end return nil end
+UnitIsDead = function(u) return tdead end
+GetXPExhaustion = function() return rest end
+inst = false
+IsInInstance = function() if inst then return true, "party" end return false, "none" end
+GetInstanceInfo = function() return inst.name, "party", 1, "Normal", 5, 0, false, inst.id end
+GetNumGroupMembers = function() return 3 end
+"""
+L7 = runtime(pre=PRE7)
+g7 = L7.globals()
+def run7(code): L7.execute(code)
+def later7(s): run7("now_t = now_t + %d; server_t = (server_t or 0) + %d" % (s, s))
+g7.fire("ADDON_LOADED", "KombiTestlog")
+g7.fire("PLAYER_ENTERING_WORLD", True, False)
+c7 = lambda: g7.KombiTestlogDB.chars["Testheld-Testrealm"]
+weg = lambda: [c7().weg[i] for i in range(1, len(c7().weg) + 1)]
+check(weg()[0].startswith("S ") and weg()[0].endswith(" 3.7") and len(weg()) == 2 and " 1412 46.80 58.10 12 100 1000 0 " in weg()[1] + " ",
+      "3.7: Laufweg beginnt mit S und einer Probe (%s)" % weg())
+# Kill im Kampf: Kreatur und Stufe vom toten Ziel
+g7.fire("PLAYER_REGEN_DISABLED"); g7.fire("PLAYER_TARGET_CHANGED")
+run7("tdead = true; xpNow = 200"); g7.fire("PLAYER_XP_UPDATE", "player"); g7.fire("PLAYER_REGEN_ENABLED")
+# erholt: Vorrat im nächsten Takt gelesen, Kill zählt bei nE
+later7(2); run7("rest = 500"); g7.ticker()
+g7.fire("PLAYER_REGEN_DISABLED"); run7("xpNow = 400"); g7.fire("PLAYER_XP_UPDATE", "player"); g7.fire("PLAYER_REGEN_ENABLED")
+run7("rest = 0"); later7(10); g7.ticker()
+# Quest ausserhalb des Kampfs
+g7.fire("QUEST_TURNED_IN", 870, 300, 0); run7("xpNow = 700"); g7.fire("PLAYER_XP_UPDATE", "player")
+# Stufenaufstieg im Kampf: 50 bis zur Stufe und 50 danach, gebucht auf Stufe 12
+later7(10); run7("xpNow = 950"); g7.fire("PLAYER_XP_UPDATE", "player")   # sonst (Entdecken)
+g7.fire("PLAYER_REGEN_DISABLED"); run7("lvlNow = 13; xpNow = 50; xpMax = 1100"); g7.fire("PLAYER_XP_UPDATE", "player")
+g7.fire("PLAYER_XP_UPDATE", "pet")   # anderer Einheit: nichts
+xp7 = {k: (v.n, v.xp, v.nE, v.xpE) for k, v in c7().xp.items()}
+check(xp7 == {"Gegner:3244:13:12": (3, 400, 1, 200), "Quest:?:?:12": (1, 300, 0, 0), "sonst:?:?:12": (1, 250, 0, 0)},
+      "3.7: XP pro Quelle mit Kreatur, Stufe, erholt und Stufenaufstieg (%s)" % xp7)
+g7.fire("PLAYER_REGEN_ENABLED")
+# Laufweg: Bewegung nach 10 s gibt eine Probe, Stillstand erst nach 60 s
+n0 = len(weg())
+later7(10); run7("posX = 0.47"); g7.ticker()
+later7(10); g7.ticker()
+n1 = len(weg())
+later7(50); g7.ticker()
+check(n1 == n0 + 1 and len(weg()) == n0 + 2 and weg()[-1].split()[4:6] == ["13", "50"],
+      "3.7: Laufweg nur bei Bewegung, sonst alle 60 s (%s)" % weg()[n0:])
+# Dungeon: betreten, Kill, Beute mit Geld, Tod, 2 Minuten draussen, zurück, verlassen; Ende nach 10 Minuten draussen
+run7("inst = { name = 'Höhlen des Wehklagens', id = 43 }; posX, posY = false, false")
+run7("C_Map.GetPlayerMapPosition = function() if posX then return { GetXY = function(self) return posX, posY end } end return nil end")
+later7(10); g7.ticker()
+g7.fire("PLAYER_REGEN_DISABLED"); run7("xpNow = 250"); g7.fire("PLAYER_XP_UPDATE", "player"); g7.fire("PLAYER_REGEN_ENABLED")
+run7("loot = { { type = 1, id = 6447, name = 'Schlangenzahn', n = 1 }, { type = 2, name = '50 Kupfer', n = 0 } }; lootsrc = 'Creature-0-1-2-3-4-3636-00AB'")
+g7.fire("LOOT_OPENED", False, False); run7("money = money + 50"); g7.fire("PLAYER_MONEY"); g7.fire("LOOT_CLOSED")
+g7.fire("PLAYER_DEAD")
+run7("inst = false; posX, posY = 0.46, 0.39"); later7(10); g7.ticker()
+later7(120); run7("inst = { name = 'Höhlen des Wehklagens', id = 43 }"); g7.ticker()
+run7("inst = false"); later7(30); g7.ticker()
+later7(700); g7.ticker()
+log7 = [g7.KombiTestlogDB.log[i] for i in range(1, len(g7.KombiTestlogDB.log) + 1)]
+dl = [l for l in log7 if "| DUNGEON |" in l]
+r7 = g7.KombiTestlogDB.dungeons[1] if g7.KombiTestlogDB.dungeons else None
+check(len(dl) == 2 and "betreten Höhlen des Wehklagens (Instanz 43) | Gruppe 3" in dl[0]
+      and "Ende Höhlen des Wehklagens (Instanz 43) | verlassen | Dauer 2:40, davon draussen 2 Min | XP +200, Kills 1 | Geld +50c | Beute 1 Stapel | Tode 1 | Stufe 13 -> 13 | Gruppe 3" in dl[1],
+      "3.7: Dungeon-Lauf mit Zeit draussen, XP, Geld, Beute, Tod (%s)" % dl)
+check(r7 is not None and r7.beute == "6447:1" and r7.wieder == 1 and r7.draussen == 120 and r7.char == "Testheld-Testrealm",
+      "3.7: Dungeon-Lauf gespeichert (%s)" % (dict(r7) if r7 else None))
+check(any(w.split()[1] == "I43" for w in weg()), "3.7: Laufweg in der Instanz ohne Position mit I und Instanz-ID")
+# Ausloggen im Dungeon beendet den Lauf
+run7("inst = { name = 'Höhlen des Wehklagens', id = 43 }"); later7(10); g7.ticker()
+run7("logout = true"); g7.fire("PLAYER_LOGOUT")
+log7 = [g7.KombiTestlogDB.log[i] for i in range(1, len(g7.KombiTestlogDB.log) + 1)]
+check(sum("| DUNGEON |" in l for l in log7) == 4 and "| Ausloggen |" in [l for l in log7 if "| DUNGEON |" in l][-1],
+      "3.7: Ausloggen beendet den Dungeon-Lauf")
+# tools/spiel_aus_testlog.py liest Laufweg, XP-Quellen und Dungeon-Läufe aus der SavedVariables-Datei
+import spiel_aus_testlog as sp
+with tempfile.TemporaryDirectory() as tmp:
+    pfad7 = os.path.join(tmp, "KombiTestlog.lua")
+    open(pfad7, "w", encoding="utf-8").write(L7.execute(SERIALIZE)("KombiTestlogDB", g7.KombiTestlogDB))
+    log_s, weg_s, xp_s, dg_s = sp.lade([pfad7, pfad7])   # dieselbe Datei zweimal: nichts doppelt
+    xq_s = {}
+    for r in sp.xp_zeilen(xp_s, "2026-10-15"):
+        e = xq_s.setdefault(r["art"] + ":" + r["kreatur"], {"anzahl": 0, "xp": 0})
+        e["anzahl"] += r["anzahl"]
+        e["xp"] += r["xp"]
+    dz_s = sp.dungeon_zeilen(dg_s)
+    wz_s = sp.weg_zeilen(weg_s)
+check(xq_s.get("Gegner:3244", {}).get("anzahl") == 4 and xq_s["Gegner:3244"]["xp"] == 600 and xq_s["Quest:?"]["xp"] == 300,
+      "spiel: XP-Quellen aus der Datei, nicht doppelt (%s)" % {k: (v["anzahl"], v["xp"]) for k, v in xq_s.items()})
+check(len(dz_s) == 2 and dz_s[0]["name"] == "Höhlen des Wehklagens" and dz_s[0]["xp"] == 200 and dz_s[0]["draussen_min"] == "2"
+      and dz_s[0]["beute"] == "6447:1", "spiel: Dungeon-Läufe (%s)" % [(d["name"], d["xp"], d["ende"]) for d in dz_s])
+check(any(r["karte"] == "1412" and float(r["minuten"]) > 0 for r in wz_s) and any(r["karte"] == "I43" for r in wz_s)
+      and all("Testheld" not in str(r) for r in wz_s + dz_s), "spiel: Laufweg pro Karte, ohne Namen (%s)" % [(r["karte"], r["minuten"], r["xp"]) for r in wz_s])
+# Pfand aus dem Geldabzug, in beiden Reihenfolgen; ein Abzug ohne Angebot (Kauf) zählt nicht
+L8 = runtime()
+g8 = L8.globals()
+g8.fire("ADDON_LOADED", "KombiTestlog"); g8.fire("PLAYER_ENTERING_WORLD", True, False)
+g8.SlashCmdList["KOMBITESTLOG"]("ah aus")
+L8.execute("interacting[21] = true; counts[2318] = 50")
+g8.fire("AUCTION_HOUSE_SHOW")
+L8.execute("money = money - 300"); g8.fire("PLAYER_MONEY")                                        # Kauf: kein Pfand
+L8.execute("C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 20, 600)")
+L8.execute("money = money - 100"); g8.fire("PLAYER_MONEY")                                        # Abzug vor der Bestätigung
+g8.fire("AUCTION_HOUSE_AUCTION_CREATED", 101)
+L8.execute("C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 5, 610)")
+g8.fire("AUCTION_HOUSE_AUCTION_CREATED", 102)
+L8.execute("money = money - 100"); g8.fire("PLAYER_MONEY")                                        # Abzug nach der Bestätigung
+L8.execute("C_AuctionHouse.PostCommodity({ id = 2318 }, 2, 1, 620)")
+g8.fire("AUCTION_HOUSE_AUCTION_CREATED", 103)                                                     # kein Abzug: Wert des Spiels
+# AH-Scan mit Angeboten unter dem Händlerpreis (Leichtes Leder: Händlerpreis 15c; 5 Stück zu je 10c, 2 zu je 20c)
+L8.execute("""iteminfo[2318] = { 'Leichtes Leder', 1, 10, 0, 7, 15 }
+auctions = { { id = 2318, n = 5, buy = 50, name = 'Leichtes Leder' }, { id = 2318, n = 2, buy = 40, name = 'Leichtes Leder' },
+             { id = 6386, n = 1, buy = 3, name = 'Gewebte Handschuhe' } }""")
+g8.SlashCmdList["KOMBITESTLOG"]("ah")
+g8.fire("REPLICATE_ITEM_LIST_UPDATE")
+L8.execute("now_t = now_t + 3"); g8.ticker()
+log8 = [g8.KombiTestlogDB.log[i] for i in range(1, len(g8.KombiTestlogDB.log) + 1)]
+scan8 = [l for l in log8 if "| AH-SCAN |" in l]
+sc8 = g8.KombiTestlogDB.ahScans[len(g8.KombiTestlogDB.ahScans)]
+check(scan8 and "unter Händlerpreis: 2 Gegenstände, Gewinn zusammen 26c: Leichtes Leder (2318) 5x für 50c, Gewinn 25c, "
+      "6386 1x für 3c, Gewinn 1c" in scan8[-1] and "2318:10:10:7:2:15:5:50" in sc8.alle and "6386:3:3:1:1:4:1:3" in sc8.alle
+      and sc8.unterHaendler == 2, "3.7: AH-Scan mit Händlerpreis und Angeboten darunter (%s / %s)" % (scan8[-1:], sc8.alle))
+check(any("Unter Händlerpreis: 2 Gegenstände, Gewinn zusammen 26c" in m for m in
+          [g8.messages[i] for i in range(1, len(g8.messages) + 1)]), "3.7: Händlerpreis-Hinweis im Chat")
+an8 = [l.split(" | ", 6)[-1] for l in log8 if "| AH-ANGEBOT |" in l]
+check(an8 == ["20x Leichtes Leder (2318) zu 6s je Stück | Dauer 24 Std. | Pfand 1s (Geldabzug; Spiel meldete 1s 20c) | erstellt",
+              "5x Leichtes Leder (2318) zu 6s 10c je Stück | Dauer 24 Std. | Pfand 30c | erstellt",
+              "Pfand laut Geldabzug 1s (Spiel meldete 30c) für 5x Leichtes Leder (2318)",
+              "1x Leichtes Leder (2318) zu 6s 20c je Stück | Dauer 24 Std. | Pfand 6c | erstellt"],
+      "3.7: Pfand aus dem Geldabzug (%s)" % an8)
+p8 = g8.KombiTestlogDB.ahPost
+check(p8[1].pfand == 100 and p8[1].pfandApi == 120 and p8[2].pfand == 100 and p8[2].pfandApi == 30 and p8[3].pfand == 6
+      and p8[3].pfandApi is None, "3.7: Pfand und Wert des Spiels in ahPost")
+# --- Version 3.7 / markt.py: für den Händler herstellen, unter Händlerpreis, nächster Schritt ---
+scan_h = [{"datum": "2026-10-15 22:00", "zeit": 1, "markt": "EU Horde Rx", "phase": "Beta", "unvollstaendig": False,
+           "abnahme": {}, "abstand": 0, "angebote": 10, "preise": {
+    2318: {"tiefst": 30, "median": 35, "menge": 120, "angebote": 3, "stufen": [(30, 50), (36, 50), (60, 20)], "plan": True},
+    6386: {"tiefst": 3, "median": 3, "menge": 2, "angebote": 2, "stufen": [(3, 2)], "plan": False, "haendler": 4, "unter": 2,
+           "unter_kosten": 6}}}]
+db_h = {"chars": {"Testheld-Testrealm": {"rezepte": {"Lederverarbeitung": {"stufe": "109", "max": "150",
+        "liste": "9068:7282:1:1:1:2318*10"}}, "taschen": {"liste": "2321:4"}}},
+        "info": {7282: {"n": "Leichte Lederhose", "s": 599}}, "rezeptNamen": {9068: "Leichte Lederhose"}}
+mh = mk.Markt(db_h, scan_h, {})
+fh = mk.fuer_haendler(mh)
+check(len(fh) == 1 and fh[0]["n"] == 10 and fh[0]["kosten"] == 3300 and round(fh[0]["gewinn"]) == 2690 and int(fh[0]["grenz"]) == 59,
+      "markt: für den Händler herstellen bis die nächste Herstellung zu teuer ist (%s)" % fh)
+uh = mk.unter_haendler(mh)
+check(len(uh) == 1 and uh[0]["id"] == 6386 and uh[0]["n"] == 2 and uh[0]["gewinn"] == 2, "markt: Angebote unter dem Händlerpreis (%s)" % uh)
+tph = mk.tipps(mh, [], [], [], [], [], fh, uh)
+check(tph[0].startswith("Unter Händlerpreis: 2x ") and "Scan 15.10. 22:00" in tph[0]
+      and tph[1].startswith("Für den Händler herstellen (Testheld, Lederverarbeitung 109): 10× Leichte Lederhose (gelb, gibt noch Punkte)")
+      and "Lohnt, solange Leichtes Leder höchstens 59c kostet" in tph[1], "markt: Tipps für den Händler (%s)" % tph)
+la = mk.lage(mh)
+zl = la.get("Testheld-Testrealm", [])
+check(zl and zl[0].startswith("LW 109: weiter bis 115 mit etwa 10× Leichte Lederhose, gelb.") and "Feiner Faden (hast 4)" in zl[0]
+      and "beim Händler verkaufen: 5s 99c" in zl[0], "markt: nächster Schritt Lederverarbeitung (%s)" % zl)
+with tempfile.TemporaryDirectory() as tmp:
+    mk.kombidaten(tmp, mh, tph, ["Hinweis"], "15.10. 22:00", 1, la)
+    daten_h = open(os.path.join(tmp, "Daten.lua"), encoding="utf-8").read()
+L9 = runtime(pre=daten_h)
+g9 = L9.globals()
+g9.fire("ADDON_LOADED", "KombiTestlog")
+g9.fire("PLAYER_ENTERING_WORLD", True, False)
+g9.SlashCmdList["KOMBITESTLOG"]("tipp")
+msgs9 = [g9.messages[i] for i in range(1, len(g9.messages) + 1)]
+check(any("2 Tipps und 1 Schritte für dich" in m for m in msgs9) and any(m.endswith("Nächster Schritt für dich:") for m in msgs9)
+      and any("- LW 109: weiter bis 115" in m for m in msgs9), "3.7: /tl tipp zeigt den nächsten Schritt für den Charakter (%s)" % msgs9[-6:])
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)
