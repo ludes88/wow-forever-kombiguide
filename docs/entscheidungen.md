@@ -31,6 +31,7 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 
 - 15.10.2026: In der Beta nur noch wenig spielen, damit die Lust zum Start bleibt. Dafür eine kleine Liste, was bis 22.10. noch nötig ist und welche Daten pro Sitzung zurückkommen. Umgesetzt: Kurzliste in `docs/tests/messplan-beta.md` (Vorschlag von Claude).
 - 15.10.2026: Ziel: einloggen, 2–3 Stunden spielen (Fischen, Auktionshaus, Kürschnern, Lehrer usw.), und am Schluss hat Claude alle Daten, auch zum Start; einmal im Auktionshaus scannen, damit der Plan nach den Wochenpreisen angepasst werden kann. Umgesetzt (Vorschlag von Claude): AH-Scan im Testlog 3.5 beim Öffnen des Auktionshauses, `tools/ah_aus_testlog.py`.
+- 15.10.2026: Nächster Schritt: Claude bekommt Zugriff mit Schreibrecht auf den WoW-Ordner («Falls ja müssen wir als nächste es hinbekommen das du Zugriff und schreibrecht auf meinen wow Ordner erhälst»). Ziel: Während und nach dem Start rechnet Claude laufend, was sich zu farmen, herzustellen und ins AH zu stellen lohnt. Weg: die Verbindung der Claude-Desktop-App zum PC (der Chat ist verbunden; am 15.10. war der PC nicht erreichbar).
 
 ## Offen
 
@@ -52,3 +53,5 @@ Nur was der Nutzer entschieden hat, mit Datum. Offenes steht unten.
 16. AH-Preise: eigener Scan im Testlog 3.5 (gebaut, Vorschlag von Claude) oder zusätzlich bzw. stattdessen das Addon AHledger (https://www.curseforge.com/wow/addons/ahledger: Scan-Knopf, Preise im Tooltip; Upload an ahledger.com nur mit der Sync-App und «Contribute scans», laut Seite standardmässig an).
 17. Ab wann die eigenen Scan-Preise den Plan ersetzen (`tools/ah_aus_testlog.py --eintragen`): zum Start, nach wie vielen Tagen Scans, welcher Markt.
 18. Ausbau ab Stufe 22 bis Lederverarbeitung und Verzauberkunst 300 (Frage des Nutzers vom 15.10.): eigene Berufs-Halte neben dem gekauften Guide (Weg B, Test T14) oder zuerst nur ein Mengen- und Kostenplan 150–300.
+19. Welcher Ordner freigegeben wird: ganz `World of Warcraft` (Beta und Start) oder nur `_classic_beta_` (zum Start dann der neue Ordner). Claude schreibt nur in einen eigenen Ordner `Interface\AddOns\KombiDaten`, nie in die mit dem Repo verknüpften AddOns (Vorschlag von Claude).
+20. Ob Claude vor dem 22.10. die Bausteine für Empfehlungen baut (Vorschlag von Claude): Rezepte mit Reagenzien und Inventar im Testlog, Rechner `tools/markt.py` («was lohnt sich jetzt»), Anzeige im Spiel nach `/reload`.
