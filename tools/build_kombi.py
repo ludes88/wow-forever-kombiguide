@@ -1,8 +1,18 @@
-# Kombi-Guide bauen: RXP-Gratis-Route 1-22 (Horde, Forever) als eigene Gruppe, Berufsschritte aus der Plan-Tabelle einfügen, prüfen.
+# Kombi-Guide bauen: RXP-Route 1-22 (Horde, Forever) als eigene Gruppen, Berufsschritte aus der Plan-Tabelle einfügen, prüfen.
 #
 # Aufruf:  tools/fetch_rxp.sh v4.11.23 && python3 tools/build_kombi.py v4.11.23 [Ausgabeordner]
-# Eingaben: data/kombi/plan.csv (eine Zeile pro Berufsschritt), data/karten/forever_karten.csv (Kartenecken), data/kombi/VERSION
+# Eingaben: data/kombi/plan.csv (eine Zeile pro Berufsschritt), data/karten/forever_karten.csv (Kartenecken), data/kombi/VERSION,
+#           data/kombi/dungeons.csv (welche Dungeons in der Dungeon-Route an sind)
 # Ausgabe:  <Ausgabeordner, Standard build/>/RXPGuides_KombiGuide/{RXPGuides_KombiGuide.toc, Kombi_Guide.lua}
+#
+# Zwei Gruppen in einer Datei (eine Datei, damit beim Spieler /reload reicht):
+#   «Kombiguide (H)»          RXPs Speedrun-Route, Schritte unverändert (gespeicherte Stellen der Testcharaktere bleiben)
+#   «Kombiguide Dungeon (H)»  RXPs Dungeon-Route «(WIP) Dungeon Guide 1-22» (12-17, 17-22), Mulgore aus der Speedrun-Route
+#                             (RXPs Dungeon-Mulgore bindet sie über #include ein). Die Dungeons aus dungeons.csv sind fest
+#                             eingebaut: In Forever blendet RXP die Dungeon-Auswahl aus und setzt sie beim Laden auf «keine»
+#                             (SettingsPanel.lua, RXPGuides.lua «TODO: Fix the dungeon selection for Camelot»; v4.11.23 und
+#                             Hauptzweig 15.10.). Fest eingebaut heisst: Ein Schritt, den RXPs DungeonCheck mit dieser Auswahl
+#                             ausblenden würde, fällt weg; bei den übrigen fallen die «.dungeon»-Zeilen weg.
 #
 # Koordinaten: Spielkoordinaten (x, y in Prozent, wie im Testlog) werden über die Kartenecken a0/b0 (Karte 0,0) und a1/b1
 # (Karte 1,1) in RXP-Weltkoordinaten umgerechnet: a = a0 + (a1 - a0) * x / 100, b = b0 + (b1 - b0) * y / 100.
@@ -15,8 +25,17 @@ RXP = os.environ.get("RXP_DIR", os.path.join(ROOT, "vendor", "rxpguides"))
 TAG = sys.argv[1] if len(sys.argv) > 1 else "v4.11.23"
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "build")
 VERSION = open(os.path.join(ROOT, "data", "kombi", "VERSION"), encoding="utf-8").read().strip()
-FILES = ["Guides/forever/Horde-1-12_Mulgore.lua", "Guides/forever/Horde-12-22_Barrens.lua"]
-NEW_GROUP = "Kombiguide (H)"
+MULGORE = "Guides/forever/Horde-1-12_Mulgore.lua"
+GRUPPEN = [
+    # gruppe, Quellen (Datei, nur diese Guides oder None = alle), Dungeons fest einbauen, #subgroup ersetzen
+    {"gruppe": "Kombiguide (H)", "route": "Speedrun",
+     "quellen": [(MULGORE, None), ("Guides/forever/Horde-12-22_Barrens.lua", None)],
+     "dungeons": False, "subgroup": None},
+    {"gruppe": "Kombiguide Dungeon (H)", "route": "Dungeon (WIP)",
+     "quellen": [(MULGORE, None),
+                 ("Guides/Forever/dungeon/Horde-12-22_Barrens.lua", ("12-17 The Barrens", "17-22 Stonetalon/Barrens/Ashenvale"))],
+     "dungeons": True, "subgroup": "(WIP) Dungeon Guide 1-22"},
+]
 LAST_NEXT = "RestedXP Forever Guide (H)\\22-24 Hillsbrad"
 ZONES = {"1412": "Mulgore", "1413": "The Barrens", "1454": "Orgrimmar", "1456": "Thunder Bluff"}
 
@@ -143,66 +162,184 @@ def split_steps(body):
     return head, steps
 
 
+def dungeon_shown(dg, skip, on):
+    """RXPGuides.lua addon.stepLogic.DungeonCheck mit der festen Auswahl «on»."""
+    if skip and skip in on:
+        return False
+    if dg and dg != skip and dg in on:
+        return True
+    return not dg
+
+
+def add_filter(header, g, where, problems):
+    """Kopfzeile «step [<< F]» um die Bedingung g erweitern (Leerzeichen heisst und, GuideLoader.lua applies)."""
+    m = re.match(r"^(\s*step)\s*(?:<<\s*(.*?))?\s*$", header)
+    if not m or "--" in header:
+        problems.append(f"{where}: Kopfzeile '{header.strip()}' unbekannt, Dungeon-Bedingung nicht einbaubar")
+        return header
+    old = (m.group(2) or "").strip()
+    if not old:
+        return f"{m.group(1)} << {g}"
+    if "/" in old or "/" in g or "(" in old:
+        problems.append(f"{where}: '{old}' und '{g}' lassen sich nicht einfach verbinden")
+        return header
+    return f"{m.group(1)} << {old} {g}"
+
+
+def resolve_dungeons(steps, on, known, where, problems):
+    """Dungeon-Auswahl fest einbauen: Schritte, die RXP mit «on» ausblenden würde, fallen weg; bei den übrigen die
+    «.dungeon»-Zeilen. Eine «.dungeon»-Zeile mit eigenem Filter («<< Priest») gilt nur für diese Charaktere: Ist das
+    Ergebnis für sie anders als für die übrigen, kommt die Bedingung in die Kopfzeile des Schritts."""
+    out, dropped, filtered, tags = [], 0, 0, {}
+    for st in steps:
+        dl = []
+        for k, l in enumerate(st):
+            m = re.match(r"^\s*\.dungeon\s+(.*?)\s*$", l)
+            if not m:
+                continue
+            rest, filt = m.group(1), None
+            fm = re.search(r"\s*<<\s*(.+)$", rest)
+            if fm:
+                filt, rest = fm.group(1).strip(), rest[:fm.start()]
+            if ">>" in rest or not rest.strip():
+                problems.append(f"{where}: '.dungeon' mit Text oder ohne Dungeon wird nicht unterstützt: '{l.strip()}'")
+                continue
+            inst = rest.split()[0].upper()
+            tags[inst.lstrip("!")] = tags.get(inst.lstrip("!"), 0) + 1
+            if inst.lstrip("!") not in known:
+                problems.append(f"{where}: Dungeon '{inst.lstrip('!')}' fehlt in data/kombi/dungeons.csv")
+            dl.append((k, inst, filt))
+        if not dl:
+            out.append(st)
+            continue
+        filts = sorted({f for _, _, f in dl if f})
+        if len(filts) > 1:
+            problems.append(f"{where}: Schritt mit mehreren Dungeon-Filtern {filts} wird nicht unterstützt")
+            out.append(st)
+            continue
+
+        def shown(fval):
+            dg = skip = None
+            for _, inst, f in dl:
+                if f and not fval:
+                    continue
+                if inst.startswith("!"):
+                    skip = inst[1:]
+                else:
+                    dg = inst
+            return dungeon_shown(dg, skip, on)
+
+        s1 = shown(True)
+        s0 = shown(False) if filts else s1
+        if not s1 and not s0:
+            dropped += 1
+            continue
+        drop = {k for k, _, _ in dl}
+        new = [l for k, l in enumerate(st) if k not in drop]
+        if s1 != s0:
+            f = filts[0]
+            if not re.fullmatch(r"!?\w+", f):
+                problems.append(f"{where}: Dungeon-Filter '{f}' lässt sich nicht umkehren")
+            g = f if s1 else (f[1:] if f.startswith("!") else "!" + f)
+            new[0] = add_filter(new[0], g, where, problems)
+            filtered += 1
+        if len(new) < 2:
+            problems.append(f"{where}: Schritt ohne Inhalt nach dem Entfernen der Dungeon-Zeilen")
+        out.append(new)
+    return out, dropped, filtered, tags
+
+
 plan = read_csv(os.path.join(ROOT, "data", "kombi", "plan.csv"))
 maps = {m["karte"]: m for m in read_csv(os.path.join(ROOT, "data", "karten", "forever_karten.csv"))}
+dungeon_rows = read_csv(os.path.join(ROOT, "data", "kombi", "dungeons.csv"))
+DUNGEONS_KNOWN = {r["kuerzel"].strip().upper() for r in dungeon_rows}
+DUNGEONS_ON = {r["kuerzel"].strip().upper() for r in dungeon_rows if r["an"].strip().lower() == "ja"}
+for r in dungeon_rows:
+    if r["an"].strip().lower() not in ("ja", "nein"):
+        raise SystemExit(f"data/kombi/dungeons.csv: '{r['kuerzel']}' braucht an = ja oder nein")
 
 # Zeilen mit gleichem Guide, Anker und Position bilden einen Block (Reihenfolge wie in der Tabelle)
 blocks = {}
 for row in plan:
     blocks.setdefault((row["guide"], row["anker"], row["position"]), []).append(row)
 
-report, problems, out_blocks, used, guide_labels = [], [], [], set(), {}
-for path in FILES:
-    for body in re.findall(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]\)", show(path), re.S):
-        head, steps = split_steps(body)
-        name = next((re.sub(r"^\s*#name\s+", "", l).strip() for l in head if re.match(r"^\s*#name\s", l)), "?")
-        newhead = []
-        for l in head:
-            if re.match(r"^\s*#group\s", l):
-                l = f"#group {NEW_GROUP}"
-            elif re.match(r"^\s*#defaultfor\s", l):
+report, problems, out_blocks = [], [], []
+dg_text = ", ".join(sorted(DUNGEONS_ON)) or "keine"
+dg_off = ", ".join(sorted(DUNGEONS_KNOWN - DUNGEONS_ON)) or "keine"
+for G in GRUPPEN:
+    group = G["gruppe"]
+    used, guide_labels, tags_all, group_blocks = set(), {}, {}, []
+    for path, only in G["quellen"]:
+        for body in re.findall(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]\)", show(path), re.S):
+            head, steps = split_steps(body)
+            name = next((re.sub(r"^\s*#name\s+", "", l).strip() for l in head if re.match(r"^\s*#name\s", l)), "?")
+            if only and name not in only:
                 continue
-            elif re.match(r"^\s*#next\s+22-24 Hillsbrad\s*$", l):
-                l = f"#next {LAST_NEXT}"
-            newhead.append(l)
-        for (gname, anker, pos), rows in blocks.items():
-            if gname != name:
-                continue
-            rx = anchor_regex(anker)
-            hits = [i for i, st in enumerate(steps) if any(re.search(rx, x) for x in st)]
-            if len(hits) != 1:
-                problems.append(f"{name}: Anker '{anker}' {len(hits)}x gefunden")
-                continue
-            i = hits[0]
-            if pos == "nach":
-                j = i + 1
-                while j - 1 < len(steps) and any(re.match(r"^\s*#completewith\s+next\b", x) for x in steps[j - 1]):
-                    j += 1
-            elif pos == "vor":
-                j = i
-                while j - 1 >= 0 and any(re.match(r"^\s*#completewith\s+next\b", x) for x in steps[j - 1]):
-                    j -= 1
-            else:
-                problems.append(f"{name}: Position '{pos}' unbekannt (vor/nach)")
-                continue
-            new = [make_step(r, maps) for r in rows]
-            steps[j:j] = new
-            used.update(r["nr"] for r in rows)
-            report.append(f"{name}: {len(new)} Schritte {pos} '{anker}' (RXP-Schritt {i + 1}) eingefügt, Zeilen {', '.join(r['nr'] for r in rows)}")
-        report.append(f"{name}: {len(steps)} Schritte")
-        block = "\n".join(newhead) + "\n" + "\n".join("\n".join(s) for s in steps)
-        guide_labels[name] = set(re.findall(r"^\s*#label\s+(\S+)\s*$", block, re.M))
-        out_blocks.append(block)
+            where = f"{group} | {name}"
+            newhead = []
+            for l in head:
+                if re.match(r"^\s*#group\s", l):
+                    l = f"#group {group}"
+                elif re.match(r"^\s*#subgroup\s", l) and G["subgroup"]:
+                    l = f"#subgroup {G['subgroup']}"
+                elif re.match(r"^\s*#(defaultfor|beta)\b", l):
+                    continue
+                elif re.match(r"^\s*#next\s+(?:[^;\n]*\\)?22-24 Hillsbrad\s*$", l):
+                    l = f"#next {LAST_NEXT}"
+                newhead.append(l)
+            if G["dungeons"]:
+                steps, dropped, filtered, tags = resolve_dungeons(steps, DUNGEONS_ON, DUNGEONS_KNOWN, where, problems)
+                for t, c in tags.items():
+                    tags_all[t] = tags_all.get(t, 0) + c
+                report.append(f"{where}: Dungeons fest eingebaut ({dg_text}): {dropped} RXP-Schritte entfallen, "
+                              f"{filtered} mit Klassen-Bedingung")
+            for (gname, anker, pos), rows in blocks.items():
+                if gname != name:
+                    continue
+                rx = anchor_regex(anker)
+                hits = [i for i, st in enumerate(steps) if any(re.search(rx, x) for x in st)]
+                if len(hits) != 1:
+                    problems.append(f"{where}: Anker '{anker}' {len(hits)}x gefunden")
+                    continue
+                i = hits[0]
+                if pos == "nach":
+                    j = i + 1
+                    while j - 1 < len(steps) and any(re.match(r"^\s*#completewith\s+next\b", x) for x in steps[j - 1]):
+                        j += 1
+                elif pos == "vor":
+                    j = i
+                    while j - 1 >= 0 and any(re.match(r"^\s*#completewith\s+next\b", x) for x in steps[j - 1]):
+                        j -= 1
+                else:
+                    problems.append(f"{where}: Position '{pos}' unbekannt (vor/nach)")
+                    continue
+                new = [make_step(r, maps) for r in rows]
+                steps[j:j] = new
+                used.update(r["nr"] for r in rows)
+                report.append(f"{where}: {len(new)} Schritte {pos} '{anker}' (RXP-Schritt {i + 1}) eingefügt, Zeilen {', '.join(r['nr'] for r in rows)}")
+            report.append(f"{where}: {len(steps)} Schritte")
+            block = "\n".join(newhead) + "\n" + "\n".join("\n".join(s) for s in steps)
+            guide_labels[name] = set(re.findall(r"^\s*#label\s+(\S+)\s*$", block, re.M))
+            group_blocks.append(block)
+    if G["dungeons"] and tags_all:
+        report.append(f"{group}: Dungeon-Zeilen in den Quellen: " + ", ".join(f"{t} {c}" for t, c in sorted(tags_all.items())))
+    missing = [r["nr"] for r in plan if r["nr"] not in used]
+    if missing:
+        problems.append(f"{group}: nicht eingefügt: Plan-Zeilen " + ", ".join(missing))
+    for row in plan:
+        bis = row.get("bis") or ""
+        if bis and bis != "next" and bis not in guide_labels.get(row["guide"], set()):
+            problems.append(f"{group}: Plan-Zeile {row['nr']}: Label '{bis}' (bis) gibt es in '{row['guide']}' nicht")
+    report.append(f"{group}: {len(group_blocks)} Guides, {len(used)} Plan-Zeilen eingefügt")
+    out_blocks.extend((group, b) for b in group_blocks)
 
-missing = [r["nr"] for r in plan if r["nr"] not in used]
-if missing:
-    problems.append("nicht eingefügt: Plan-Zeilen " + ", ".join(missing))
-
-header = ("-- Kombi-Guide " + VERSION + " (WoW Forever, Horde): RXP-Gratis-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv\n"
+header = ("-- Kombi-Guide " + VERSION + " (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv\n"
+          "-- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route. Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der\n"
+          "-- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an " + dg_text + ", aus " + dg_off + "\n"
           "-- Basis RestedXP " + TAG + ", Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz\n"
           "if not (RXPGuides and RXPGuides.RegisterGuide) then return end\n"
           "if UnitFactionGroup(\"player\") == \"Alliance\" then return end\n")
-lua_src = header + "\n".join(f"RXPGuides.RegisterGuide([[\n{b}\n]])\n" for b in out_blocks)
+lua_src = header + "\n".join(f"RXPGuides.RegisterGuide([[\n{b}\n]])\n" for _, b in out_blocks)
 
 # Prüfen: Lua-Syntax, Kopf, Befehle, eigene Texte
 L = lua51.LuaRuntime(unpack_returned_tuples=True)
@@ -214,15 +351,26 @@ fn()
 cap = L.globals().captured
 fsrc = show("functions.lua")
 funcs = set(re.findall(r"function addon\.functions\.(\w+)\s*\(", fsrc)) | set(re.findall(r'addon\.functions\["(\w+)"\]\s*=', fsrc)) | set(re.findall(r"addon\.functions\.(\w+)\s*=", fsrc))
-unknown = set()
+unknown, seen = set(), set()
+if len(cap) != len(out_blocks):
+    problems.append(f"{len(cap)} Guides registriert, erwartet {len(out_blocks)}")
 for i in range(1, len(cap) + 1):
     t = cap[i]
+    group = out_blocks[i - 1][0] if i <= len(out_blocks) else "?"
     h = t.split("\nstep")[0]
-    for need in ("#forever", "#name", "#group " + NEW_GROUP, "<< Horde"):
+    for need in ("#forever", "#name", "#group " + group, "<< Horde"):
         if need not in h:
             problems.append(f"Guide {i}: {need} fehlt im Kopf")
-    if "#defaultfor" in h:
-        problems.append(f"Guide {i}: #defaultfor noch da")
+    for bad in ("#defaultfor", "#beta"):
+        if re.search(r"^\s*" + bad + r"\b", h, re.M):
+            problems.append(f"Guide {i}: {bad} noch da")
+    m = re.search(r"^\s*#name\s+(.+?)\s*$", h, re.M)
+    key = (group, m.group(1) if m else "?")
+    if key in seen:
+        problems.append(f"Guide {i}: Gruppe und Name doppelt: {key}")
+    seen.add(key)
+    if any(G["gruppe"] == group and G["dungeons"] for G in GRUPPEN) and re.search(r"^\s*\.dungeon\b", t, re.M):
+        problems.append(f"Guide {i} ({group}): '.dungeon' noch da")
     for m in re.finditer(r"^\s*\.(\w+)", t, re.M):
         if m.group(1) not in funcs:
             unknown.add(m.group(1))
@@ -236,19 +384,16 @@ for row in plan:
     for value in (row.get("bedingung") or "").split(" // ") + (row.get("extra") or "").split(" // "):
         if re.search(r"^\s*\.\w+\s+[^>]*,,", value):
             problems.append(f"Plan-Zeile {row['nr']}: leeres Argument (',,') in '{value.strip()}': RXP überspringt es")
-    bis = row.get("bis") or ""
-    if bis and bis != "next" and bis not in guide_labels.get(row["guide"], set()):
-        problems.append(f"Plan-Zeile {row['nr']}: Label '{bis}' (bis) gibt es in '{row['guide']}' nicht")
 if unknown:
     problems.append("unbekannte Befehle: " + ", ".join(sorted(unknown)))
-report.append(f"Lua 5.1 ok, {len(cap)} Guides registriert, {len(used)} Plan-Zeilen eingefügt, Datei {len(lua_src) // 1024} KB")
+report.append(f"Lua 5.1 ok, {len(cap)} Guides registriert, Datei {len(lua_src) // 1024} KB")
 
 d = os.path.join(OUT, "RXPGuides_KombiGuide")
 os.makedirs(d, exist_ok=True)
 open(os.path.join(d, "Kombi_Guide.lua"), "w", encoding="utf-8").write(lua_src)
 open(os.path.join(d, "RXPGuides_KombiGuide.toc"), "w", encoding="utf-8").write(
     "## Interface: 16001\n## Title: RXP Guides Kombiguide\n"
-    "## Notes: Kombi-Guide " + VERSION + ": RXP-Gratis-Route 1-22 (Basis " + TAG + ") mit Berufsschritten. CC BY-NC-SA 4.0\n"
+    "## Notes: Kombi-Guide " + VERSION + ": RXP-Route 1-22 (Basis " + TAG + "), Speedrun und Dungeon (WIP), mit Berufsschritten. CC BY-NC-SA 4.0\n"
     "## Author: ludes88\n## Version: " + VERSION + "-" + TAG + "\n## Dependencies: RXPGuides\n\nKombi_Guide.lua\n")
 print("\n".join(report))
 print("Probleme: " + ("; ".join(problems) if problems else "keine"))

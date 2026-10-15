@@ -1,9 +1,14 @@
 # RXP-Schritte so lesen, wie RXP sie einem Charakter zeigt, und prüfen, ob ein Neubau gespeicherte Stellen verschiebt.
 #
 # Aufruf:
-#   python3 tools/rxp_schritte.py liste <Quelle> "<Guide-Name>" [--klasse druid] [--rasse tauren] [--von N] [--bis M]
+#   python3 tools/rxp_schritte.py liste <Quelle> "<Guide-Name>" [--klasse druid] [--rasse tauren] [--von N] [--bis M] [--dungeons RFC,WC]
 #   python3 tools/rxp_schritte.py vergleich <alte Quelle> <neue Quelle> "<Guide-Name>" --stelle N [--klasse ...] [--rasse ...]
 #       Exit 1, wenn sich einer der Schritte 1..N in Zeilennummer, Kopf oder Inhalt ändert (dann fände RXP die Stelle nicht mehr).
+#   --gruppe: nur Guides dieser Gruppe (Kombi_Guide.lua enthält jeden Guide-Namen zweimal: «Kombiguide (H)» zuerst, dann
+#       «Kombiguide Dungeon (H)»). Ohne die Angabe gilt der erste Guide mit dem Namen.
+#   --dungeons: eingeschaltete Dungeons (Kürzel wie in RXP, z. B. RFC,WC,BFD). Ohne die Angabe sind alle aus, wie in Forever:
+#       RXP blendet dort die Dungeon-Auswahl aus und setzt sie beim Laden des gespeicherten Guides auf «keine»
+#       (SettingsPanel.lua, RXPGuides.lua «TODO: Fix the dungeon selection for Camelot», v4.11.23).
 # Quelle: eine Lua-Datei mit RXPGuides.RegisterGuide([[...]]), oder
 #   git:REV:PFAD   aus diesem Repo, z. B. git:HEAD:addons/RXPGuides_KombiGuide/Kombi_Guide.lua
 #   rxp:TAG:PFAD   aus dem RXP-Klon, z. B. rxp:v4.11.23:Guides/forever/Horde-12-22_Barrens.lua
@@ -11,8 +16,10 @@
 # Nachgebaut nach RestedXP v4.11.23 (GuideLoader.lua ParseGuide/applies, RXPGuides.lua IsStepShown):
 # - Kommentare: text:gsub("%-%-[^\r\n]*[\r\n]", "\n"); gezählt wird jede nicht leere Zeile, auch eine, die nur noch
 #   Einrückung enthält. stepId = Zeilennummer + guideId (Adler-32 aus Gruppe und Name), die Nummer zählt nur gezeigte Schritte.
-# - Gezeigt mit den Forever-Standard-Einstellungen: kein Hardcore (Forever erzwingt das), kein SSF, keine Dungeons,
-#   XP-Rate 1, Saison 0. «.dungeon !X» blendet nichts aus. #maxlevel und Stufen-Filter («<< 20») zählen nur mit --stufe.
+# - Gezeigt mit den Forever-Standard-Einstellungen: kein Hardcore (Forever erzwingt das), kein SSF, keine Dungeons
+#   (ausser mit --dungeons), XP-Rate 1, Saison 0. #maxlevel und Stufen-Filter («<< 20») zählen nur mit --stufe.
+# - Dungeons wie RXPs DungeonCheck (RXPGuides.lua): «.dungeon X» merkt sich X, «.dungeon !Y» merkt sich Y (je die letzte Zeile).
+#   Gezeigt wird ein Schritt nicht, wenn Y an ist; sonst, wenn X an ist oder der Schritt kein X hat.
 import argparse, os, re, subprocess, sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -67,11 +74,23 @@ def xprate_ok(v, rate=1.0):
     return lo <= rate <= hi
 
 
-def steps(text, name, me, level=None):
+def dungeon_hidden(dg, dgskip, dungeons):
+    """RXPGuides.lua addon.stepLogic.DungeonCheck: Grund fürs Ausblenden oder None."""
+    if dgskip and dgskip in dungeons:
+        return f"dungeon !{dgskip}"
+    if dg and dg != dgskip and dg in dungeons:
+        return None
+    if not dg:
+        return None
+    return f"dungeon {dg}"
+
+
+def steps(text, name, me, level=None, dungeons=frozenset(), group=None):
     blocks = re.findall(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]", text, re.S)
-    block = next((b for b in blocks if re.search(r"^\s*#name\s+%s\s*$" % re.escape(name), b, re.M)), None)
+    block = next((b for b in blocks if re.search(r"^\s*#name\s+%s\s*$" % re.escape(name), b, re.M)
+                  and (group is None or re.search(r"^\s*#group\s+%s\s*$" % re.escape(group), b, re.M))), None)
     if block is None:
-        raise SystemExit(f"Guide «{name}» nicht gefunden")
+        raise SystemExit(f"Guide «{name}»" + (f" in der Gruppe «{group}»" if group else "") + " nicht gefunden")
     block = re.sub(r"--[^\r\n]*[\r\n]", "\n", block)
     out, cur, skip, n = [], None, False, 0
     for seg in re.findall(r"[^\n\r]+", block):
@@ -81,7 +100,7 @@ def steps(text, name, me, level=None):
             m = re.search(r"<<\s*(.+)", line)
             skip = bool(m) and not applies(m.group(1), me, level)
             if not skip:
-                cur = {"line": n, "hdr": line, "body": [], "hide": []}
+                cur = {"line": n, "hdr": line, "body": [], "hide": [], "dg": None, "dgskip": None}
                 out.append(cur)
             continue
         if skip or cur is None or not line:
@@ -102,8 +121,16 @@ def steps(text, name, me, level=None):
             cur["hide"].append(f"#season {arg}")
         elif tag == "#maxlevel" and level is not None and arg.isdigit() and level > int(arg):
             cur["hide"].append(f"#maxlevel {arg}")
-        elif line.startswith(".dungeon") and not line.split()[-1].startswith("!"):
-            cur["hide"].append("dungeon")      # «.dungeon !WC» heisst nur «überspringen, wenn WC an ist»
+        elif re.match(r"^\.dungeon\s", line):
+            inst = line.split(">>")[0].split()[1].upper()
+            if inst.startswith("!"):
+                cur["dgskip"] = inst[1:]       # «.dungeon !WC» heisst «überspringen, wenn WC an ist»
+            else:
+                cur["dg"] = inst
+    for s in out:
+        why = dungeon_hidden(s["dg"], s["dgskip"], dungeons)
+        if why:
+            s["hide"].append(why)
     shown = [s for s in out if not s["hide"]]
     for i, s in enumerate(shown, start=1):
         s["idx"] = i
@@ -120,11 +147,14 @@ def main():
     ap.add_argument("--von", type=int, default=1)
     ap.add_argument("--bis", type=int)
     ap.add_argument("--stelle", type=int)
+    ap.add_argument("--dungeons", default="", help="eingeschaltete Dungeons, z. B. RFC,WC,BFD (Standard: keine, wie in Forever)")
+    ap.add_argument("--gruppe", help="nur Guides dieser Gruppe, z. B. «Kombiguide Dungeon (H)» (Standard: der erste Guide mit dem Namen)")
     a = ap.parse_args()
     me = {a.klasse.lower(), a.rasse.lower(), "horde", "forever", "dede"}   # Klasse, Rasse, Fraktion, Spiel, Sprache (applies)
+    dg = frozenset(x.strip().upper() for x in a.dungeons.split(",") if x.strip())
     if a.modus == "liste":
         src, name = a.quellen
-        for s in steps(load(src), name, me, a.stufe):
+        for s in steps(load(src), name, me, a.stufe, dg, a.gruppe):
             if s["idx"] < a.von or (a.bis and s["idx"] > a.bis):
                 continue
             keys = [b for b in s["body"] if re.match(r"^(#label|#completewith|\.accept|\.turnin|\.complete|\.collect|\.xp|\.train)\b", b)]
@@ -133,7 +163,7 @@ def main():
     old, new, name = a.quellen
     if not a.stelle:
         raise SystemExit("vergleich braucht --stelle N (gespeicherte Schrittnummer des Testcharakters)")
-    A, B = steps(load(old), name, me, a.stufe), steps(load(new), name, me, a.stufe)
+    A, B = steps(load(old), name, me, a.stufe, dg, a.gruppe), steps(load(new), name, me, a.stufe, dg, a.gruppe)
     first, moved = None, []
     for x, y in zip(A, B):
         if (x["line"], x["hdr"], x["body"]) != (y["line"], y["hdr"], y["body"]):
