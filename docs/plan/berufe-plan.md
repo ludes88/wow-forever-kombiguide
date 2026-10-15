@@ -30,7 +30,7 @@ Lesart von Claude (Rückfrage an den Nutzer offen): «Break-even an Investment v
 |---|---|---|---|---|---|
 | Ruined Leather Scraps (Verdorbene Lederfetzen) | 99 | 76 | 83–87 | 16 | 25c |
 | Light Leather (Leichtes Leder) | 62 (netto; 33 mehr entstehen aus den Fetzen) | 66 | 79–86 | 0 | 50c |
-| Light Hide | 27 | 4 | 5–6 | 22 | 69c |
+| Light Hide (Leichter Balg) | 27 | 4 | 5–6 | 22 | 69c |
 
 Die 66 Leder ohne S1 setzen voraus, dass die 5 Plainstrider Kidneys (Quest 821) vor Orgrimmar fallen (Annahme in `modell_leder.csv`; RXP erinnert bis 12-17 #180 daran); ohne sie wären es etwa 60. Ist der Zähler beim Farm-Stopp S1 schon voll, ist S1 nur Zugabe.
 
@@ -164,7 +164,7 @@ Was nach Stufe D übrig bleibt (Erwartungswert) und nicht für VZ bis 150 gebrau
 | Soul Dust | 11.0 | 79s 31c | 93s 83c |
 | Large Glimmering Shard | 1.0 | 75s 83c | 1g 7s 17c |
 | Lesser Astral Essence | 3.0 | 18s 12c | 28s 26c |
-| Small Glimmering Shard | 1.7 | 6s 30c | 6s 4c |
+| Small Glimmering Shard (Kleiner gleißender Splitter) | 1.7 | 6s 30c | 6s 4c |
 | Strange Dust (Seltsamer Staub) | 0.4 | 31c | 91c |
 
 Dazu aus der Lederverarbeitung: 3 Cured Light Hide, 7 Heavy Leather. Heavy Leather braucht wow-professions erst ab LW 155.
@@ -193,35 +193,35 @@ Wann sich eine Wahl umdreht. Spalten: Wert mit den Beta-Preisen «jetzt» und mi
 | Light Leather | Leichtes Leder | 2318 | AHledger https://ahledger.com/items/2318-light-leather |
 | Ruined Leather Scraps | Verdorbene Lederfetzen | 2934 | AHledger https://ahledger.com/items/2934-ruined-leather-scraps |
 | Medium Leather | Mittleres Leder | 2319 | AHledger https://ahledger.com/items/2319-medium-leather |
-| Light Hide | – | 783 | AHledger https://ahledger.com/items/783-light-hide |
-| Medium Hide | – | 4232 | AHledger https://ahledger.com/items/4232-medium-hide |
+| Light Hide | Leichter Balg | 783 | AHledger https://ahledger.com/items/783-light-hide |
+| Medium Hide | Mittlerer Balg | 4232 | AHledger https://ahledger.com/items/4232-medium-hide |
 | Heavy Hide | – | 4235 | AHledger https://ahledger.com/items/4235-heavy-hide |
-| Salt | – | 4289 | AHledger https://ahledger.com/items/4289-salt |
-| Coarse Thread | – | 2320 | AHledger https://ahledger.com/items/2320-coarse-thread |
-| Fine Thread | – | 2321 | AHledger https://ahledger.com/items/2321-fine-thread |
-| Gray Dye | – | 4340 | AHledger https://ahledger.com/items/4340-gray-dye |
-| Cured Light Hide | – | 4231 | AHledger https://ahledger.com/items/4231-cured-light-hide |
-| Cured Medium Hide | – | 4233 | AHledger, Ergebnis-Link der Rezeptseite 3817 (Recherche 14.10.) |
-| Embossed Leather Gloves | – | 4239 | Wowhead-Link in data/rechnung/Kreislauf.csv · AHledger, Ergebnis-Link der Rezeptseite 3756 |
-| Fine Leather Belt | – | 4246 | Wowhead-Link in Kreislauf.csv · AHledger Rezeptseite 3763 |
-| Light Leather Pants | – | 7282 | Wowhead-Link in Kreislauf.csv · AHledger Rezeptseite 9068 |
-| Dark Leather Belt | – | 4249 | Wowhead-Link in Kreislauf.csv · AHledger Rezeptseite 3766 |
-| Heavy Leather | – | 4234 | AHledger https://ahledger.com/items/4234-heavy-leather |
-| Hillman's Leather Gloves | – | 4247 | Wowhead-Link in Kreislauf.csv (https://www.wowhead.com/forever/item=4247/hillmans-leather-gloves) |
-| Light Armor Kit | – | 2304 | AHledger https://ahledger.com/items/2304-light-armor-kit |
+| Salt | Salz | 4289 | AHledger https://ahledger.com/items/4289-salt |
+| Coarse Thread | Grober Faden | 2320 | AHledger https://ahledger.com/items/2320-coarse-thread |
+| Fine Thread | Feiner Faden | 2321 | AHledger https://ahledger.com/items/2321-fine-thread |
+| Gray Dye | Grauer Farbstoff | 4340 | AHledger https://ahledger.com/items/4340-gray-dye |
+| Cured Light Hide | Geschmeidiger leichter Balg | 4231 | AHledger https://ahledger.com/items/4231-cured-light-hide |
+| Cured Medium Hide | Geschmeidiger mittlerer Balg | 4233 | AHledger, Ergebnis-Link der Rezeptseite 3817 (Recherche 14.10.) |
+| Embossed Leather Gloves | Geprägte Lederhandschuhe | 4239 | Wowhead-Link in data/rechnung/Kreislauf.csv · AHledger, Ergebnis-Link der Rezeptseite 3756 |
+| Fine Leather Belt | Feiner Ledergürtel | 4246 | Wowhead-Link in Kreislauf.csv · AHledger Rezeptseite 3763 |
+| Light Leather Pants | Leichte Lederhose | 7282 | Wowhead-Link in Kreislauf.csv · AHledger Rezeptseite 9068 |
+| Dark Leather Belt | Dunkler Ledergürtel | 4249 | Wowhead-Link in Kreislauf.csv · AHledger Rezeptseite 3766 |
+| Heavy Leather | Schweres Leder | 4234 | AHledger https://ahledger.com/items/4234-heavy-leather |
+| Hillman's Leather Gloves | Lederhandschuhe des Hügelwächters | 4247 | Wowhead-Link in Kreislauf.csv (https://www.wowhead.com/forever/item=4247/hillmans-leather-gloves) |
+| Light Armor Kit | Leichtes Rüstungsset | 2304 | AHledger https://ahledger.com/items/2304-light-armor-kit |
 | Strange Dust | Seltsamer Staub | 10940 | AHledger https://ahledger.com/items/10940-strange-dust |
 | Lesser Magic Essence | Geringe Magieessenz | 10938 | AHledger https://ahledger.com/items/10938-lesser-magic-essence |
 | Greater Magic Essence | Grosse Magieessenz | 10939 | AHledger https://ahledger.com/items/10939-greater-magic-essence |
 | Lesser Astral Essence | – | 10998 | AHledger https://ahledger.com/items/10998-lesser-astral-essence |
 | Greater Astral Essence | – | 11082 | AHledger https://ahledger.com/items/11082-greater-astral-essence |
 | Soul Dust | – | 11083 | AHledger https://ahledger.com/items/11083-soul-dust |
-| Small Glimmering Shard | – | 10978 | AHledger https://ahledger.com/items/10978-small-glimmering-shard |
+| Small Glimmering Shard | Kleiner gleißender Splitter | 10978 | AHledger https://ahledger.com/items/10978-small-glimmering-shard |
 | Large Glimmering Shard | – | 11084 | AHledger https://ahledger.com/items/11084-large-glimmering-shard |
-| Copper Rod | – | 6217 | AHledger https://ahledger.com/items/6217-copper-rod |
-| Silver Rod | – | 6338 | AHledger https://ahledger.com/items/6338-silver-rod |
-| Shadowgem | – | 1210 | AHledger https://ahledger.com/items/1210-shadowgem |
-| Mote of Magic | – | 247786 | AHledger https://ahledger.com/items/247786-mote-of-magic |
-| Simple Wood | – | 4470 | AHledger https://ahledger.com/items/4470-simple-wood |
+| Copper Rod | Kupferrute | 6217 | AHledger https://ahledger.com/items/6217-copper-rod |
+| Silver Rod | Silberrute | 6338 | AHledger https://ahledger.com/items/6338-silver-rod |
+| Shadowgem | Schattenedelstein | 1210 | AHledger https://ahledger.com/items/1210-shadowgem |
+| Mote of Magic | Magiepartikel | 247786 | AHledger https://ahledger.com/items/247786-mote-of-magic |
+| Simple Wood | Einfaches Holz | 4470 | AHledger https://ahledger.com/items/4470-simple-wood |
 | Deviate Fish | – | 6522 | AHledger https://ahledger.com/items/6522-deviate-fish |
 
 ## 8. Annahmen und offene Punkte

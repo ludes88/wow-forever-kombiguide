@@ -1,4 +1,4 @@
--- Kombi-Guide 0.5 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.5.1 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route. Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
 -- Basis RestedXP v4.11.23, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
@@ -4906,7 +4906,7 @@ step
 step
     #label Kombi22
     .goto 1454/1,-4568.10,1855.20
-    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, The Drag), dazu das Rezept Light Leather. Ohne Berufswechsel: Häkchen setzen.
+    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, 10c, The Drag). Light Leather (Leichtes Leder) bringt der Lehrling mit, die Lehrerliste führt es nicht einzeln. Ohne Berufswechsel: Häkchen setzen.
     .train 2108 >>Lerne Lederverarbeitung
     .skill leatherworking,1,1
     .target Kamari
@@ -4937,7 +4937,7 @@ step
 step
     #label Kombi26
     .goto 1454/1,-4568.10,1855.20
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kamari|r Cured Light Hide (ab LW 10) und stelle es her (je 1 Light Hide, 1 Salt, etwa 27 mal) bis LW 55. Cured Light Hide behalten: 24 davon braucht Stufe C (Light Leather Pants). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kamari|r Cured Light Hide (Geschmeidiger leichter Balg, ab LW 30, 50c) und stelle es her (je 1 Light Hide, 1 Salt, etwa 27 mal) bis LW 55. Cured Light Hide behalten: 24 davon braucht Stufe C (Light Leather Pants). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,55 >>LW 55
     .skill leatherworking,<1,1
     .itemcount 783,1,1
@@ -4945,7 +4945,7 @@ step
 step
     #label Kombi27
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Karolek|r Geselle Lederverarbeitung (ab LW 50 und Stufe 10). Kosten ungeprüft: wow-professions nennt «Journeyman 5» (Lehrerliste) bzw. «450» (Seite von Karolek), beides ohne Einheit.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Karolek|r Geselle Lederverarbeitung (ab LW 50 und Stufe 10, 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
     .skill leatherworking,<1,1
     .skill leatherworking,<50,1
@@ -4953,7 +4953,7 @@ step
 step
     #label Kombi28
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Embossed Leather Gloves (ab LW 30) und stelle sie her (je 3 Leichtes Leder, 2 Coarse Thread, etwa 21 mal) bis LW 75. Die Handschuhe behalten, sie werden gleich entzaubert. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Embossed Leather Gloves (Geprägte Lederhandschuhe, ab LW 40, 1s 50c) und stelle sie her (je 3 Leichtes Leder, 2 Coarse Thread, etwa 21 mal) bis LW 75. Die Handschuhe behalten, sie werden gleich entzaubert. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,75 >>LW 75
     .skill leatherworking,<1,1
     .itemcount 2318,3,1
@@ -4961,7 +4961,7 @@ step
 step
     #label Kombi29
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Medium Leather (ab LW 35) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Medium Leather (Mittleres Leder, ab LW 75, 5s) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,80 >>LW 80
     .skill leatherworking,<1,1
     .itemcount 2318,4,1
@@ -4969,7 +4969,7 @@ step
 step
     #label Kombi30
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, Godan's Runeworks in The Drag), dazu Runed Copper Rod und Enchant Bracer - Inferior Stamina.
+    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, 10c, Godan's Runeworks in The Drag). Runed Copper Rod und Enchant Bracer - Inferior Stamina bringt der Lehrling mit, die Lehrerliste führt sie nicht einzeln.
     .train 7411 >>Lerne Verzauberkunst
     .skill leatherworking,<1,1
     .skill enchanting,1,1
@@ -5002,7 +5002,7 @@ step
 step
     #label Kombi35
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Inferior Stamina und verzaubere (je 1 Strange Dust) bis VZ 50 oder bis der Staub alle ist, dann Häkchen setzen. Lässt es sich noch nicht lernen (AHledger: ab 30): bis 25 weiter Bracer - Inferior Stamina (dafür weitere Mote of Magic bei Kithas, 10c), dann Minor Wizard Oil bis 30 (Formel bei Kithas 5s, je 1 Strange Dust, 1 Maple Seed, 1 Empty Vial, Händler für Seed und Vial ungeprüft). Was stimmt, bitte mit /tl notieren.
+    >>Kombiguide: Lerne Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer, ab VZ 15, 50c) und verzaubere (je 1 Strange Dust) bis VZ 50 oder bis der Staub alle ist, dann Häkchen setzen.
     .skill enchanting,50 >>VZ 50
     .skill enchanting,<1,1
     .itemcount 10940,1,1
@@ -5010,7 +5010,7 @@ step
 step
     #label Kombi36
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 50: Enchant Bracer - Minor Deflect (je 1 Lesser Magic Essence, AHledger: lernbar ab 40). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Rest bis VZ 50: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s) und verzaubere (je 1 Lesser Magic Essence). Unter VZ 40 zuerst weiter mit Brust - Minderwertige Ausdauer. Enchant Bracer - Minor Deflect führen die Lehrer in Orgrimmar nicht. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,50 >>VZ 50
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -5023,7 +5023,7 @@ step
 step
     #label Kombi38
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Godan|r Geselle Verzauberkunst (ab VZ 50 und Stufe 10). Ende von Stufe A.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Godan|r Geselle Verzauberkunst (ab VZ 50 und Stufe 10, 5s). Ende von Stufe A.
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
     .skill enchanting,<1,1
     .skill enchanting,<50,1
@@ -5051,7 +5051,7 @@ step
 step
     #label Kombi41
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Cured Medium Hide (ab LW 50) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Cured Medium Hide (Geschmeidiger mittlerer Balg, ab LW 75, 2s) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,90 >>LW 90
     .skill leatherworking,<1,1
     .itemcount 4232,1,1
@@ -5059,7 +5059,7 @@ step
 step
     #label Kombi42
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Fine Leather Belt (ab LW 45) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Fine Leather Belt (Feiner Ledergürtel, ab LW 55, 3s) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,100 >>LW 100
     .skill leatherworking,<1,1
     .itemcount 2318,6,1
@@ -5082,7 +5082,7 @@ step
 step
     #label Kombi45
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Bracer - Minor Deflect (je 1 Lesser Magic Essence). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect führen die Lehrer in Orgrimmar nicht. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -5090,7 +5090,7 @@ step
 step
     #label Kombi46
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (ab VZ 50) und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -5098,7 +5098,7 @@ step
 step
     #label Kombi47
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (je 2 Strange Dust, ab VZ 60) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (Armschiene - Schwache Ausdauer, ab VZ 50, 2s 50c; je 2 Strange Dust) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10940,2,1
@@ -7464,7 +7464,7 @@ step
 step
     #label Kombi55
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Noch kein Geselle in Lederverarbeitung: bei |cRXP_FRIENDLY_Tarn|r lernen (ab LW 50 und Stufe 10).
+    >>Kombiguide: Noch kein Geselle in Lederverarbeitung: bei |cRXP_FRIENDLY_Tarn|r lernen (ab LW 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
     .skill leatherworking,<1,1
     .skill leatherworking,<50,1
@@ -7472,7 +7472,7 @@ step
 step
     #label Kombi56
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Noch kein Geselle in Verzauberkunst: bei |cRXP_FRIENDLY_Teg Dawnstrider|r lernen (ab VZ 50 und Stufe 10).
+    >>Kombiguide: Noch kein Geselle in Verzauberkunst: bei |cRXP_FRIENDLY_Teg Dawnstrider|r lernen (ab VZ 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
     .skill enchanting,<1,1
     .skill enchanting,<50,1
@@ -7489,7 +7489,7 @@ step
 step
     #label Kombi58
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Cured Medium Hide (ab LW 50) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Cured Medium Hide (Geschmeidiger mittlerer Balg, ab LW 75, 2s in Orgrimmar) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,90 >>LW 90
     .skill leatherworking,<1,1
     .itemcount 4232,1,1
@@ -7497,7 +7497,7 @@ step
 step
     #label Kombi59
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Fine Leather Belt (ab LW 45) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Fine Leather Belt (Feiner Ledergürtel, ab LW 55, 3s in Orgrimmar) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,100 >>LW 100
     .skill leatherworking,<1,1
     .itemcount 2318,6,1
@@ -7520,7 +7520,7 @@ step
 step
     #label Kombi62
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Bracer - Minor Deflect (je 1 Lesser Magic Essence). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect führen die Lehrer in Orgrimmar nicht, hier ungeprüft. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -7528,7 +7528,7 @@ step
 step
     #label Kombi63
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (ab VZ 50) und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -7536,7 +7536,7 @@ step
 step
     #label Kombi64
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (je 2 Strange Dust, ab VZ 60) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (Armschiene - Schwache Ausdauer, ab VZ 50, 2s 50c in Orgrimmar; je 2 Strange Dust) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10940,2,1
@@ -7544,7 +7544,7 @@ step
 step
     #label Kombi65
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Light Leather Pants (ab LW 60) und stelle sie her (je 10 Leichtes Leder, 1 Cured Light Hide, 1 Fine Thread, etwa 24 mal) bis LW 115. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Light Leather Pants (Leichte Lederhose, ab LW 70, 4s in Orgrimmar) und stelle sie her (je 10 Leichtes Leder, 1 Cured Light Hide, 1 Fine Thread, etwa 24 mal) bis LW 115. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,115 >>LW 115
     .skill leatherworking,<1,1
     .itemcount 2318,10,1
@@ -7553,7 +7553,7 @@ step
 step
     #label Kombi66
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Dark Leather Belt (ab LW 85) und stelle ihn her (je 1 Fine Leather Belt, 1 Cured Medium Hide, 2 Fine Thread, 1 Gray Dye, etwa 10 mal) bis LW 125. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Dark Leather Belt (Dunkler Ledergürtel, ab LW 100, 4s in Orgrimmar) und stelle ihn her (je 1 Fine Leather Belt, 1 Cured Medium Hide, 2 Fine Thread, 1 Gray Dye, etwa 10 mal) bis LW 125. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,125 >>LW 125
     .skill leatherworking,<1,1
     .itemcount 4233,1,1
@@ -7562,7 +7562,7 @@ step
 step
     #label Kombi67
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Heavy Leather (ab LW 85) und stelle es her (je 5 Mittleres Leder, etwa 7 mal) bis LW 130. Heavy Leather im AH verkaufen oder für LW über 150 behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Heavy Leather (Schweres Leder, ab LW 125, 10s in Orgrimmar) und stelle es her (je 5 Mittleres Leder, etwa 7 mal) bis LW 130. Heavy Leather im AH verkaufen oder für LW über 150 behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,130 >>LW 130
     .skill leatherworking,<1,1
     .skill leatherworking,<85,1
@@ -7580,7 +7580,7 @@ step
 step
     #label Kombi69
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Hillman's Leather Gloves (AHledger: ab 105) und stelle sie her (je 14 Mittleres Leder, 4 Fine Thread, etwa 24 mal) bis LW 150. Die Handschuhe zum Entzaubern behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Hillman's Leather Gloves (Lederhandschuhe des Hügelwächters, ab LW 120, 5s in Orgrimmar) und stelle sie her (je 14 Mittleres Leder, 4 Fine Thread, etwa 24 mal) bis LW 150. Die Handschuhe zum Entzaubern behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,150 >>LW 150
     .skill leatherworking,<1,1
     .skill leatherworking,<105,1
@@ -7623,7 +7623,7 @@ step
 step
     #label Kombi75
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Lerne Enchant Cloak - Minor Protection (AHledger: ab 70, SeeMeta: ab 90) und verzaubere (je 2 Strange Dust) bis VZ 109. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlen Essenzen: Lerne Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz, ab VZ 70, 2s in Orgrimmar) und verzaubere (je 2 Strange Dust) bis VZ 109. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,109 >>VZ 109
     .skill enchanting,<1,1
     .skill enchanting,<100,1
@@ -7632,7 +7632,7 @@ step
 step
     #label Kombi76
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Runed Silver Rod und stelle sie her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem). Die Rute behalten.
+    >>Kombiguide: Lerne Runed Silver Rod (Runenverzierte Silberrute, ab VZ 100, 10s in Orgrimmar) und stelle sie her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem). Die Rute behalten.
     .skill enchanting,110 >>VZ 110
     .skill enchanting,<1,1
     .skill enchanting,<90,1
@@ -7667,7 +7667,7 @@ step
 step
     #label Kombi80
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Bracer - Lesser Stamina (je 1 Soul Dust aus den Hillman's Leather Gloves) bis VZ 150. Lernstufe ungeprüft. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Enchant Bracer - Lesser Stamina (Armschiene - Geringe Ausdauer, ab VZ 130, 15s in Orgrimmar; je 1 Soul Dust aus den Hillman's Leather Gloves) bis VZ 150. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,150 >>VZ 150
     .skill enchanting,<1,1
     .skill enchanting,<130,1
@@ -14461,7 +14461,7 @@ step
 step
     #label Kombi22
     .goto 1454/1,-4568.10,1855.20
-    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, The Drag), dazu das Rezept Light Leather. Ohne Berufswechsel: Häkchen setzen.
+    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, 10c, The Drag). Light Leather (Leichtes Leder) bringt der Lehrling mit, die Lehrerliste führt es nicht einzeln. Ohne Berufswechsel: Häkchen setzen.
     .train 2108 >>Lerne Lederverarbeitung
     .skill leatherworking,1,1
     .target Kamari
@@ -14492,7 +14492,7 @@ step
 step
     #label Kombi26
     .goto 1454/1,-4568.10,1855.20
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kamari|r Cured Light Hide (ab LW 10) und stelle es her (je 1 Light Hide, 1 Salt, etwa 27 mal) bis LW 55. Cured Light Hide behalten: 24 davon braucht Stufe C (Light Leather Pants). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kamari|r Cured Light Hide (Geschmeidiger leichter Balg, ab LW 30, 50c) und stelle es her (je 1 Light Hide, 1 Salt, etwa 27 mal) bis LW 55. Cured Light Hide behalten: 24 davon braucht Stufe C (Light Leather Pants). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,55 >>LW 55
     .skill leatherworking,<1,1
     .itemcount 783,1,1
@@ -14500,7 +14500,7 @@ step
 step
     #label Kombi27
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Karolek|r Geselle Lederverarbeitung (ab LW 50 und Stufe 10). Kosten ungeprüft: wow-professions nennt «Journeyman 5» (Lehrerliste) bzw. «450» (Seite von Karolek), beides ohne Einheit.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Karolek|r Geselle Lederverarbeitung (ab LW 50 und Stufe 10, 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
     .skill leatherworking,<1,1
     .skill leatherworking,<50,1
@@ -14508,7 +14508,7 @@ step
 step
     #label Kombi28
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Embossed Leather Gloves (ab LW 30) und stelle sie her (je 3 Leichtes Leder, 2 Coarse Thread, etwa 21 mal) bis LW 75. Die Handschuhe behalten, sie werden gleich entzaubert. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Embossed Leather Gloves (Geprägte Lederhandschuhe, ab LW 40, 1s 50c) und stelle sie her (je 3 Leichtes Leder, 2 Coarse Thread, etwa 21 mal) bis LW 75. Die Handschuhe behalten, sie werden gleich entzaubert. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,75 >>LW 75
     .skill leatherworking,<1,1
     .itemcount 2318,3,1
@@ -14516,7 +14516,7 @@ step
 step
     #label Kombi29
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Medium Leather (ab LW 35) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Medium Leather (Mittleres Leder, ab LW 75, 5s) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,80 >>LW 80
     .skill leatherworking,<1,1
     .itemcount 2318,4,1
@@ -14524,7 +14524,7 @@ step
 step
     #label Kombi30
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, Godan's Runeworks in The Drag), dazu Runed Copper Rod und Enchant Bracer - Inferior Stamina.
+    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, 10c, Godan's Runeworks in The Drag). Runed Copper Rod und Enchant Bracer - Inferior Stamina bringt der Lehrling mit, die Lehrerliste führt sie nicht einzeln.
     .train 7411 >>Lerne Verzauberkunst
     .skill leatherworking,<1,1
     .skill enchanting,1,1
@@ -14557,7 +14557,7 @@ step
 step
     #label Kombi35
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Inferior Stamina und verzaubere (je 1 Strange Dust) bis VZ 50 oder bis der Staub alle ist, dann Häkchen setzen. Lässt es sich noch nicht lernen (AHledger: ab 30): bis 25 weiter Bracer - Inferior Stamina (dafür weitere Mote of Magic bei Kithas, 10c), dann Minor Wizard Oil bis 30 (Formel bei Kithas 5s, je 1 Strange Dust, 1 Maple Seed, 1 Empty Vial, Händler für Seed und Vial ungeprüft). Was stimmt, bitte mit /tl notieren.
+    >>Kombiguide: Lerne Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer, ab VZ 15, 50c) und verzaubere (je 1 Strange Dust) bis VZ 50 oder bis der Staub alle ist, dann Häkchen setzen.
     .skill enchanting,50 >>VZ 50
     .skill enchanting,<1,1
     .itemcount 10940,1,1
@@ -14565,7 +14565,7 @@ step
 step
     #label Kombi36
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 50: Enchant Bracer - Minor Deflect (je 1 Lesser Magic Essence, AHledger: lernbar ab 40). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Rest bis VZ 50: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s) und verzaubere (je 1 Lesser Magic Essence). Unter VZ 40 zuerst weiter mit Brust - Minderwertige Ausdauer. Enchant Bracer - Minor Deflect führen die Lehrer in Orgrimmar nicht. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,50 >>VZ 50
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -14578,7 +14578,7 @@ step
 step
     #label Kombi38
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Godan|r Geselle Verzauberkunst (ab VZ 50 und Stufe 10). Ende von Stufe A.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Godan|r Geselle Verzauberkunst (ab VZ 50 und Stufe 10, 5s). Ende von Stufe A.
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
     .skill enchanting,<1,1
     .skill enchanting,<50,1
@@ -14606,7 +14606,7 @@ step
 step
     #label Kombi41
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Cured Medium Hide (ab LW 50) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Cured Medium Hide (Geschmeidiger mittlerer Balg, ab LW 75, 2s) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,90 >>LW 90
     .skill leatherworking,<1,1
     .itemcount 4232,1,1
@@ -14614,7 +14614,7 @@ step
 step
     #label Kombi42
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Fine Leather Belt (ab LW 45) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Fine Leather Belt (Feiner Ledergürtel, ab LW 55, 3s) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,100 >>LW 100
     .skill leatherworking,<1,1
     .itemcount 2318,6,1
@@ -14637,7 +14637,7 @@ step
 step
     #label Kombi45
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Bracer - Minor Deflect (je 1 Lesser Magic Essence). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect führen die Lehrer in Orgrimmar nicht. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -14645,7 +14645,7 @@ step
 step
     #label Kombi46
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (ab VZ 50) und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -14653,7 +14653,7 @@ step
 step
     #label Kombi47
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (je 2 Strange Dust, ab VZ 60) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (Armschiene - Schwache Ausdauer, ab VZ 50, 2s 50c; je 2 Strange Dust) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10940,2,1
@@ -16908,7 +16908,7 @@ step
 step
     #label Kombi55
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Noch kein Geselle in Lederverarbeitung: bei |cRXP_FRIENDLY_Tarn|r lernen (ab LW 50 und Stufe 10).
+    >>Kombiguide: Noch kein Geselle in Lederverarbeitung: bei |cRXP_FRIENDLY_Tarn|r lernen (ab LW 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
     .skill leatherworking,<1,1
     .skill leatherworking,<50,1
@@ -16916,7 +16916,7 @@ step
 step
     #label Kombi56
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Noch kein Geselle in Verzauberkunst: bei |cRXP_FRIENDLY_Teg Dawnstrider|r lernen (ab VZ 50 und Stufe 10).
+    >>Kombiguide: Noch kein Geselle in Verzauberkunst: bei |cRXP_FRIENDLY_Teg Dawnstrider|r lernen (ab VZ 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
     .skill enchanting,<1,1
     .skill enchanting,<50,1
@@ -16933,7 +16933,7 @@ step
 step
     #label Kombi58
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Cured Medium Hide (ab LW 50) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Cured Medium Hide (Geschmeidiger mittlerer Balg, ab LW 75, 2s in Orgrimmar) und stelle es her (je 1 Medium Hide, 1 Salt, etwa 10 mal) bis LW 90. Behalten für Dark Leather Belt (Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,90 >>LW 90
     .skill leatherworking,<1,1
     .itemcount 4232,1,1
@@ -16941,7 +16941,7 @@ step
 step
     #label Kombi59
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Fine Leather Belt (ab LW 45) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Fine Leather Belt (Feiner Ledergürtel, ab LW 55, 3s in Orgrimmar) und stelle ihn her (je 6 Leichtes Leder, 2 Coarse Thread, etwa 19 mal) bis LW 100. 10 Gürtel behalten (Dark Leather Belt in Stufe C). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,100 >>LW 100
     .skill leatherworking,<1,1
     .itemcount 2318,6,1
@@ -16964,7 +16964,7 @@ step
 step
     #label Kombi62
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Bracer - Minor Deflect (je 1 Lesser Magic Essence). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect führen die Lehrer in Orgrimmar nicht, hier ungeprüft. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -16972,7 +16972,7 @@ step
 step
     #label Kombi63
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (ab VZ 50) und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -16980,7 +16980,7 @@ step
 step
     #label Kombi64
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (je 2 Strange Dust, ab VZ 60) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlen Essenzen: Enchant Bracer - Minor Stamina (Armschiene - Schwache Ausdauer, ab VZ 50, 2s 50c in Orgrimmar; je 2 Strange Dust) bis VZ 100. Ende von Stufe B. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10940,2,1
@@ -16988,7 +16988,7 @@ step
 step
     #label Kombi65
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Light Leather Pants (ab LW 60) und stelle sie her (je 10 Leichtes Leder, 1 Cured Light Hide, 1 Fine Thread, etwa 24 mal) bis LW 115. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Light Leather Pants (Leichte Lederhose, ab LW 70, 4s in Orgrimmar) und stelle sie her (je 10 Leichtes Leder, 1 Cured Light Hide, 1 Fine Thread, etwa 24 mal) bis LW 115. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,115 >>LW 115
     .skill leatherworking,<1,1
     .itemcount 2318,10,1
@@ -16997,7 +16997,7 @@ step
 step
     #label Kombi66
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Dark Leather Belt (ab LW 85) und stelle ihn her (je 1 Fine Leather Belt, 1 Cured Medium Hide, 2 Fine Thread, 1 Gray Dye, etwa 10 mal) bis LW 125. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Dark Leather Belt (Dunkler Ledergürtel, ab LW 100, 4s in Orgrimmar) und stelle ihn her (je 1 Fine Leather Belt, 1 Cured Medium Hide, 2 Fine Thread, 1 Gray Dye, etwa 10 mal) bis LW 125. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,125 >>LW 125
     .skill leatherworking,<1,1
     .itemcount 4233,1,1
@@ -17006,7 +17006,7 @@ step
 step
     #label Kombi67
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Heavy Leather (ab LW 85) und stelle es her (je 5 Mittleres Leder, etwa 7 mal) bis LW 130. Heavy Leather im AH verkaufen oder für LW über 150 behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Heavy Leather (Schweres Leder, ab LW 125, 10s in Orgrimmar) und stelle es her (je 5 Mittleres Leder, etwa 7 mal) bis LW 130. Heavy Leather im AH verkaufen oder für LW über 150 behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,130 >>LW 130
     .skill leatherworking,<1,1
     .skill leatherworking,<85,1
@@ -17024,7 +17024,7 @@ step
 step
     #label Kombi69
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Hillman's Leather Gloves (AHledger: ab 105) und stelle sie her (je 14 Mittleres Leder, 4 Fine Thread, etwa 24 mal) bis LW 150. Die Handschuhe zum Entzaubern behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Hillman's Leather Gloves (Lederhandschuhe des Hügelwächters, ab LW 120, 5s in Orgrimmar) und stelle sie her (je 14 Mittleres Leder, 4 Fine Thread, etwa 24 mal) bis LW 150. Die Handschuhe zum Entzaubern behalten. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill leatherworking,150 >>LW 150
     .skill leatherworking,<1,1
     .skill leatherworking,<105,1
@@ -17067,7 +17067,7 @@ step
 step
     #label Kombi75
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Lerne Enchant Cloak - Minor Protection (AHledger: ab 70, SeeMeta: ab 90) und verzaubere (je 2 Strange Dust) bis VZ 109. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlen Essenzen: Lerne Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz, ab VZ 70, 2s in Orgrimmar) und verzaubere (je 2 Strange Dust) bis VZ 109. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,109 >>VZ 109
     .skill enchanting,<1,1
     .skill enchanting,<100,1
@@ -17076,7 +17076,7 @@ step
 step
     #label Kombi76
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Runed Silver Rod und stelle sie her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem). Die Rute behalten.
+    >>Kombiguide: Lerne Runed Silver Rod (Runenverzierte Silberrute, ab VZ 100, 10s in Orgrimmar) und stelle sie her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem). Die Rute behalten.
     .skill enchanting,110 >>VZ 110
     .skill enchanting,<1,1
     .skill enchanting,<90,1
@@ -17111,7 +17111,7 @@ step
 step
     #label Kombi80
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Bracer - Lesser Stamina (je 1 Soul Dust aus den Hillman's Leather Gloves) bis VZ 150. Lernstufe ungeprüft. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Enchant Bracer - Lesser Stamina (Armschiene - Geringe Ausdauer, ab VZ 130, 15s in Orgrimmar; je 1 Soul Dust aus den Hillman's Leather Gloves) bis VZ 150. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,150 >>VZ 150
     .skill enchanting,<1,1
     .skill enchanting,<130,1
