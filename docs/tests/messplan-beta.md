@@ -13,29 +13,34 @@ Grundlagen:
 
 Du willst in der Beta nur noch wenig spielen, damit die Lust zum Start bleibt (15.10.). Die Liste nimmt nur, was der Plan zum Start braucht und was sich beim Spielen zum Start nicht ohnehin nebenbei misst. Was du davon machst, entscheidest du.
 
-Vorher einmal: `aktualisieren.bat`, dann `/reload`. Die Zeile SITZUNG zeigt «Testlog 3.5».
+Vorher einmal: `aktualisieren.bat`, dann `/reload`. Die Zeile SITZUNG zeigt «Testlog 3.6».
 
 **Sitzung 1, etwa 2 Stunden (Schätzung aus den Dauern unten): ein Druide auf Stufe 15–16 mit Kürschnerei, Kräuterkunde und Angeln, der Kürschnerei und Kräuterkunde verlernen darf**
 1. Orgrimmar: das Auktionshaus öffnen. Der AH-Scan läuft von selbst. Offen lassen, bis «AH-Scan fertig» im Chat steht, und einmal vergleichen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis? Steht stattdessen «übersprungen» oder kommt nichts: `/tl ah`. (M11, T15)
-2. Orgrimmar: Berufswechsel mit dem Kombi-Guide («12-17 The Barrens», Block nach «SpiritsPickup», in der Schrittliste direkt wählbar) oder von Hand nach `docs/plan/berufe-plan.md` §2, Stufe A. So weit Material und Gold reichen, kein Leder extra farmen. Bei Kamari, Karolek, Jhag und Godan im Lehrerfenster den Filter einmal auf alle drei Arten stellen. (M5, M1, T11)
-3. Lushwater Oasis im Brachland (etwa 46.8, 39.4; aus RXP umgerechnet, im Spiel ungeprüft): 30 Minuten angeln. (M3)
-4. Danach jeden anderen Druiden einmal einloggen und wieder aus. (M2)
+2. Orgrimmar, je ein paar Sekunden (neu in Testlog 3.6, M12): den Briefkasten öffnen (T16) und die Bank (T18). Wenn du magst, ein billiges Stück im Auktionshaus einstellen, z. B. 1 Leichtes Leder (T19); kommt es später verkauft oder abgelaufen zurück, misst der Briefkasten das mit.
+3. Orgrimmar: Berufswechsel mit dem Kombi-Guide («12-17 The Barrens», Block nach «SpiritsPickup», in der Schrittliste direkt wählbar) oder von Hand nach `docs/plan/berufe-plan.md` §2, Stufe A. So weit Material und Gold reichen, kein Leder extra farmen. Bei Kamari, Karolek, Jhag und Godan im Lehrerfenster den Filter einmal auf alle drei Arten stellen. Danach jedes Berufsfenster einmal öffnen, auch Angeln und Kochen (Rezepte, T17). (M5, M1, T11)
+4. Lushwater Oasis im Brachland (etwa 46.8, 39.4; aus RXP umgerechnet, im Spiel ungeprüft): 30 Minuten angeln. (M3)
+5. Bist du am Ende wieder an einem Auktionshaus (Orgrimmar und Thunder Bluff teilen eines): nochmals öffnen. Zwei Scans 15 Minuten bis 2 Stunden auseinander ergeben die erste Abnahme (T20).
+6. Danach jeden anderen Druiden einmal einloggen und wieder aus. (M2)
 
-**Sitzung 2, wenn du magst (Schritt 5 etwa 10 Minuten, 6 etwa 10 Minuten mit Wegen, 7 30 Minuten; geschätzt)**
-5. Ein Druide auf Stufe 21–22: im Kombi-Guide «17-22» die letzten Schritte wählen, in den gekauften Guide wechseln, ein paar Schritte gehen, zurück in den Kombi-Guide und wieder in den gekauften. Steht er noch am selben Schritt? (M9, T5, T14)
-6. Der Druide aus Sitzung 1 in Thunder Bluff: Lehrerfenster von Una (Lederverarbeitung, Experte) sowie Mot und Teg Dawnstrider (Verzauberkunst), Filter auf alle drei Arten; dort nochmals das Auktionshaus öffnen, als zweiter Scan an einem anderen Tag. (M1, M11)
-7. Nur mit einem Druiden mit Kräuterkunde ab 70: 30 Minuten Kräuter im Südbrachland, dazu `/tl M4 Bountiful Harvest Rang <Zahl oder keiner>`. (M4)
+**Sitzung 2, wenn du magst (Schritt 7 etwa 10 Minuten, 8 etwa 10 Minuten mit Wegen, 9 30 Minuten; geschätzt)**
+7. Ein Druide auf Stufe 21–22: im Kombi-Guide «17-22» die letzten Schritte wählen, in den gekauften Guide wechseln, ein paar Schritte gehen, zurück in den Kombi-Guide und wieder in den gekauften. Steht er noch am selben Schritt? (M9, T5, T14)
+8. Der Druide aus Sitzung 1 in Thunder Bluff: Lehrerfenster von Una (Lederverarbeitung, Experte) sowie Mot und Teg Dawnstrider (Verzauberkunst), Filter auf alle drei Arten; dort nochmals das Auktionshaus und den Briefkasten öffnen, als zweiter Scan an einem anderen Tag. (M1, M11, M12)
+9. Nur mit einem Druiden mit Kräuterkunde ab 70: 30 Minuten Kräuter im Südbrachland, dazu `/tl M4 Bountiful Harvest Rang <Zahl oder keiner>`. (M4)
+
+Ist der Ordner `KombiDaten` mit Empfehlungen schon da (schreibe ich, sobald ich Zugriff auf deinen WoW-Ordner habe): beim ersten Mal das Spiel neu starten, dann `/tl tipp` (T21).
 
 Weggelassen, weil es beim Spielen zum Start ohnehin mitläuft oder teuer ist: M6 (Farm-Stopp S1), M7 (Armor Kits), M8 (Orte), M10 (Sitzung in Thunder Bluff).
 
 **Nach jeder Sitzung**
 - `/reload` oder ausloggen. Erst dann schreibt WoW die Datei.
 - Ist dieser Chat mit deinem PC verbunden und der PC an: «fertig» schreiben, ich lese die Datei selbst. Sonst die Datei `World of Warcraft\_classic_beta_\WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua` im Chat anhängen. Sie enthält alles, auch die AH-Scans.
-- Notizen braucht es keine, ausser in Schritt 7. Wenn etwas nicht stimmt: `/tl bug <was>`.
+- Notizen braucht es keine, ausser in Schritt 9. Wenn etwas nicht stimmt: `/tl bug <was>`.
+- Seit Testlog 3.6 enthält die Datei auch deinen Bestand, deine Rezepte und die Briefe des Auktionshauses. Daraus rechne ich die Empfehlungen (`tools/markt.py`); ins Repo kommen davon nur die Marktpreise und die Abnahme, ohne Namen.
 
 ## So läuft eine Messung
 
-1. `aktualisieren.bat`, dann `/reload`. SITZUNG zeigt «Testlog 3.5». Seit 3.4: die Zeile LEHRER, die beim Öffnen eines Lehrerfensters die ganze Liste schreibt. Neu in 3.5: AH-SCAN beim Öffnen des Auktionshauses (M11).
+1. `aktualisieren.bat`, dann `/reload`. SITZUNG zeigt «Testlog 3.6». Seit 3.4: die Zeile LEHRER, die beim Öffnen eines Lehrerfensters die ganze Liste schreibt. Seit 3.5: AH-SCAN beim Öffnen des Auktionshauses (M11). Neu in 3.6: REZEPTE (Berufsfenster), INVENTAR (Taschen, Bank), AH-POST (Briefkasten), AH-ANGEBOT (eigenes Angebot) und die Abnahme zwischen zwei AH-Scans (M12).
 2. Zu Beginn `/tl M3 Start`, am Ende `/tl M3 Ende` (mit der Nummer der Messung). Die Notiz schreibt Ort, Stufe und Berufe dazu. So finde ich die Abschnitte im Protokoll.
 3. Spielen wie unten beschrieben. Das Testlog schreibt das meiste selbst: SAMMELN, ANGELN, HERSTELLEN, ENTZAUBERN, LEHRER, GELD, QUEST AB, BERUF, AH-SCAN.
 4. Danach `/reload` und das Protokoll schicken:
@@ -59,7 +64,8 @@ Für die Messungen braucht es den Kombi-Guide nicht. Wer ihn auf einem Messchara
 | M8 | Orte und Widersprüche vor Ort (T8) | jeder | nebenbei | weggelassen |
 | M9 | Ende von «17-22» und Sprung in den gekauften Guide (T5), Wechsel hin und zurück (T14), Stellen mit `#completewith` (T3) | Stufe 21–22 | 10 Min | Sitzung 2 |
 | M10 | Sitzung in Thunder Bluff (T12) | Stufe 20, LW etwa 80 und VZ etwa 50 | 60 Min | weggelassen |
-| M11 | AH-Scan (T15) | jeder, am Auktionshaus | ungeprüft (Schätzung: 1–2 Min) | Sitzung 1 und 2 |
+| M11 | AH-Scan (T15), Abnahme zwischen zwei Scans (T20) | jeder, am Auktionshaus | ungeprüft (Schätzung: 1–2 Min) | Sitzung 1 und 2 |
+| M12 | Rezepte, Bestand, Briefe des Auktionshauses, eigenes Angebot (Testlog 3.6, T16–T19) | jeder | je wenige Sekunden | Sitzung 1, Briefkasten auch in 2 |
 
 ## M1 Lehrerlisten (Testlog 3.4)
 
@@ -270,10 +276,29 @@ Nebenbei, wenn ein Druide vorbeikommt: neben die Person stellen und `/tl M8 <Nam
 **Ersetzt**
 - Den Preis «jetzt» in `data/rechnung/Preise.csv` und `data/kombi/preise_zusatz.csv`, sobald du es willst (`tools/ah_aus_testlog.py --eintragen`, offene Entscheidung 17): 7-Tage-Median aus vollständigen Scans, nur bei mindestens 50 Stück im Angebot. Bis dahin vergleicht der Bericht `docs/plan/ah-preise.md` nur.
 - Grundlage für die Wochenpreise zum Start.
+- Seit Testlog 3.6 (T20): Zwei vollständige Scans 15 Minuten bis 2 Stunden auseinander ergeben die Abnahme («geschätzt gekauft», eine Schätzung) in `data/preise/ah_abnahme.csv`. Ungeprüft, ob der Client die Restlaufzeit als 0–3 oder 1–4 zählt; das Testlog erkennt es am Wert 0 oder 4 und schreibt die Grenzen der Bänder (`GetTimeLeftBandInfo`) in jeden Scan.
+
+## M12 Rezepte, Bestand, AH-Post, eigenes Angebot (Testlog 3.6, T16–T19)
+
+**Frage**
+- Was kann jeder Charakter herstellen, mit welchen Reagenzien, und welche Farbe hat ein Rezept bei welcher Fertigkeit?
+- Was liegt in Taschen, Bank und Kontobank?
+- Was hast du im Auktionshaus angeboten, verkauft, gekauft, und was lief ab? Das sind die einzigen echten Verkaufsbelege; ein Scan zeigt nur Angebote.
+
+**Ablauf**
+- Jedes Berufsfenster einmal öffnen (auch nach dem Lernen neuer Rezepte). Die Zeile REZEPTE schreibt alle gelernten Rezepte; danach nur Farbwechsel. Ist im Fenster ein Filter an («nur herstellbar», Suche), sagt die Zeile «Liste unvollständig».
+- Bank öffnen: INVENTAR mit Bank und Kontobank. Taschen schreibt das Testlog beim Ein- und Ausloggen selbst.
+- Briefkasten öffnen: AH-POST mit den Briefen des Auktionshauses (verkauft, abgelaufen, gekauft). Die Briefe musst du dafür nicht öffnen. Ungeprüft: ob der Client Preis und Gebühr auch für ungeöffnete Briefe liefert; sonst steht zuerst nur die Betreffzeile (Art, Gegenstand, Menge), und sobald ein Brief einmal offen war, trägt das Testlog die Rechnung nach («Rechnung ergänzt»).
+- Etwas einstellen: AH-ANGEBOT mit Menge, Preis, Dauer und Pfand.
+
+**Ersetzt**
+- Die Rezepte, Reagenzien und Farben aus AHledger und wow-professions durch die des Spiels (Widersprüche 17 und 20).
+- Grundlage für `tools/markt.py`: Was du herstellen kannst und was es bringt, was du im Bestand hast, was sich bei dir verkauft.
 
 ## Was danach passiert
 
 - Ich werte jede Lieferung aus und trage die Messwerte mit Datum in die Tabellen ein: `rezepte.csv`, `kuerschnern_anteile.csv`, `bedarf_lw_vz.csv`, `Kreislauf.csv`, Konstanten in `plan_berufe.py`. AH-Scans übernimmt `tools/ah_aus_testlog.py` nach `data/preise/` (ohne Realm- und Charakternamen).
+- Dazu rechnet `tools/markt.py` die Empfehlungen (herstellen, kaufen und wieder verkaufen, aus dem Bestand verkaufen, farmen) und schreibt sie nach `build/markt/` und als Addon `KombiDaten` (im Spiel `/tl tipp`). Das bleibt bei dir, nicht im Repo.
 - Danach rechne ich die Pläne neu und baue den Guide neu. Der Bericht sagt, welche Zahl sich wie geändert hat.
 - Entscheidungen bleiben bei dir. Mit M3 und M4 lassen sich die offenen Punkte 9 (Angelzeit) und 12 (Kräuterkunde bis Thunder Bluff) entscheiden; mit M1 und M7 der Punkt 15 (verkaufen statt entzaubern).
 - Beta-Daten gelten für die Beta. Zum Start am 04.11. prüfe ich Preise und Orte nach (Risiko 6).

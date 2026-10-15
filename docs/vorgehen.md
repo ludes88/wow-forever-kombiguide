@@ -8,7 +8,8 @@ Stand 15.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
 - Für Recherche, Mengen-Rechnung und Bauen kann Claude parallele Agenten einsetzen.
 - Die Verbindung «Link to this computer» bot die Desktop-App für die erste Sitzung nicht an (13.10.). Ersatz: Die AddOns des Nutzers sind mit dem Repo verknüpft (`tools/windows/addons_verknuepfen.bat`, einmal). Der Kombi-Guide liegt deshalb erzeugt im Repo unter `addons/RXPGuides_KombiGuide/`.
 - Ist eine Sitzung mit dem PC verbunden, liest Claude die Testlog-Datei selbst; sonst schickt der Nutzer sie im Chat. Die Testlog-Datei enthält Charakternamen und kommt NIE ins Repo.
-- Die Arbeit des Nutzers pro Runde: `aktualisieren.bat` doppelklicken, `/reload`, spielen, am Schluss `/reload`, dann die Datei `KombiTestlog.lua` anhängen oder, bei verbundenem PC, «fertig» schreiben. Die Datei enthält auch die AH-Scans (Testlog 3.5).
+- Die Arbeit des Nutzers pro Runde: `aktualisieren.bat` doppelklicken, `/reload`, spielen, am Schluss `/reload`, dann die Datei `KombiTestlog.lua` anhängen oder, bei verbundenem PC, «fertig» schreiben. Die Datei enthält auch die AH-Scans (Testlog 3.5) und seit 3.6 Rezepte, Bestand und die Briefe des Auktionshauses; dafür einmal Berufsfenster, Bank und Briefkasten öffnen.
+- Empfehlungen (seit 15.10.): Claude rechnet mit `tools/markt.py` aus der Datei und schreibt das Addon `KombiDaten` (Ordner `Interface\AddOns\KombiDaten`, nie ein mit dem Repo verknüpfter Ordner); im Spiel `/tl tipp`. Ohne Zugriff auf den WoW-Ordner schickt Claude den Ordner als Datei.
 
 ## Datenkette statt Handarbeit
 
@@ -42,6 +43,8 @@ Stand 15.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
    - Wert (Entscheide vom 13.10.): beim Kräuterfarmen das gewinnbringendste Kraut, gerechnet pro Knoten mit Zusatzbeute; beim Fischen der Fisch mit dem höchsten AH-Wert, roh oder gekocht. Preise in der Beta von AHledger, zum Start aus dem Startdokument des Nutzers (EU). Grundlagen: `docs/recherche/2026-10-13_kraeuter-fische-kochen.md`.
    - Goldbilanz entlang der Route: Kosten (Lehrer für Zauber und Berufe, Rezepte, Händlermaterial, Flüge) gegen Einnahmen; Kostenquellen in `docs/recherche/2026-10-13_kosten.md`, gemessene Werte aus Testlog 3.
    - Eigene AH-Preise (seit 15.10.): Das Testlog 3.5 liest beim Öffnen des Auktionshauses alle Angebote (höchstens alle 15 Minuten). `tools/ah_aus_testlog.py <Testlog>` übernimmt die Scans ohne Realm- und Charakternamen nach `data/preise/ah_eigen.csv` (Plan-Gegenstände, alle Scans; daraus der 7-Tage-Median) und `data/preise/ah_alle.csv` (letzter Scan, alle Gegenstände); Bericht `docs/plan/ah-preise.md` mit dem Vergleich zum Rechenpreis des Plans. Mit `--eintragen` ersetzt der 7-Tage-Median den Preis «jetzt» in `data/rechnung/Preise.csv` und in den AH-Zeilen von `preise_zusatz.csv` (nur vollständige Scans, nur bei mindestens 50 Stück im Angebot; 30-Tage-Werte und xlsx bleiben AHledger); danach `plan_berufe.py` neu rechnen. Wann das geschieht, entscheidet der Nutzer (offene Entscheidung 17). Markt = Region, Fraktion, Kurzzeichen des Realms (statt des Namens), Beta oder Live.
+   - Abnahme (seit Testlog 3.6): Bei jedem Scan vergleicht das Testlog die billigsten Angebote der beobachteten Gegenstände mit dem Scan davor (nur Angebote, die bis dahin nicht ablaufen konnten) und speichert, was fehlt. `tools/ah_aus_testlog.py` sammelt das in `data/preise/ah_abnahme.csv` (Schätzung der Käufe, ohne Namen; Grenzen in Risiko 24). Beobachtet sind der Plan, `/tl item` und alle Reagenzien und Ergebnisse der gelernten Rezepte.
+   - Empfehlungen (seit 15.10.): `tools/markt.py <Testlog>` rechnet aus Rezepten, Bestand, AH-Post, Scans und dem Verlauf in `data/preise/`, was sich herzustellen, zu kaufen und wieder zu verkaufen, aus dem Bestand zu verkaufen und zu farmen lohnt (Rechenweg im Kopf der Datei). Ausgabe nur nach `build/markt/` (`markt.md` und das Addon `KombiDaten`), weil sie den Bestand und die eigenen Verkäufe enthält. Schwelle der Marge: offene Entscheidung 20.
 4. **Generator** `tools/build_kombi.py`: liest Plan- und Kartentabelle, baut die RXP-Gratis-Route in genau der RXP-Version des Nutzers neu und fügt die Schritte ein.
 5. **Prüfung** (automatisch im Generator):
    - Lua-Syntax, Kopf, bekannte Befehle
@@ -49,7 +52,7 @@ Stand 15.10.2026. Entscheidungen liegen beim Nutzer (siehe `entscheidungen.md`);
    - kein `--` und kein `[[`/`]]` in eigenen Texten, Koordinaten 0–100
    - dazu von Hand vor dem Merge: `tools/rxp_schritte.py vergleich` für jede gespeicherte Stelle eines Testcharakters (Best Practice §6)
 6. **Spieltest** mit KombiTestlog, dann Auswertung durch Claude, dann Plan anpassen, neue Version bauen und austauschen. Der Fortschritt bleibt, solange Gruppe und Guide-Namen gleich bleiben (T6).
-   - Messplan für die Beta (14.–22.10.): `docs/tests/messplan-beta.md`. Jede Messung (M1–M11) nennt, welche Zahl in welcher Tabelle sie ersetzt; oben die Kurzliste vom 15.10. Testlog 3.4 schreibt dafür auch die Lehrerlisten (LEHRER), 3.5 die AH-Scans (AH-SCAN).
+   - Messplan für die Beta (14.–22.10.): `docs/tests/messplan-beta.md`. Jede Messung (M1–M12) nennt, welche Zahl in welcher Tabelle sie ersetzt; oben die Kurzliste vom 15.10. Testlog 3.4 schreibt dafür auch die Lehrerlisten (LEHRER), 3.5 die AH-Scans (AH-SCAN), 3.6 Rezepte, Bestand und AH-Post (REZEPTE, INVENTAR, AH-POST, AH-ANGEBOT).
 
 ## Versionen
 
