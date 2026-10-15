@@ -2034,6 +2034,7 @@ local function showTips(arg)
         d.markt and (" (" .. tostring(d.markt) .. ")") or "")
     if #d.tipps == 0 then
         say(head .. ": noch keine Empfehlung mit Beleg.")
+        if type(d.hinweise) == "table" and d.hinweise[1] then say("Hinweis: " .. tostring(d.hinweise[1])) end
         return
     end
     if arg == "alle" then
