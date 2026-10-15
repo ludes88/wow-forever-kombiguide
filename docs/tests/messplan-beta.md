@@ -23,6 +23,8 @@ Stand 15.10. abends (`docs/tests/messdaten-2026-10-15.md`): Er hat schon Lederve
 
 Erledigt am 15.10. (bis 20:58, noch mit Testlog 3.5): der erste AH-Scan um 20:12 (Schritt 1, ohne Vergleich mit dem Tiefstpreis im Fenster). Er ist jetzt Stufe 16 und hat Angeln (5) und Kochen (1). Im Kombi-Guide steht er bei «12-17» #103, kurz vor dem Orgrimmar-Block. Spielst du ihn im Guide weiter, sollten dort ab v0.4.1 die Schritte von selbst wegfallen. Kästchen bleiben für «Weiter mit der Route» und fürs Entzaubern, falls er Embossed Leather Gloves oder mehr als 10 Fine Leather Belts dabei hat. Bleibt ein anderer Schritt stehen: `/tl bug <welcher>` (T11 teilweise).
 
+Erledigt bis 22:16: Lehrerlisten in Orgrimmar (Schritt 3, M1) und ein dritter AH-Scan, der erste mit Testlog 3.6 (22:15). Offen bleiben Briefkasten, Abnahme (ein weiterer Scan mit 3.6), Angeln.
+
 Erledigt bis 22:01 (`docs/tests/messdaten-2026-10-15.md`): Stufe 18, Orgrimmar-Block durchlaufen (laut dir alles mit Lederverarbeitung und Verzauberkunst ok), zweiter AH-Scan um 21:54 (Schritt 1), nach dem Update auf Testlog 3.6 Taschen, Bank, alle Berufsfenster und ein eigenes Angebot (Schritt 2 ohne Briefkasten). Offen: Briefkasten (T16), Lehrerlisten (Schritt 3), zwei Scans mit Testlog 3.6 mindestens 15 Minuten auseinander (Schritt 5: der Scan von 21:54 lief noch mit 3.5 und zählt für die Abnahme nicht), Angeln (Schritt 4).
 1. Orgrimmar: das Auktionshaus öffnen. Der AH-Scan läuft von selbst. Offen lassen, bis «AH-Scan fertig» im Chat steht, und einmal vergleichen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis? Steht stattdessen «übersprungen» oder kommt nichts: `/tl ah`. (M11, T15)
 2. Orgrimmar, je ein paar Sekunden (neu in Testlog 3.6, M12): den Briefkasten öffnen (T16) und die Bank (T18). Wenn du magst, ein billiges Stück im Auktionshaus einstellen, z. B. 1 Leichtes Leder (T19); kommt es später verkauft oder abgelaufen zurück, misst der Briefkasten das mit.
@@ -76,6 +78,8 @@ Für die Messungen braucht es den Kombi-Guide nicht. Wer ihn auf einem Messchara
 | M12 | Rezepte, Bestand, Briefe des Auktionshauses, eigenes Angebot (Testlog 3.6, T16–T19) | jeder | je wenige Sekunden | Sitzung 1, Briefkasten auch in 2 |
 
 ## M1 Lehrerlisten (Testlog 3.4)
+
+**Stand 15.10. (Nacht):** In Orgrimmar gemessen (Kamari, Karolek, Jhag, Godan, alle Filter): `data/kombi/lehrer.csv`, Auswertung in `docs/tests/messdaten-2026-10-15.md`. Ersetzt sind die Lernstufen und Kosten in den Texten von `plan.csv` (Kombi-Guide v0.5.1) und die Widersprüche 3, 4, 16, 17 und 20 (teilweise). Offen: Thunder Bluff (Una, Mot, Teg Dawnstrider), Kürschnerei und Kräuterkunde (Widersprüche 5, 6, 15), Druidenlehrer, woher Enchant Bracer - Minor Deflect kommt.
 
 **Frage**
 - Ab welcher Fertigkeit lässt sich ein Rezept lernen? Die Quellen widersprechen sich:

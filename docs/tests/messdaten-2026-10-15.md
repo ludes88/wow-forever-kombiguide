@@ -133,3 +133,49 @@ Gleicher Charakter, Stufe 16 (65 %) → 18 (56 %). Bis 21:58 Kombiguide 0.4 und 
 
 **Karten**
 - 1421 Silberwald exakt (KARTE 21:19; `tools/karte_aus_testlog.py`). Keine RXP-Punkte mit Kommentar zum Vergleich.
+
+## 15.10. 22:01–22:16 (Datei beim Beenden des Spiels um 22:16)
+
+Gleicher Charakter, Stufe 18, Orgrimmar, Testlog 3.6. Danach hat der Nutzer das Spiel geschlossen (Server-Abschaltung angekündigt).
+
+**Lehrerlisten (M1, T13)**
+- Vier Lehrer in Orgrimmar, je zuerst mit dem Filter «lernbar+gesperrt», dann mit allen drei Arten: Kamari (Kreatur 5811, 17 Einträge), Karolek (3365, 48), Jhag (11066, 10), Godan (3345, 29). Ändert sich der Filter, schreibt das Testlog eine neue Zeile; das ist so gebaut (gleiche Liste: keine zweite Zeile).
+- Übernommen mit `tools/lehrer_aus_testlog.py` nach `data/kombi/lehrer.csv` (104 Einträge mit Lernstufe, Kosten, Ort; ohne Charakter und ohne Status).
+- Geselle: Lederverarbeitung und Verzauberkunst je ab Stufe 10 und Fertigkeit 50, 5s (Karolek, Godan). Lehrling 10c. Einen Experten führen Karolek und Godan nicht.
+- Lernstufen der Rezepte unseres Plans (Lehrerliste gegen `data/kombi/rezepte.csv`, Spalte orange = AHledger):
+
+  | Rezept | Lehrerliste | AHledger (orange) |
+  |---|---|---|
+  | Cured Light Hide (Geschmeidiger leichter Balg) | 30, 50c | 10 |
+  | Embossed Leather Gloves (Geprägte Lederhandschuhe) | 40, 1s 50c | 30 |
+  | Fine Leather Belt (Feiner Ledergürtel) | 55, 3s | 45 |
+  | Light Leather Pants (Leichte Lederhose) | 70, 4s | 60 |
+  | Medium Leather (Mittleres Leder) | 75, 5s | 35 |
+  | Cured Medium Hide (Geschmeidiger mittlerer Balg) | 75, 2s | 50 |
+  | Dark Leather Belt (Dunkler Ledergürtel) | 100, 4s | 85 |
+  | Hillman's Leather Gloves (Lederhandschuhe des Hügelwächters) | 120, 5s | 105 |
+  | Heavy Leather (Schweres Leder) | 125, 10s | 85 |
+  | Cured Heavy Hide (Geschmeidiger schwerer Balg) | 125, 5s | – |
+  | Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer) | 15, 50c | 30 |
+  | Enchant Chest - Minor Absorption (Brust - Schwache Absorption) | 40, 1s | 50 |
+  | Enchant Bracer - Minor Stamina (Armschiene - Schwache Ausdauer) | 50, 2s 50c | 60 |
+  | Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz) | 70, 2s | 70 |
+  | Runed Silver Rod (Runenverzierte Silberrute) | 100, 10s | 90 |
+  | Enchant Boots - Minor Stamina (Stiefel - Schwache Ausdauer) | 125, 14s | 110 |
+  | Enchant Bracer - Lesser Stamina (Armschiene - Geringe Ausdauer) | 130, 15s | – |
+
+  Englisch–deutsch über die Item-ID oder, bei Verzauberungen, über die Zauber-ID der gelernten Rezepte (REZEPTE); «Stiefel - Schwache Ausdauer» und «Armschiene - Geringe Ausdauer» nur über den Namen zugeordnet (nicht gelernt, keine Zauber-ID).
+- Jedes Rezept der Routen ist lernbar, wenn die Route es braucht (wow-professions: Medium Leather ab 75, Heavy Leather ab 125, Hillman's Leather Gloves ab 130; kami-labs: Hillman's Shoulders ab 130, Lehrerliste 105).
+- Nicht auf den Listen, obwohl der Charakter sie kennt: Light Leather, Light Armor Kit, Handgenähte Lederstiefel (Lederverarbeitung), Runed Copper Rod, Enchant Bracer - Inferior Stamina, Übungszauberstab des Novizen, Staub zu Partikel (Verzauberkunst); sehr wahrscheinlich bringt sie der Lehrling mit. Ebenso nicht dabei: **Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr)**, Minor Wizard Oil (Formel beim Händler), Enchant 2H Weapon - Lesser Intellect (Formel beim Händler) und das Mystische mittlere Rüstungsset (Muster bei Tamar).
+- Lernkosten bis 150, gerechnet aus der Liste: Lederverarbeitung (Route wow-professions) 40s 10c, mit dem Tab «Cured Heavy Hide» 45s 10c; Verzauberkunst Staub-Weg 34s 10c, Essenz-Weg 21s 10c mit der Formel 2H Weapon - Lesser Intellect (5s), ohne Minor Deflect.
+- Neue Forever-Rezepte: Dunkle Lederstiefel (252425), Mondscheinstiefel, Murlocschuppenschuhe, Schwarzwelpenpantoffeln (ab 35, je 5s), sieben «Ledergürtel des …» (ab 150, je 20s).
+- Orte (Standort beim Öffnen, Karte 1454): Kamari 63.2, 44.9; Karolek 62.8, 44.2; Jhag 53.5, 38.1; Godan 53.8, 38.6. Passt zu RXP (Kamari 63.3, 44.8) und Icy Veins (Karolek 62.8, 44.4; Jhag 53.6, 38.2; Godan 53.8, 38.4).
+
+**Dritter AH-Scan 22:15 (erster mit Testlog 3.6)**
+- 68 980 Angebote, 3058 Gegenstände, 1 nur mit Gebot, 17 s, vollständig. Region «?».
+- Restlaufzeit (Risiko 24): `GetReplicateItemTimeLeft` liefert Rohwerte 1 bis 4 (`bandRoh` 1-4, `bandVersatz` -1, also wie die alte API). Bänder laut `GetTimeLeftBandInfo`: 0 bis 30 Minuten, 30 Minuten bis 2 Stunden, 2 bis 12 Stunden, 12 bis 24 Stunden.
+- Keine Abnahme: Der Scan davor (21:54) lief mit Testlog 3.5.
+- Gegenüber 21:54 (Tiefstpreis / Median / Stück): Leichtes Leder 52c / 64c / 7094 → 35c / 60c / 8544; Mittleres Leder 95c / 1s 99c / 7934 → 1s 72c / 1s 99c / 7939; Schweres Leder 8s 14c / 8s 59c → 6s / 8s 59c; Schwerer Balg 30s → 26s; Salz 95c und Grober Faden 24c gleich.
+
+**Nicht gemessen**
+- Briefkasten: keine Zeile POST, also nicht geöffnet. Ob die 4 Edelsteine verkauft wurden, ist offen (T16).
