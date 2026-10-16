@@ -17,14 +17,16 @@ Nicht von Hand ändern: Eingaben anpassen (Preise, Route, Modell) und neu erzeug
 
 - **Sweetspot** für das eigene Leder (Lesart von Claude, Abschnitt 1): Lederverarbeitung 1–80 (Stufe A). Dafür braucht es 99 Fetzen, 62 Leichtes Leder (dazu 33 aus den Fetzen) und 27 Light Hide.
 - Laut Modell bringt die Route bis Orgrimmar 66 Leichtes Leder und 76 Fetzen, mit dem Grinden auf Stufe 16 an Raptoren (Farm-Stopp S1, RXP schlägt das Grinden dort ohnehin vor) 79–86 und 83–87. Laut Modell reicht das Leder; die fehlenden Fetzen und Bälge kosten im AH wenig (Stufe A unten).
-- Ab LW 80 bringt jedes Leichte Leder 2- bis 5-mal weniger Punkte als davor (Tabelle in Abschnitt 1). Mehr Leder zu farmen bringt 21–34 Silber pro Stunde Materialwert (Beta); Angeln ergäbe etwa 2g 11s 20c pro Stunde (nur Deviate Fish, Rate ungeprüft, Abschnitt 1).
-- Einkauf (Beta-Preise «jetzt»): Stufe A 40s 86c, B 1g 67s 99c, C 3g 44s 47c, D 7g 37s 76c. Derselbe Einkauf mit den 30-Tage-Medianen: A 44s 90c, B 4g 5s 27c, C 6g 57s 56c, D 9g 56s 16c.
-- Mit Lehrer (Lernkosten gemessen in Orgrimmar, `data/kombi/lehrer.csv`) und dem, was der Händler für verkaufte Teile zahlt: Stufe A 40s 86c + Lehrer 17s 70c − Händler 0c = netto 58s 56c, Stufe B 1g 67s 99c + Lehrer 8s 50c − Händler 0c = netto 1g 76s 49c, Stufe C 3g 44s 47c + Lehrer 30s − Händler 2g 14s 6c = netto 1g 60s 41c, Stufe D 7g 37s 76c + Lehrer 20s − Händler 0c = netto 7g 57s 76c. Zusammen netto 11g 53s 22c.
-- Derselbe Plan mit den Medianen des letzten eigenen AH-Scans (2026-10-15 22:15, ? Horde R2d38 Beta; nur Vergleich, offene Entscheidung 17): A netto 57s 67c, B netto 1g 83s 31c, C netto 1g 73s 35c, D netto 7g 84s 64c, zusammen 11g 98s 97c.
+- Ab LW 80 bringt jedes Leichte Leder 2- bis 5-mal weniger Punkte als davor (Tabelle in Abschnitt 1). Mehr Leder zu farmen bringt 21–34 Silber pro Stunde Materialwert (Beta); Angeln ergäbe etwa 2g 0s 64c pro Stunde nach 5 % Gebühr (nur Deviate Fish, Rate ungeprüft, Abschnitt 1).
+- Lesser Magic Essence rechnet der Plan zum kleineren Preis: direkt oder ein Drittel einer Greater Magic Essence (1 → 3, gemessen 13.10.). «Jetzt»: direkt 69c, über Greater 65c; eigener Scan (2026-10-15 22:15, ? Horde R2d38 Beta): über Greater 50c, direkt 91c (Regel in Abschnitt 6).
+- Einkauf (Beta-Preise «jetzt»): Stufe A 42s 63c, B 1g 76s, C 3g 29s 92c, D 7g 37s 76c. Derselbe Einkauf mit den 30-Tage-Medianen: A 71s 25c, B 5g 1s 12c, C 5g 29s 65c, D 9g 56s 16c.
+- **Netto** heisst in diesem Bericht: Einkauf + Lehrer − was der Händler für verkaufte Teile zahlt (Lernkosten gemessen in Orgrimmar, `data/kombi/lehrer.csv`). Den Rest, der am Ende übrig bleibt, rechnet erst die nächste Zeile ab. Stufe A 42s 63c + Lehrer 17s 70c − Händler 0c = netto 60s 33c, Stufe B 1g 76s + Lehrer 6s − Händler 0c = netto 1g 82s, Stufe C 3g 29s 92c + Lehrer 30s − Händler 2g 14s 6c = netto 1g 45s 86c, Stufe D 7g 37s 76c + Lehrer 20s − Händler 0c = netto 7g 57s 76c. Zusammen netto 11g 45s 96c.
+- Nach dem Verkauf des Rests im AH (Abschnitt 5, nach 5 % Gebühr 3g 16s 45c) kostet der ganze Plan etwa 8g 29s 51c (ohne Pfand; ob der Rest so abgeht, ist ungeprüft).
+- Derselbe Plan mit den Medianen des letzten eigenen AH-Scans (2026-10-15 22:15, ? Horde R2d38 Beta; nur Vergleich, offene Entscheidung 17): A netto 59s 2c, B netto 1g 75s 10c, C netto 1g 54s 55c, D netto 7g 84s 64c, zusammen 11g 73s 31c.
 - Verkaufen statt entzaubern (Preisregel, Abschnitt 6): Dark Leather Belt, Light Leather Pants gehen an den Händler, weil er mehr zahlt, als ihr Entzauberungs-Ertrag im AH kostet (Händlerpreise aus dem Forever-Client, Testlog 15.10.).
-- Vorschlag (nicht im Guide, Abschnitt 9): VZ 10–109 mit Zauberstäben, die der Händler zurückkauft. Netto A–D zusammen 10g 61s 35c statt 11g 53s 22c.
+- Vorschlag (nicht im Guide, Abschnitt 9): VZ 10–109 mit Zauberstäben, die der Händler zurückkauft. Netto A–D zusammen 10g 56s 66c statt 11g 45s 96c.
 - LW 130–150 rechnet der Plan mit dem Tab «ohne Heavy Hide» von wow-professions (billiger bei diesen Preisen, Vergleich in Abschnitt 4).
-- Nach allen Stufen bleibt Entzauberungs-Material übrig, das VZ bis 150 nicht braucht (Wert im AH etwa 3g 33s 11c, Abschnitt 5).
+- Nach allen Stufen bleibt Entzauberungs-Material übrig, das VZ bis 150 nicht braucht (Wert im AH etwa 3g 33s 11c vor und 3g 16s 45c nach 5 % Gebühr, Abschnitt 5).
 
 ## 1. Sweetspot: wie viel eigenes Leder nach Orgrimmar
 
@@ -38,26 +40,26 @@ Lesart von Claude (Rückfrage an den Nutzer offen): «Break-even an Investment v
 
 Die 66 Leder ohne S1 setzen voraus, dass die 5 Plainstrider Kidneys (Quest 821) vor Orgrimmar fallen (Annahme in `modell_leder.csv`; RXP erinnert bis 12-17 #180 daran); ohne sie wären es etwa 60. Ist der Zähler beim Farm-Stopp S1 schon voll, ist S1 nur Zugabe.
 
-Punkte pro Leichtem Leder und Kosten pro Punkt (Plan-Route, Beta-Preise «jetzt»; «zurück» = Wert, der als Material oder beim Entzaubern zurückkommt; netto negativ = Gewinn):
+Punkte pro Leichtem Leder und Kosten pro Punkt (Plan-Route). «zurück» = was aus den Herstellungen zurückkommt: beim Händler (Forever-Client), beim Entzaubern (Ertrag zum Kaufpreis, weil die Verzauberkunst ihn sonst kauft), als Material für später (Preis, ohne Preis zu den eigenen Kosten) oder im AH nach 5 % Gebühr. Netto negativ = Gewinn. Zwei Preisbasen: AHledger «jetzt» und der letzte eigene Scan (2026-10-15 22:15, ? Horde R2d38 Beta):
 
-| Stufe | LW | Rezept | Herstellungen | Leichtes Leder | Punkte je Leder | Material (AH/Händler) | zurück | netto je Punkt |
-|---|---|---|---|---|---|---|---|---|
-| A | 1–30 | Light Leather | 33 | 0 | – | 24s 75c | 16s 50c | 28c |
-| A | 30–55 | Cured Light Hide | 27 | 0 | – | 32s 13c | 0c | 1s 29c |
-| A | 55–75 | Embossed Leather Gloves | 21 | 63 | 0.32 | 35s 70c | 24s 19c | 58c |
-| A | 75–80 | Medium Leather | 8 | 32 | 0.16 | 16s | 15s 28c | 14c |
-| B | 80–90 | Cured Medium Hide | 10 | 0 | – | 93s 80c | 0c | 9s 38c |
-| B | 90–100 | Fine Leather Belt | 19 | 114 | 0.09 | 60s 80c | 20s 78c | 4s |
-| C | 100–115 | Light Leather Pants | 24 | 240 | 0.06 | 1g 44s | 55s 43c | 5s 90c |
-| C | 115–125 | Dark Leather Belt | 10 | 0 | – | 55s | 51s 8c | 39c |
-| C | 125–130 | Heavy Leather | 7 | 0 | – | 66s 85c | 83s 86c | −3s 40c |
-| D | 130–150 | Hillman's Leather Gloves | 24 | 0 | – | 7g 37s 76c | 4g 75s 99c | 13s 9c |
+| Stufe | LW | Rezept | Herstellungen | Leichtes Leder | Punkte je Leder | Material (AH/Händler) | zurück | wie | netto je Punkt | netto je Punkt (eigener Scan) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A | 1–30 | Light Leather | 33 | 0 | – | 24s 75c | 16s 50c | Material für später | 28c | 7c |
+| A | 30–55 | Cured Light Hide | 27 | 0 | – | 32s 13c | 32s 13c | Material für später (ohne Preis: zu Kosten) | 0c | 2c |
+| A | 55–75 | Embossed Leather Gloves | 21 | 63 | 0.32 | 35s 70c | 23s 96c | entzaubert | 59c | 1s 17c |
+| A | 75–80 | Medium Leather | 8 | 32 | 0.16 | 16s | 15s 28c | Material für später | 14c | 66c |
+| B | 80–90 | Cured Medium Hide | 10 | 0 | – | 93s 80c | 93s 80c | Material für später (ohne Preis: zu Kosten) | 0c | −3s 55c |
+| B | 90–100 | Fine Leather Belt | 19 | 114 | 0.09 | 60s 80c | 52s 78c | entzaubert, 10 behalten | 80c | 1s 85c |
+| C | 100–115 | Light Leather Pants | 24 | 240 | 0.06 | 1g 44s | 1g 43s 76c | Händler | 2c | 3s 47c |
+| C | 115–125 | Dark Leather Belt | 10 | 0 | – | 55s | 70s 30c | Händler | −1s 53c | 13s 42c |
+| C | 125–130 | Heavy Leather | 7 | 0 | – | 66s 85c | 79s 67c | AH nach Gebühr | −2s 56c | 2s 51c |
+| D | 130–150 | Hillman's Leather Gloves | 24 | 0 | – | 7g 37s 76c | 4g 75s 99c | entzaubert | 13s 9c | 9s 81c |
 
 Zeit gegen Gold (Beta-Preise; Raten sind Annahmen, siehe Abschnitt 8):
 
 - Grinden für Leder, Gegner Stufe 11–15: 21–34 Silber pro Stunde Materialwert bei 50–80 Häuten (30-Tage-Preise: 31–49). Dazu gibt es XP; RXP schlägt das Grinden auf Stufe 16 an der Sludge Fen ohnehin vor.
-- Angeln an der Lushwater Oasis, nur Deviate Fish gerechnet: rund 47 pro Stunde bei der Fangrate vom Stonebull Lake ergibt 2g 11s 20c pro Stunde (Normal Horde US) bzw. 5g 15s 81c (PvP Horde US). Ungeprüft: Fangrate und nötige Angelfertigkeit im Brachland (keine Forever-Quelle).
-- Folgerung (bei diesen Preisen): Grinden nur für Leder lohnt sich erst, wenn Leichtes Leder etwa 4s 40c–7s 4c kostet (heute 50c).
+- Angeln an der Lushwater Oasis, nur Deviate Fish gerechnet: rund 47 pro Stunde bei der Fangrate vom Stonebull Lake ergibt 2g 11s 20c pro Stunde vor und 2g 0s 64c nach 5 % Gebühr (Normal Horde US), bzw. 5g 15s 81c und 4g 90s 2c (PvP Horde US). Ungeprüft: Fangrate und nötige Angelfertigkeit im Brachland (keine Forever-Quelle).
+- Folgerung (bei diesen Preisen, Fisch nach Gebühr): Grinden nur für Leder lohnt sich erst, wenn Leichtes Leder etwa 4s 18c–6s 69c kostet (heute 50c).
 
 ## 2. Ablauf: Stufen A bis D
 
@@ -78,10 +80,11 @@ Verzaubern:
 
 - VZ 1–2: 1× Runed Copper Rod
 - VZ 2–20: 18× Enchant Bracer - Inferior Stamina
-- VZ 20–50: 6× Enchant Bracer - Minor Deflect
-- VZ 20–50: 24× Enchant Chest - Inferior Stamina
+- VZ 20–50: 10× Enchant Bracer - Minor Deflect
+- VZ 20–50: 20× Enchant Chest - Inferior Stamina
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 23.6 Strange Dust, 6.3 Lesser Magic Essence; die Zähler im Guide zeigen Vorrat plus Einkauf
 
-Einkauf im AH: 22 Light Hide, 16 Ruined Leather Scraps, 1 Strange Dust = 20s 2c (derselbe Einkauf mit den 30-Tage-Medianen: 24s 6c)
+Einkauf im AH: 22 Light Hide, 16 Ruined Leather Scraps, 4 Lesser Magic Essence = 21s 79c (derselbe Einkauf mit den 30-Tage-Medianen: 50s 41c)
 Einkauf beim Händler: 27 Salt, 42 Coarse Thread, 19 Mote of Magic, 1 Copper Rod = 20s 84c
 Beim Lehrer: LW Lehrling 10c (Kamari), VZ Lehrling 10c (Godan), LW Geselle 5s (Karolek, ab 50), VZ Geselle 5s (Godan, ab 50), Cured Light Hide 50c (Kamari, ab 30), Embossed Leather Gloves 1s 50c (Kamari, ab 40), Medium Leather 5s (Karolek, ab 75), Enchant Chest - Inferior Stamina 50c (Godan, ab 15) = 17s 70c
 
@@ -96,14 +99,13 @@ Entzaubern: 9× Fine Leather Belt → erwartet 16.9 Strange Dust, 2.7 Greater Ma
 
 Verzaubern:
 
-- VZ 50–70: 8× Enchant Bracer - Minor Deflect
-- VZ 50–70: 12× Enchant Chest - Inferior Stamina
-- VZ 70–100: 2× Enchant Bracer - Minor Stamina
-- VZ 70–100: 30.8× Enchant Chest - Minor Absorption
+- VZ 50–70: 20× Enchant Bracer - Minor Deflect
+- VZ 70–100: 33× Enchant Chest - Minor Absorption
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 20.5 Strange Dust, 8.1 Lesser Magic Essence; die Zähler im Guide zeigen Vorrat plus Einkauf
 
-Einkauf im AH: 10 Medium Hide, 98 Light Leather, 31 Lesser Magic Essence = 1g 59s 19c (derselbe Einkauf mit den 30-Tage-Medianen: 3g 96s 47c)
+Einkauf im AH: 10 Medium Hide, 98 Light Leather, 45 Lesser Magic Essence = 1g 67s 20c (derselbe Einkauf mit den 30-Tage-Medianen: 4g 92s 32c)
 Einkauf beim Händler: 10 Salt, 38 Coarse Thread = 8s 80c
-Beim Lehrer: Cured Medium Hide 2s (Karolek, ab 75), Fine Leather Belt 3s (Karolek, ab 55), Enchant Bracer - Minor Stamina 2s 50c (Godan, ab 50), Enchant Chest - Minor Absorption 1s (Godan, ab 40) = 8s 50c
+Beim Lehrer: Cured Medium Hide 2s (Karolek, ab 75), Fine Leather Belt 3s (Karolek, ab 55), Enchant Chest - Minor Absorption 1s (Godan, ab 40) = 6s
 
 ### Stufe C: LW bis 130, VZ bis 130 (in Thunder Bluff, Stufe 20)
 
@@ -117,12 +119,12 @@ Beim Händler verkaufen (statt entzaubern): 24× Light Leather Pants zu je 5s 99
 
 Verzaubern:
 
-- VZ 100–109: 16× Enchant Chest - Minor Absorption
-- VZ 100–109: 1× Enchant Cloak - Minor Protection
+- VZ 100–109: 9× Enchant Cloak - Minor Protection
 - VZ 109–110: 1× Runed Silver Rod
 - VZ 110–130: 32× Enchant Cloak - Minor Protection
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 20.5 Strange Dust; die Zähler im Guide zeigen Vorrat plus Einkauf
 
-Einkauf im AH: 240 Light Leather, 69 Strange Dust, 27 Medium Leather, 1 Silver Rod, 20 Lesser Magic Essence, 1 Shadowgem = 2g 65s 47c (derselbe Einkauf mit den 30-Tage-Medianen: 5g 78s 56c)
+Einkauf im AH: 240 Light Leather, 65 Strange Dust, 27 Medium Leather, 1 Silver Rod, 1 Shadowgem, 4 Lesser Magic Essence = 2g 50s 92c (derselbe Einkauf mit den 30-Tage-Medianen: 4g 50s 65c)
 Einkauf beim Händler: 44 Fine Thread, 10 Gray Dye = 79s
 Beim Lehrer: Light Leather Pants 4s (Karolek, ab 70), Dark Leather Belt 4s (Karolek, ab 100), Heavy Leather 10s (Karolek, ab 125), Enchant Cloak - Minor Protection 2s (Godan, ab 70), Runed Silver Rod 10s (Godan, ab 100) = 30s
 
@@ -137,28 +139,32 @@ Entzaubern: 24× Hillman's Leather Gloves → erwartet 7.2 Greater Astral Essenc
 Verzaubern:
 
 - VZ 130–150: 20× Enchant Bracer - Lesser Stamina
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 27.0 Soul Dust; die Zähler im Guide zeigen Vorrat plus Einkauf
+
+Ohne eigenen Soul Dust (Stufe D nicht gemacht oder zu wenige Hillman's Leather Gloves entzaubert): VZ 130–150 mit 20× Enchant Boots - Minor Stamina (80 Strange Dust, Lehrer 14s) kostet «jetzt» 81s 20c, mit gekauftem Soul Dust (20× Enchant Bracer - Lesser Stamina, Lehrer 15s) 1g 59s 20c; mit dem eigenen Scan 66s gegen 1g 95s. Stiefel: 4 Strange Dust je Verzauberung laut wow-professions (Tab Strange Dust, im Spiel ungeprüft), lernbar ab VZ 125 (Lehrerliste Godan, Orgrimmar); ob Teg Dawnstrider in Thunder Bluff sie führt, ist ungeprüft.
 
 Einkauf im AH: 336 Medium Leather = 6g 41s 76c (derselbe Einkauf mit den 30-Tage-Medianen: 8g 60s 16c)
 Einkauf beim Händler: 96 Fine Thread = 96s
 Beim Lehrer: Hillman's Leather Gloves 5s (Karolek, ab 120), Enchant Bracer - Lesser Stamina 15s (Godan, ab 130) = 20s
 
-## 3. Lernstufen: wo die Quellen sich widersprechen
+## 3. Lernstufen: wo die Route früher ist als die Lehrer
 
-wow-professions nutzt diese Rezepte früher, als AHledger sie lernen lässt («orange» = lernbar ab). Im Spiel prüfen; der Guide nennt einen Ausweg.
+wow-professions nutzt diese Rezepte früher, als sie lernbar sind: zuerst die Lehrerlisten aus Orgrimmar (gemessen 15.10., `data/kombi/lehrer.csv`), sonst AHledger («orange» = lernbar ab). Der Plan rechnet pro Punkt nur mit Rezepten, die schon gehen (Abschnitt 2); der Guide nennt einen Ausweg.
 
-| Beruf | Rezept | wow-professions ab | AHledger lernbar ab | Quelle |
+| Beruf | Rezept | wow-professions ab | lernbar ab | Quelle |
 |---|---|---|---|---|
-| VZ | Enchant Bracer - Minor Deflect | 20 | 40 | AHledger Rezeptseite 7428 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 80/100/120 · Widerspruch: wow-professions nutzt es ab 20 |
-| VZ | Enchant Chest - Inferior Stamina | 20 | 30 | AHledger Rezeptseite 7420 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 70/90/110 · Widerspruch: wow-professions nutzt es ab 20 · kami-labs nennt 15 |
+| VZ | Enchant Bracer - Minor Deflect | 20 | 40 | AHledger Rezeptseite 7428 (ahledger.com/wow-forever/recipes, Recherche 14.10.) · SeeMeta 80/100/120 · Widerspruch: wow-professions nutzt es ab 20 (AHledger, nicht in den Lehrerlisten) |
+
+Gemessen in Orgrimmar (15.10.): Enchant Chest - Inferior Stamina ab VZ 15 (wow-professions: 20, AHledger: 30); Enchant Bracer - Minor Deflect steht bei Jhag und Godan nicht in der Liste, laut SeeMeta kommt es mit dem Rang (https://seemeta.com/en/wow-forever/professions/enchanting, Stand 14.10.2026; im Spiel ungeprüft). Der Guide nimmt dafür Enchant Chest - Minor Absorption (ab VZ 40, gleiches Material).
 
 ## 4. LW 130–150: Tab «Cured Heavy Hide» oder «ohne Heavy Hide»
 
 wow-professions: «If 20x Heavy Hide cost less than around 120x Heavy Leather, 140x Medium Leather and 17x Moss Agate» → Tab «Cured Heavy Hide», sonst «Leveling without Heavy Hide». Die Regel denkt bis 175; hier zählt nur bis 150.
 
-| Tab | Einkauf A–D (jetzt) | Rückverkauf übriges Material | netto |
-|---|---|---|---|
-| Cured Heavy Hide | 17g 42s 33c | 1g 65s 42c | 15g 76s 91c |
-| ohne Heavy Hide | 12g 91s 8c | 3g 33s 11c | 9g 57s 97c |
+| Tab | Einkauf A–D (jetzt) | Händler zahlt für Teile | Rückverkauf Rest (nach Gebühr) | Saldo (ohne Lehrer) |
+|---|---|---|---|---|
+| Cured Heavy Hide | 17g 34s 21c | 2g 14s 6c | 1g 57s 15c | 13g 63s |
+| ohne Heavy Hide | 12g 86s 32c | 2g 14s 6c | 3g 16s 45c | 7g 55s 81c |
 
 Der Plan nimmt «ohne Heavy Hide». Bei anderen Preisen zum Start kann es kippen: neu rechnen.
 
@@ -166,12 +172,14 @@ Der Plan nimmt «ohne Heavy Hide». Bei anderen Preisen zum Start kann es kippen
 
 Was nach Stufe D übrig bleibt (Erwartungswert) und nicht für VZ bis 150 gebraucht wird. Ob man es für LW oder VZ über 150 behält, entscheidest du.
 
-| Material | Menge | Wert (jetzt) | Wert (30 Tage) |
-|---|---|---|---|
-| Greater Astral Essence | 7.2 | 2g 5s 49c | 2g 64s 24c |
-| Large Glimmering Shard | 1.0 | 75s 83c | 1g 7s 17c |
-| Soul Dust | 7.0 | 50s 47c | 59s 71c |
-| Small Glimmering Shard (Kleiner gleißender Splitter) | 0.4 | 1s 32c | 1s 26c |
+| Material | Menge | Wert (jetzt) | nach 5 % Gebühr | Wert (30 Tage) |
+|---|---|---|---|---|
+| Greater Astral Essence | 7.2 | 2g 5s 49c | 1g 95s 21c | 2g 64s 24c |
+| Large Glimmering Shard | 1.0 | 75s 83c | 72s 4c | 1g 7s 17c |
+| Soul Dust | 7.0 | 50s 47c | 47s 95c | 59s 71c |
+| Small Glimmering Shard (Kleiner gleißender Splitter) | 0.4 | 1s 32c | 1s 25c | 1s 26c |
+
+Zusammen 3g 33s 11c vor und 3g 16s 45c nach Gebühr (ohne Pfand). Dazu kommt, was die Lederverarbeitung übrig lässt (nächste Zeile).
 
 Dazu aus der Lederverarbeitung: 3 Cured Light Hide, 7 Heavy Leather. Heavy Leather braucht wow-professions erst ab LW 155.
 
@@ -184,17 +192,18 @@ Wann sich eine Wahl umdreht. Spalten: Wert mit den Beta-Preisen «jetzt» und mi
 | Wahl | Regel | jetzt | 30 Tage |
 |---|---|---|---|
 | Fehlende Fetzen | kaufen, wenn 3 Fetzen weniger kosten als 2 Leichtes Leder; sonst Light Armor Kit (1 Leder) | 75c gegen 1s: Fetzen kaufen | 84c gegen 1s 58c: Fetzen kaufen |
-| Extra Embossed Leather Gloves nur zum Entzaubern | lohnt, wenn 1,125 Strange Dust und 0,3 Lesser Magic Essence (Ertrag) mehr wert sind als 3 Leichtes Leder und 2 Coarse Thread | 1s 70c gegen 1s 15c: lohnt nicht, Staub kaufen | 2s 57c gegen 4s 93c: lohnt |
-| VZ 20–70 und 100–109 | 1 Strange Dust oder 1 Lesser Magic Essence pro Punkt: das billigere | 69c gegen 84c: Essenz | 7s 35c gegen 2s 42c: Staub |
-| VZ 70–100 | Essenz (33 für 30 Punkte) lohnt, solange sie weniger als 1,82 Strange Dust kostet | 69c gegen 1s 53c: Essenz (Chest - Minor Absorption) | 7s 35c gegen 4s 40c: Staub (Bracer - Minor Stamina) |
-| VZ 110–130 | Essenz (80, dazu Formel 5s) statt 64 Strange Dust lohnt unter etwa 0,8 Strange Dust pro Essenz | 60s 20c gegen 53s 76c: Staub (Cloak - Minor Protection) | 5g 93s gegen 1g 54s 88c: Staub (Cloak - Minor Protection) |
+| Extra Embossed Leather Gloves nur zum Entzaubern | lohnt, wenn 1,125 Strange Dust und 0,3 Lesser Magic Essence (Ertrag) mehr wert sind als 3 Leichtes Leder und 2 Coarse Thread | 1s 70c gegen 1s 14c: lohnt nicht, Staub kaufen | 2s 57c gegen 4s 88c: lohnt |
+| VZ 20–70 und 100–109 | 1 Strange Dust oder 1 Lesser Magic Essence pro Punkt: das billigere | 65c gegen 84c: Essenz | 7s 19c gegen 2s 42c: Staub |
+| VZ 70–100 | Essenz (33 für 30 Punkte) lohnt, solange sie weniger als 1,82 Strange Dust kostet | 65c gegen 1s 53c: Essenz (Chest - Minor Absorption) | 7s 19c gegen 4s 40c: Staub (Bracer - Minor Stamina) |
+| VZ 110–130 | Essenz (80, dazu Formel 5s) statt 64 Strange Dust lohnt unter etwa 0,8 Strange Dust pro Essenz | 57s 27c gegen 53s 76c: Staub (Cloak - Minor Protection) | 5g 80s 47c gegen 1g 54s 88c: Staub (Cloak - Minor Protection) |
 | VZ 130–150 | Soul Dust (20) statt 80 Strange Dust lohnt unter 4 Strange Dust pro Soul Dust; eigener Soul Dust aus Hillman's zählt 0 | 1g 44s 20c gegen 67s 20c: Staub kaufen | 1g 70s 60c gegen 1g 93s 60c: Soul Dust kaufen |
 | LW 130–150 | Tab «Cured Heavy Hide» (20 Heavy Hide, 60 Salt, 14 Hillman's) statt «ohne Heavy Hide» (24 Hillman's), ohne Entzaubern gerechnet | 11g 68s 36c gegen 7g 37s 76c: ohne Heavy Hide | 25g 22s 76c gegen 9g 56s 16c: ohne Heavy Hide |
 | Light Leather Pants: Händler statt Entzaubern | Händler zahlt 5s 99c (Forever-Client); lohnt, solange der Ertrag (1,875 Strange Dust, 0,3 Greater Magic Essence, 0,04 Splitter) weniger wert ist | 2s 31c gegen 5s 99c: Händler | 11s 15c gegen 5s 99c: entzaubern |
 | Dark Leather Belt: Händler statt Entzaubern | Händler zahlt 7s 3c (Forever-Client); lohnt, solange 3,75 Strange Dust, 0,3 Lesser Astral Essence und 0,04 Splitter weniger wert sind | 5s 11c gegen 7s 3c: Händler | 12s 4c gegen 7s 3c: entzaubern |
-| VZ 10–75: Geringer Magiezauberstab | statt 1 Strange Dust pro Punkt (Chest - Inferior Stamina): 1 Simple Wood und 1 Lesser Magic Essence, der Händler zahlt den Stab zurück | −3c gegen 84c: Zauberstab | 6s 63c gegen 2s 42c: Staub |
-| VZ 70–110: Grosser Magiezauberstab | statt 2 Strange Dust (Bracer - Minor Stamina): 1 Simple Wood und 2 Lesser Magic Essence, der Händler zahlt den Stab zurück | −24c gegen 1s 68c: Zauberstab | 13s 8c gegen 4s 84c: Staub |
-| Leder grinden statt angeln | Grinden (50–80 Häute pro Stunde, Gegner 11–15) bringt mehr als Angeln (nur Deviate Fish, Rate ungeprüft) | 21s 10c–33s 76c gegen 2g 11s 20c pro Stunde: Angeln | 30s 55c–48s 88c gegen 1g 96s 65c pro Stunde: Angeln |
+| VZ 10–75: Geringer Magiezauberstab | statt des Plan-Wegs (1 Strange Dust pro Punkt, ab VZ 40 auch 1 Lesser Magic Essence: das billigere): 1 Simple Wood und 1 Lesser Magic Essence, der Händler zahlt den Stab zurück | −7c gegen 65c: Zauberstab | 6s 47c gegen 2s 42c: Plan-Weg |
+| VZ 70–110: Grosser Magiezauberstab | statt des Plan-Wegs (pro Punkt 1,1 Lesser Magic Essence mit Chest - Minor Absorption oder 2 Strange Dust mit Bracer - Minor Stamina: das billigere): 1 Simple Wood und 2 Lesser Magic Essence, der Händler zahlt den Stab zurück | −31c gegen 72c: Zauberstab | 12s 77c gegen 4s 84c: Plan-Weg |
+| Lesser Magic Essence: direkt oder über Greater | Greater Magic Essence kaufen und teilen (1 → 3), wenn sie weniger als 3 Lesser kostet (gemessen 13.10.: aus 9 wurden 27) | 65c gegen 69c: Greater kaufen und teilen | 7s 19c gegen 7s 35c: Greater kaufen und teilen |
+| Leder grinden statt angeln | Grinden (50–80 Häute pro Stunde, Gegner 11–15) bringt mehr als Angeln (nur Deviate Fish nach 5 % Gebühr, Rate ungeprüft) | 21s 10c–33s 76c gegen 2g 0s 64c pro Stunde: Angeln | 30s 55c–48s 88c gegen 1g 86s 82c pro Stunde: Angeln |
 
 ## 7. Gegenstände im Guide (Item-IDs)
 
@@ -238,10 +247,11 @@ Wann sich eine Wahl umdreht. Spalten: Wert mit den Beta-Preisen «jetzt» und mi
 
 ## 8. Annahmen und offene Punkte
 
-- Eigener Bestand: untere Rate des Mengenmodells beim Wechsel (Abschnitt E1). Was der Zähler im Spiel zeigt, gilt.
+- Eigener Bestand: untere Rate des Mengenmodells beim Wechsel (Abschnitt E1 des Mengenmodells, `docs/plan/mengen-leder.md`). Was der Zähler im Spiel zeigt, gilt.
+- Häute pro Stunde beim Grinden: 50–80 (Annahme aus `tools/plan_mengen.py`, keine Quelle für Stufe 12–20; gemessen in Mulgore rund 97 pro Stunde, Charakter Stufe 6–7, Testlog 13.10.).
 - Herstellungen pro Abschnitt: wow-professions («These numbers are estimates»). Der letzte Abschnitt bis 155 ist bis 150 anteilig gezählt.
 - Fehlende Fetzen: kaufen ist billiger als Light Armor Kits aus Leder, solange 3 × Fetzenpreis < 2 × Lederpreis (heute 75c gegen 1s).
-- Entzaubern: Erwartungswert aus `Kreislauf.csv`; Greater Magic Essence zählt als 3 Lesser (wow-professions: Rechtsklick teilt sie).
+- Entzaubern: Erwartungswert aus `Kreislauf.csv`; Greater Magic Essence zählt als 3 Lesser (wow-professions: Rechtsklick teilt sie). Gekauft wird die Lesser zum kleineren Preis: direkt oder ein Drittel der Greater (gemessen 13.10.: aus 9 wurden 27).
 - Verzaubern: pro Punkt das Rezept mit den geringsten Kaufkosten; eigenes Material kostet nichts. Ob man ein Zielteil (Armschiene, Brust, Umhang, Stiefel, Zweihänder) braucht, sagt keine Forever-Quelle ausdrücklich (wow-professions erwähnt im Makro einen «optional target slot»).
 - Lehrer: Lernstufen und Kosten gemessen bei Kamari, Karolek, Jhag und Godan (Orgrimmar, Testlog 15.10., `data/kombi/lehrer.csv`): Lehrling 10c, Geselle 5s (ab Stufe 10 und Fertigkeit 50), Rezepte 50c bis 25s. Lehrer in Thunder Bluff nicht gemessen. Rezepte ohne Eintrag in der Liste (Light Leather, Light Armor Kit, Runed Copper Rod, Bracer - Inferior Stamina, Bracer - Minor Deflect) zählen mit 0; laut SeeMeta kommt Minor Deflect mit dem Rang (https://seemeta.com/en/wow-forever/professions/enchanting, Stand 14.10.2026), im Spiel ungeprüft.
 - Händler zahlt (Verkauf der Teile): Forever-Client (`data/preise/haendler_ankauf.csv`, Testlog 15.10.); für Teile ohne Messung AHledger (Spalte «Händlerpreis (s)» in `Kreislauf.csv`), im Spiel ungeprüft. Viele hergestellte Teile zahlt der Forever-Händler niedriger als Classic (z. B. Grosser Magiezauberstab 2s statt 15s 35c, Geprägte Lederhandschuhe 71c statt 1s 19c; Vergleich in `docs/recherche/2026-10-15_haendlerpreise.md`).
@@ -254,9 +264,9 @@ Idee: Der Geringe Magiezauberstab (ab VZ 10, 50c beim Lehrer) ist laut SeeMeta b
 
 | Stufe | Einkauf | Lehrer | Händler zurück | netto | ohne Zauberstäbe netto |
 |---|---|---|---|---|---|
-| A | 77s 68c | 17s 70c | 44s | 51s 38c | 58s 56c |
-| B | 2g 15s 28c | 7s | 82s | 1g 40s 28c | 1g 76s 49c |
-| C | 3g 13s 99c | 30s | 2g 32s 6c | 1g 11s 93c | 1g 60s 41c |
+| A | 76s 43c | 17s 70c | 44s | 50s 13c | 60s 33c |
+| B | 2g 12s 64c | 7s | 82s | 1g 37s 64c | 1g 82s |
+| C | 3g 13s 18c | 30s | 2g 32s 6c | 1g 11s 12c | 1g 45s 86c |
 | D | 7g 37s 76c | 20s | 0c | 7g 57s 76c | 7g 57s 76c |
 
 Verzaubern in der Variante:
@@ -268,7 +278,7 @@ Verzaubern in der Variante:
 
 Was dafür spricht und was offen ist:
 
-- Bei den eigenen Scan-Preisen vom 15.10. (Lesser Magic Essence 88c, Strange Dust 60c) kostet ein Punkt mit dem Geringen Stab netto etwa 16c statt 60c, mit dem Grossen etwa 14c statt 1s 20c (Regeln in Abschnitt 6).
-- Offen: ob die Farben in Forever so laufen (SeeMeta, nur bei VZ 100 geprüft; das Testlog schreibt jeden Farbwechsel), ob der Händlerpreis zum Start bleibt (Widerspruch 21) und ob der Markt die nötigen Essenzen hat (am 15.10. rund 2500 Stück im Angebot).
-- Entscheid beim Nutzer (offener Punkt 7: woher das Material für Verzauberkunst kommt).
+- Mit den Medianen des eigenen Scans (2026-10-15 22:15, ? Horde R2d38 Beta; Lesser Magic Essence 50c über die Greater, direkt 91c; Strange Dust 65c; Simple Wood 38c beim Händler) kostet ein Punkt mit dem Geringen Stab netto −22c statt 50c auf dem Plan-Weg, mit dem Grossen −62c statt 55c (negativ = Gewinn; Regeln in Abschnitt 6).
+- Offen: ob die Farben in Forever so laufen (SeeMeta, nur bei VZ 100 geprüft; das Testlog schreibt jeden Farbwechsel), ob der Händlerpreis zum Start bleibt (Widerspruch 21) und ob der Markt die nötigen Essenzen hat (im letzten Scan etwa 6795 Lesser Magic Essence, jede Greater als 3 gezählt).
+- Entscheid beim Nutzer (offener Punkt 28; dazu Punkt 7: woher das Material für Verzauberkunst kommt).
 

@@ -92,7 +92,14 @@ def lade(pfade):
     uniq = [(zeit(z), z) for z in uniq]
     uniq = [(t, z) for t, z in uniq if t]
     uniq.sort(key=lambda tz: tz[0])
-    return uniq, {k: sorted(v, key=lambda s: int(s.split()[1]) if s.startswith("S ") else int(s.split()[0])) for k, v in weg.items()}, xp, dg
+    return uniq, {k: sorted(v, key=weg_ordnung) for k, v in weg.items()}, xp, dg
+
+
+def weg_ordnung(probe):
+    """Zeit, bei gleicher Sekunde die Sitzungsmarke «S» vor der ersten Probe, dann der Text: Die Proben kommen über eine
+    Menge (doppelte Dateien), deren Reihenfolge vom Hash-Zufall abhängt; so bleibt die Auswertung bei jedem Lauf gleich."""
+    f = probe.split()
+    return (int(f[1]), 0, probe) if f[0] == "S" else (int(f[0]), 1, probe)
 
 
 def stufe(m):

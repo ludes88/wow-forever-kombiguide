@@ -1,6 +1,6 @@
 # Prüfbericht 15.10.2026 und was daraus wurde
 
-Auftrag des Nutzers (15.10., spät): «führe auch ein gesamt audit aus und trage alles nach». Geprüft hat ein eigener Prüf-Agent, der die Arbeit nicht selbst gemacht hat, auf dem Stand `main` 2a5b8ed (Merge #22). Er hat nichts geändert; die Umsetzung stammt von Claude (Branch `testlog-3.7`, Kombi-Guide 0.5.2).
+Auftrag des Nutzers (15.10., spät): «führe auch ein gesamt audit aus und trage alles nach». Geprüft hat ein eigener Prüf-Agent, der die Arbeit nicht selbst gemacht hat, auf dem Stand `main` 2a5b8ed (Merge #22). Er hat nichts geändert; die Umsetzung stammt von Claude (Branch `testlog-3.7`, seit Merge #23 auf `main`; Kombi-Guide 0.5.2). Die zweite Prüfrunde vom 16.10. steht in `pruefbericht-2026-10-16.md`.
 
 ## Grundlagen des Prüfers
 
@@ -10,7 +10,7 @@ Auftrag des Nutzers (15.10., spät): «führe auch ein gesamt audit aus und trag
 
 ## Befunde und Stand
 
-«umgesetzt» = im Branch `testlog-3.7` erledigt; «Entscheid» = liegt beim Nutzer (`docs/entscheidungen.md`).
+«umgesetzt» = im Branch `testlog-3.7` erledigt (seit Merge #23 auf `main`); «Entscheid» = liegt beim Nutzer (`docs/entscheidungen.md`).
 
 | Nr. | Befund (kurz) | Stand |
 |---|---|---|
@@ -44,7 +44,7 @@ Auftrag des Nutzers (15.10., spät): «führe auch ein gesamt audit aus und trag
 | C15 | Restwert 3g 85s ist der Wert aller Stufen | erledigt durch die Neuberechnung (Rest jetzt 3g 33s, alle Stufen) |
 | C16 | Händlerzeile 20:10 liest sich wie ein Kauf | umgesetzt (`messdaten-2026-10-15.md`) |
 | D1 | Unbelegt: «Taste K», «bringt der Lehrling mit», «Build 70245» | umgesetzt (Text belegt oder entfernt) |
-| D2 | Geselle Kürschnerei ohne Stufen-Schutz | offen: ob der Geselle Kürschnerei Stufe 10 verlangt, ist ungeprüft (Widersprüche 5, 6); Zeile vor der Stelle #45, nur Text änderbar |
+| D2 | Geselle Kürschnerei ohne Stufen-Schutz | offen: ob der Geselle Kürschnerei Stufe 10 verlangt, ist ungeprüft (Widersprüche 5, 6); die Plan-Zeilen 8 und 11 liegen nach der Stelle #45 (Zeile 8 ist #88 in «6-12 Mulgore»), eine Bedingung wie in Zeile 15 (`.xp <10,1`) verschöbe #45 also nicht (Begründung korrigiert am 16.10.); seit v0.5.3 nennen beide Texte den Ausweg «Häkchen setzen» |
 | D3 | Fine Leather Belt hängt an Cured Medium Hide | offen, bewusst: ohne Medium Hide fehlt auch der Dunkle Ledergürtel (Risiko 20) |
 | D4 | Rundung «1g 58s» | umgesetzt (1g 59s) |
 | D5 | Kommentar in `rxp_schritte.py` | umgesetzt |

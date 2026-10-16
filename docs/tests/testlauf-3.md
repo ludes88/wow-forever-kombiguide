@@ -84,7 +84,7 @@ Keine Zusatzbeute (Samen) in diesen 5 Knoten.
 
 **Quests der Berufe (Forever, neu)**
 
-- Bei Kaga Wildhoof (1412 46.2, 67.2) angenommen: 97933 «Grundlagen des Zeltens: Kräuterkunde» und 97936 «Grundlagen des Zeltens: Kürschnerei». Abgabe: **ungeprüft**.
+- Bei Kaga Wildhoof (1412 46.2, 67.2) angenommen: 97933 «Grundlagen des Zeltens: Kräuterkunde» und 97936 «Grundlagen des Zeltens: Kürschnerei». Abgabe: 97936 am 14.10. um 20:07 in Bloodhoof bei 45.0, 61.5 abgegeben (Testlog QUEST AB, 270 XP; der NPC-Name steht nicht im Testlog, laut warcraft.wiki.gg Yonn Deepcut); 97933 bis 15.10. nicht abgegeben.
 - RXPs Horde-Route führt beide nicht (v4.11.13, v4.11.23 und Hauptzweig vom 13.10. abends). Für die Allianz hat RXP die Gegenstücke (97924 Skinning, 97921 Herbalism) mit `.skill skinning,<1,1` usw. (`Guides/forever/Alliance-1-13_Human.lua`). Kandidat für Kombi-Guide v0.2.
 
 ## Zweiter Abschnitt: Befunde zum Testlog
@@ -116,5 +116,5 @@ Keine Zusatzbeute (Samen) in diesen 5 Knoten.
 ## Noch offen in diesem Testlauf
 
 - Stufe 8 und 10: Lehrer (GELD, GELERNT) bei Gennia Runetotem (Bloodhoof, laut RXP-Route)
-- Kombi-Guide v0.2 im Spiel: Erscheinen die Schritte an der richtigen Stelle, stimmen Ziele und Orte (Yonn Deepcut ungeprüft)?
+- Kombi-Guide v0.2 im Spiel: Erscheinen die Schritte an der richtigen Stelle, stimmen Ziele und Orte (Yonn Deepcut seit 14.10. gemessen: 45.0, 61.5)?
 - Testlog 3.2/3.3 im Spiel: Mit welchem Grund enden die Post-Sitzungen?

@@ -284,7 +284,7 @@ def silber(s):
         return "–"
     g, r = divmod(round(s * 100), 10000)
     sv, k = divmod(r, 100)
-    parts = [f"{g}g"] * bool(g) + [f"{sv}s"] * bool(sv) + [f"{k}c"] * bool(k or not (g or sv))
+    parts = [f"{g}g"] * bool(g) + [f"{sv}s"] * bool(sv or (g and k)) + [f"{k}c"] * bool(k or not (g or sv))   # «2g 0s 64c»
     return " ".join(parts)
 
 
