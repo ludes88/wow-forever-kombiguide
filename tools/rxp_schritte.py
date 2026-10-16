@@ -8,8 +8,9 @@
 #       für neue Schritte mit #maxlevel, die ein Testcharakter höherer Stufe nicht sieht: dann --stufe angeben);
 #       geänderter Inhalt bei gleicher Zeile wird nur gemeldet (RXP findet die Stelle über die Zeilennummer, Best Practice §6).
 #   python3 tools/rxp_schritte.py ziele <Quelle> "<Guide-Name>" [--gruppe ...] [--stufe N]
-#       Zusatzschritte (Label «Kombi…») mit #completewith: für 9 Klassen und 4 Rassen das Ziel suchen. Exit 1, wenn eins fehlt
-#       oder «next» einen Zusatzschritt mit #completewith trifft (Kette; seit 16.10.).
+#       Zusatzschritte (Label «Kombi…») mit #completewith: für 9 Klassen und 5 Rassen das Ziel suchen. Exit 1, wenn eins fehlt,
+#       sofort erledigt ist (kein Element, auf das RXP wartet) oder «next» einen Zusatzschritt mit #completewith trifft
+#       (Kette; seit 16.10.).
 #   --gruppe: nur Guides dieser Gruppe (Kombi_Guide.lua enthält jeden Guide-Namen zweimal: «Kombiguide (H)» zuerst, dann
 #       «Kombiguide Dungeon (H)»). Ohne die Angabe gilt der erste Guide mit dem Namen.
 #   --dungeons: eingeschaltete Dungeons (Kürzel wie in RXP, z. B. RFC,WC,BFD). Ohne die Angabe sind alle aus, wie in Forever:
@@ -144,14 +145,41 @@ def steps(text, name, me, level=None, dungeons=frozenset(), group=None):
 
 
 KLASSEN = ("warrior", "hunter", "rogue", "priest", "shaman", "mage", "warlock", "druid", "paladin")
-RASSEN = ("orc", "troll", "tauren", "undead")
+RASSEN = ("orc", "troll", "tauren", "undead", "skyborne")   # Skyborne: neues Volk in Forever (RXP «<< !Skyborne»)
+
+
+def wartet(s):
+    """Hat der Schritt ein Element, auf das RXP wartet? Ohne ein solches ist er sofort erledigt (GuideWindow.lua
+    UpdateStepCompletion prüft nur Elemente, die nicht «textOnly» sind). Nicht warten: Text (>>), Tags (#), .target und
+    .mob, Bedingungen wie .xp …,1 oder .isOnQuest, .goto ohne Radius oder mit fünftem Argument (functions.lua goto)."""
+    for b in s["body"]:
+        if b.startswith("+"):
+            return True
+        m = re.match(r"^\.(\w+)\s*(.*)$", b)
+        if not m:
+            continue
+        cmd, arg = m.group(1), m.group(2).split(">>")[0]
+        if cmd in ("target", "mob", "isOnQuest", "isQuestComplete", "isQuestTurnedIn", "isQuestAvailable", "isNotOnQuest",
+                   "zoneskip", "subzoneskip", "dungeon", "maxlevel"):
+            continue
+        if cmd == "xp" and re.search(r",\s*-?\d+\s*$", arg.split("--")[0]):
+            continue
+        if cmd == "goto":
+            parts = [x.strip() for x in arg.split("--")[0].split(",")]
+            radius = parts[3] if len(parts) > 3 else ""
+            if not (radius and re.fullmatch(r"\d+(\.\d+)?", radius) and float(radius) > 0 and len(parts) == 4):
+                continue
+        return True
+    return False
 
 
 def ziele(text, name, group, level=None):
     """Zusatzschritte mit «#completewith X» (Label «Kombi…»): Für jede Klasse und Rasse das Ziel X unter den gezeigten Schritten
     suchen (RXP: «next» = nächster gezeigter Schritt, sonst guide.labels, GuideWindow.lua UpdateStepCompletion). Fehler:
-    kein Ziel (der Schritt bliebe stehen, bis man ihn erledigt) oder «next» trifft einen Zusatzschritt mit #completewith
-    (Kette: der erste verschwände mit dem zweiten). Hinweis: Ziel hat selbst #completewith (dann gilt dessen Ende, z. B. ein
+    kein Ziel (der Schritt bliebe stehen, bis man ihn erledigt), ein Ziel ohne Element, auf das RXP wartet, ohne wartenden
+    Schritt davor (dann ist es sofort erledigt und der Zusatzschritt mit ihm, Prüfung 16.10.: «DeathDUPpickup» direkt
+    nach dem Zamah-Schritt), oder «next» trifft einen
+    Zusatzschritt mit #completewith (Kette: der erste verschwände mit dem zweiten). Hinweis: Ziel hat selbst #completewith (dann gilt dessen Ende, z. B. ein
     Flug oder, mit einem Label gewollt, ein anderer Zusatzschritt)."""
     def cw(s):
         return next((b.split()[1] for b in s["body"] if re.match(r"^#completewith\s+\S", b)), None)
@@ -177,6 +205,11 @@ def ziele(text, name, group, level=None):
                 target = (st[s["idx"]] if s["idx"] < len(st) else None) if t == "next" else labels.get(t)
                 if target is None:
                     fehler.setdefault((lab, t, "Ziel fehlt"), []).append(f"{rasse} {klasse}")
+                elif not wartet(target) and not any(wartet(x) and not cw(x) for x in st[s["idx"]:target["idx"] - 1]):
+                    # Ein leeres Ziel (nur #label, z. B. «WildManeTurnIn») markiert nur eine Stelle: Liegt davor ein Schritt,
+                    # auf den RXP wartet, bleibt der Zusatzschritt bis dorthin stehen. Sonst verschwindet er sofort.
+                    fehler.setdefault((lab, t, "Ziel ohne Element, auf das RXP wartet, und kein wartender Schritt davor "
+                                               "(sofort erledigt)"), []).append(f"{rasse} {klasse}")
                 elif cw(target) and kombi(target) and t == "next":
                     fehler.setdefault((lab, t, "Kette"), []).append(f"{rasse} {klasse}")
                 elif cw(target):
