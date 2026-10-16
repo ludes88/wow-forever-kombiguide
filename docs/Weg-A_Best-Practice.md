@@ -205,7 +205,7 @@ Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link o
   - Burg Schattenfang (SFK): 1013 bei Keeper Bel'dugur (Apothecarium, ab 16, Ort widersprüchlich); 1098 (High Executor Hadrec, Gruft im Grabmal) und 1014 (Dalar Dawnweaver, Grabmal) erst ab 18. Orte aus RXP v4.11.23 `Guides/forever/Horde-01-14_Undead.lua`.
   - Tiefschwarze Grotte (BFD): 6563 bei Je'neu Sancrea (ab 17 bzw. 18, nach 6562), 6921 ab 21; 6564 startet mit einem Gegenstand vor dem Dungeon, 6561 gibt Argent Guard Thaelrid im Dungeon (Bashana ist nur die Abgabe).
   - Kral der Klingenhauer (RFK, 29–38 laut Warcraft Tavern): Blueleaf Tubers 1221 bei Mebok in Ratchet ab 20, die Gegenstände liegen neben ihm.
-  - WC: 1491 setzt Raptor Horns 865 voraus (Icy Veins), 959 und 962 ab 14, 914 ab 10, 1486 ab 13, 1487 ab 15.
+  - WC: 1491 gibt es erst nach Raptor Horns 865 (RXPs Dungeon-Route nimmt sie im selben Schritt nach der Abgabe an; Recherche), 959 und 962 ab 14, 914 ab 10, 1486 ab 13, 1487 ab 15 (Icy Veins, Warcraft Tavern).
   - Nicht bis 22: Hall of Thanes (Allianz, keine Horde-Quests ausserhalb), Todesminen (nur Allianz), Excavation Site: Wetlands, City of Dalaran, Gnomeregan, Scharlachrotes Kloster (Quests ab 24 bzw. 25).
 - Questlog: Wie viele Quests es in Forever fasst, ist ungeprüft. Die API-Doku nennt `MAXIMUM_NUM_QUESTS_LOG_CAN_ACCEPT` = 40 (`QuestConstantsDocumentation.lua` L160, Build 70425); `MAX_QUESTLOG_QUESTS` setzt nur der Mainline-Teil (`Blizzard_FrameXMLBase.toc`: `Constants.lua [AllowLoadGameType mainline]`).
 
