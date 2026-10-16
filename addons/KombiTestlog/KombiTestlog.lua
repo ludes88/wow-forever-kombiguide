@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 15.10.2026, Version 3.7
+-- Stand 16.10.2026, Version 3.7.1
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -49,6 +49,11 @@
 --   DUNGEON     Betreten einer Instanz und Ende des Laufs: Dauer, XP, Kills, Geld, Beute, Tode (Version 3.7)
 --   Laufweg und XP pro Quelle (Version 3.7) schreiben keine Zeilen, nur Daten: chars[Charakter].weg und .xp
 --
+-- Version 3.7.1: beim Händler eine Chat-Zeile, wenn Material des Plans oder Beute mit hohem AH-Wert in den Taschen liegt
+-- (Liste KombiDaten.nichtVerkaufen von tools/markt.py; verkauft wird nichts automatisch); 20 Minuten nach einem AH-Scan
+-- in der Stadt ein Hinweis für das Scan-Paar (Abnahme); zusätzlich beobachtete Gegenstände aus KombiDaten.beobachten;
+-- beim Scan fragt das Testlog die Daten von bis zu 200 Gegenständen ohne bekannten Händlerpreis an (der nächste Scan kennt
+-- dann ihren Preis); Berufe und Geld pro Charakter in chars[Charakter].berufe und .geld.
 -- Version 3.7: Laufweg (alle 10 s, bei Stillstand alle 60 s), XP pro Quelle (Gegner mit Kreatur-ID und Stufe, Quest,
 -- sonst), Dungeon-Läufe, Pfand eines eigenen Angebots aus dem Geldabzug. Einzelheiten vor «Version 3.6: Empfehlungen».
 -- Version 3.6: Rezepte, Bestand (Taschen, Bank), AH-Post, eigene Angebote, Abnahme zwischen zwei AH-Scans, /tl tipp.
@@ -64,7 +69,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.7"
+local VERSION = "3.7.1"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -407,7 +412,10 @@ local function watched(id)
     if AH_WATCH_SET[id] then return true end
     if not db then return false end
     if db.items[id] then return true end
-    return db.beobachten ~= nil and db.beobachten[id] == true
+    if db.beobachten ~= nil and db.beobachten[id] == true then return true end
+    -- Version 3.7.1: zusätzliche Gegenstände von Claude (KombiDaten.beobachten = { [Item-ID] = true }, tools/markt.py)
+    local k = rawget(_G, "KombiDaten")
+    return type(k) == "table" and type(k.beobachten) == "table" and k.beobachten[id] == true
 end
 
 -- Taschen ganz lesen (Version 3): Grundlage, um Änderungen einer Handlung zuzuordnen
@@ -528,6 +536,7 @@ local function checkSkills()
         end
     end
     skillLast = cur
+    pcall(W.berufeMerken, cur)   -- Version 3.7.1
 end
 
 function rxpKey() -- weist der oben deklarierten lokalen Variable zu
@@ -1174,6 +1183,7 @@ local function startSession(kind)
     session.kind, session.diff, session.ctx = kind, {}, context()
     session.plus, session.minus, session.nPlus, session.nMinus = 0, 0, 0, 0
     if kind == "AUKTIONSHAUS" then ahWanted = now() end   -- Version 3.5: AH-Scan beim nächsten Takt
+    if kind == "HÄNDLER" then pcall(W.haendlerWarnung) end   -- Version 3.7.1
 end
 
 -- Version 3.2: die offene Sitzung, wenn ihr Fenster noch offen ist; sonst beenden
@@ -1385,6 +1395,7 @@ local function ahFinish()
         local entry = string.format("%d:%.0f:%.0f:%d:%d", id, lo, med, total, #list)   -- %.0f: Kupfer über 2^31
         -- Version 3.7: Händlerpreis und was darunter angeboten wird («…:Händlerpreis:Stück darunter:Kosten»)
         local sp = W.sellPrice(id)
+        if sp == nil then W.datenAnfragen(id) end   -- Version 3.7.1: der nächste Scan kennt dann den Händlerpreis
         if sp and sp > 0 then
             local under, cost = 0, 0
             for _, e in ipairs(list) do   -- ahStats hat nach Preis pro Stück sortiert
@@ -1495,6 +1506,8 @@ local function ahFinish()
         db.ahHinted = true
         say("Einmal prüfen: Zeigt das Auktionshaus für Leichtes Leder denselben Tiefstpreis pro Stück? Wenn nicht: /tl bug AH-Preis")
     end
+    W.anfragen = 0
+    pcall(W.paarPlanen)
 end
 
 local function ahBatch()
@@ -2260,6 +2273,68 @@ function W.tick()
     W.wegTick()
 end
 
+-- Version 3.7.1 -----------------------------------------------------------------------------------------------------
+-- Warnung beim Händler: KombiDaten.nichtVerkaufen = { [Item-ID] = "Text" } (tools/markt.py: Material des Plans und Beute,
+-- die im AH ein Vielfaches des Händlerpreises bringt). Eine Chat-Zeile pro Besuch; verkauft wird nichts automatisch.
+W.WARN_MAX, W.PAAR_NACH, W.ANFRAGEN_MAX = 6, 1200, 200
+function W.haendlerWarnung()
+    local k = rawget(_G, "KombiDaten")
+    local liste = type(k) == "table" and type(k.nichtVerkaufen) == "table" and k.nichtVerkaufen
+    if not liste then return end
+    local bags = scanBags()
+    if not bags then return end
+    local hits = {}
+    for id, n in pairs(bags) do
+        local t = liste[id]
+        if type(t) == "string" and n > (bagBound[id] or 0) then hits[#hits + 1] = { id, n - (bagBound[id] or 0), t } end
+    end
+    if #hits == 0 then return end
+    table.sort(hits, function(a, b) return a[1] < b[1] end)
+    local parts = {}
+    for i = 1, math.min(W.WARN_MAX, #hits) do parts[i] = string.format("%dx %s", hits[i][2], hits[i][3]) end
+    local rest = (#hits > W.WARN_MAX) and string.format(" und %d weitere", #hits - W.WARN_MAX) or ""
+    say("Nicht beim Händler verkaufen (KombiDaten " .. tostring(k.stand or "?") .. "): " .. table.concat(parts, "; ") .. rest)
+end
+
+-- Scan-Paar: Die Abnahme braucht zwei Scans, die 20 bis 110 Minuten auseinander liegen. 20 Minuten nach einem Scan ein
+-- Hinweis, wenn der Charakter noch in einer Stadt oder einem Gasthaus ist (IsResting); ein neuerer Scan hebt ihn auf.
+function W.paarPlanen()
+    if not (C_Timer and C_Timer.After) then return end
+    W.paar = (W.paar or 0) + 1
+    local token = W.paar
+    C_Timer.After(W.PAAR_NACH, function()
+        if token ~= W.paar then return end
+        local ok, rest = pcall(IsResting)
+        if ok and rest == true then
+            say("Abnahme messen: Der letzte AH-Scan ist 20 Minuten her. Öffnest du jetzt das Auktionshaus (oder /tl ah), "
+                .. "entsteht ein Scan-Paar; gut sind 20 bis 110 Minuten Abstand.")
+        end
+    end)
+end
+
+-- Daten eines Gegenstands ohne bekannten Händlerpreis anfragen (C_Item.RequestLoadItemDataByID, ItemDocumentation.lua);
+-- höchstens W.ANFRAGEN_MAX pro Scan, damit der Client nicht tausende auf einmal lädt.
+function W.datenAnfragen(id)
+    W.anfragen = W.anfragen or 0
+    if W.anfragen >= W.ANFRAGEN_MAX or not (C_Item and C_Item.RequestLoadItemDataByID) then return end
+    W.anfragen = W.anfragen + 1
+    pcall(C_Item.RequestLoadItemDataByID, id)
+end
+
+-- Berufe und Geld pro Charakter: für den «nächsten Schritt» in KombiDaten auch ohne Berufsfenster (Sammelberufe)
+function W.berufeMerken(cur)
+    local b = {}
+    for name, v in pairs(cur) do b[name] = string.format("%d/%d", v[1], v[2]) end
+    local c = charDB()
+    c.berufe, c.berufeZeit = b, epoch()
+end
+
+function W.geldMerken(m)
+    if type(m) ~= "number" then return end
+    local c = charDB()
+    c.geld, c.geldZeit = m, epoch()
+end
+
 -- Version 3.6: Empfehlungen anzeigen (KombiDaten: stand, zeit, markt, tipps, hinweise)
 local function ageText(sec)
     if type(sec) ~= "number" or sec < 0 then return nil end
@@ -2722,6 +2797,7 @@ function handlers.PLAYER_MONEY()
     if not m then return end
     local d = m - (moneyLast or m)
     moneyLast = m
+    pcall(W.geldMerken, m)   -- Version 3.7.1
     if d == 0 then return end
     if d < 0 then W.moneyDrop(-d) end   -- Version 3.7: Pfand eines eigenen Angebots?
     if lootRecord then
