@@ -2282,7 +2282,7 @@ step
     #label KombiV1
     #completewith WildManeTurnIn
     .goto 1456/1,-218.13,-1055.97
-    >>Kombiguide: Dungeon-Vorquests, freiwillig: Ragefire Chasm (RFC). Bei |cRXP_FRIENDLY_Rahauro|r die zwei RFC-Quests annehmen. Abgeben kannst du sie nach dem Dungeon wieder bei |cRXP_FRIENDLY_Rahauro|r, in «17-22» kommt dafür ein Schritt. Für die Route nicht nötig. Der Schritt bleibt stehen, bis die Route Mulgore Richtung Brachland verlässt.
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Flammenschlund (RFC). Bei |cRXP_FRIENDLY_Rahauro|r die zwei RFC-Quests annehmen. Abgeben kannst du sie nach dem Dungeon wieder bei |cRXP_FRIENDLY_Rahauro|r, in «17-22» kommt dafür ein Schritt. Für die Route nicht nötig. Der Schritt bleibt stehen, bis die Route Mulgore Richtung Brachland verlässt.
     .accept 5722
     .accept 5723
     .target Rahauro
@@ -4900,8 +4900,9 @@ step
     #label KombiV3
     #completewith KombiV10
     .goto 1454/1,-4376.29,1802.43
-    >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Neeru Fireblade|r annehmen. Abgabe nach dem Dungeon bei |cRXP_FRIENDLY_Neeru Fireblade|r.
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Neeru Fireblade|r annehmen.
     .accept 5761
+    >>Abgabe nach dem Dungeon wieder bei |cRXP_FRIENDLY_Neeru Fireblade|r.
     #maxlevel 17
     .target Neeru Fireblade
 step
@@ -5140,7 +5141,7 @@ step
 step
     #label KombiV10
     .goto 1411/1,-4648.55,1321.88
-    >>Kombiguide: Abstecher, freiwillig: Ruinen von Lordaeron (Dungeon für Stufe 15 bis 20, mit Gruppe). Mit dem Zeppelin am Turm vor Orgrimmar nach Tirisfal. Ohne Abstecher: Häkchen setzen, dann fallen die Abstecher-Schritte weg und es geht mit dem Ruhestein weiter. Den Ruhestein bis zum Ende des Abstechers aufsparen: er bringt dich danach zu den Crossroads, wie es die Route vorsieht.
+    >>Kombiguide: Abstecher, freiwillig: Ruinen von Lordaeron (RoL, Dungeon für Stufe 15 bis 20, mit Gruppe). Mit dem Zeppelin am Turm vor Orgrimmar nach Tirisfal. Ohne Abstecher: Häkchen setzen, dann fallen die Abstecher-Schritte weg und es geht mit dem Ruhestein weiter. Den Ruhestein bis zum Ende des Abstechers aufsparen: er bringt dich danach zu den Crossroads, wie es die Route vorsieht.
     .zone 1420 >>In Tirisfal angekommen
     .xp <15,1
     #maxlevel 17
@@ -5172,29 +5173,68 @@ step
     #maxlevel 17
     .target Varimathras
 step
+    #label KombiV13
+    #completewith KombiV17
+    .goto 1458/0,425.16,1417.71--c:Undercity,46.7,71.9 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Theodore Griffs|r im Apothecarium annehmen (untere Ebene, bei den Alchemie-Lehrern).
+    .accept 95216
+    .xp <16,1
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Theodore Griffs
+step
+    #label KombiV16
+    #completewith KombiV17
+    .goto 1458/0,358.97,1532.29--c:Undercity,53.6,54.0 (Spielkoordinaten)
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: Burg Schattenfang (SFK, laut Warcraft Tavern Stufe 20 bis 26, laut Mobalytics 18 bis 25). Bei |cRXP_FRIENDLY_Keeper Bel'dugur::2934|r annehmen. Der Ort ist unsicher (Icy Veins und kami-labs: 53.6, 54.0, Mobalytics: 59.2, 76.6), findest du ihn nicht: Häkchen setzen. Die zwei anderen SFK-Quests im Grabmal (Silberwald) gehen erst ab Stufe 18.
+    .accept 1013
+    .xp <16,1
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Keeper Bel'dugur::2934
+step
     #label KombiV15
     #completewith KombiV17
-    .goto 1421/0,1579.60,461.70
-    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r im Grabmal (Silberwald) annehmen. Weiter Weg, also nur, wenn es passt, oder lass sie dir aus der Gruppe teilen. Abgabe ebenfalls bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r.
+    .goto 1421/0,1579.60,461.70,0,0
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r im Grabmal (Silberwald) annehmen. Weiter Weg, also nur, wenn es passt, oder lass sie dir aus der Gruppe teilen (der Pfeil zeigt erst dorthin, wenn sonst nichts ansteht). Abgabe ebenfalls bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r.
     .accept 92401
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
     .target Tabitha Heartweaver::250686
 step
     #label KombiV17
-    .goto 1458/0,185.32,1804.98--c:Undercity,71.7,11.4 (Spielkoordinaten)
-    >>Kombiguide: Ruinen von Lordaeron mit der Gruppe, Eingang oben in den Ruinen. Im Dungeon starten zwei weitere Quests: «Wappen von Lordaeron» und eine aus dem Kopf von The Baron. Willst du doch nicht: Häkchen setzen, dann kommen nur noch die Abgaben, die erledigt sind.
+    .goto 1458/0,170.70,1804.70
+    >>Kombiguide: Ruinen von Lordaeron mit der Gruppe, der Eingang liegt in den Ruinen über Unterstadt. Im Dungeon starten zwei weitere Quests mit Gegenständen, die dort fallen: «Wappen von Lordaeron» und eine mit einem Kopf. Danach, oder wenn du nicht gehst: Häkchen setzen, dann kommen nur noch die Abgaben, die erledigt sind.
     +Ruinen von Lordaeron erledigt
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
 step
     #label KombiV18
-    .goto 1458/0,169.97,1668.63--c:Undercity,73.3,32.7 (Spielkoordinaten)
-    >>Kombiguide: Ruinen von Lordaeron: «Wappen von Lordaeron» im Magieviertel abgeben.
+    .goto 1458/0,169.97,1669.27--c:Undercity,73.3,32.6 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron: «Wappen von Lordaeron» bei |cRXP_FRIENDLY_Oran Snakewrithe|r im Magieviertel abgeben.
     .turnin 95204
     .isQuestComplete 95204
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
+    .target Oran Snakewrithe
+step
+    #label KombiV19
+    .goto 1458/0,425.16,1417.71--c:Undercity,46.7,71.9 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Theodore Griffs|r im Apothecarium abgeben.
+    .turnin 95216
+    .isQuestComplete 95216
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Theodore Griffs
+step
+    #label KombiV20
+    .goto 1458/0,404.63,1434.67
+    >>Kombiguide: Ruinen von Lordaeron: die Quest mit dem Kopf bei |cRXP_FRIENDLY_Master Apothecary Faranell|r im Apothecarium abgeben. Danach geht die Kette mit vier weiteren Quests in Unterstadt weiter (laut AHledger Questlevel 21, je 1650 XP und 13s), die stehen nicht im Guide.
+    .turnin 97288
+    .isQuestComplete 97288
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Master Apothecary Faranell
 step
     #label KombiV21
     .goto 1458/0,318.67,1303.77--c:Undercity,57.8,89.7 (Spielkoordinaten)
@@ -5222,6 +5262,18 @@ step
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
     .target Tabitha Heartweaver::250686
+step
+    #label KombiV24
+    #completewith next
+    .goto 1421/0,1593.60,554.23,0,0
+    >>Kombiguide: Dungeon-Vorquests, freiwillig, ab Stufe 18: Burg Schattenfang (SFK). Im Grabmal (Silberwald) bei |cRXP_FRIENDLY_Dalar Dawnweaver::1938|r und bei |cRXP_FRIENDLY_High Executor Hadrec::1952|r in der Gruft gleich daneben annehmen.
+    .accept 1014
+    .xp <18,1
+    .zoneskip 1420/1458/1421,1
+    .accept 1098
+    .target High Executor Hadrec::1952
+    #maxlevel 17
+    .target Dalar Dawnweaver::1938
 step
     #completewith FoodandWater2
     .hs >> Hearth to The Crossroads
@@ -5407,6 +5459,13 @@ step
     .accept 865 >>Accept Raptor Horns
     .accept 1069 >>Accept Deepmoss Spider Eggs
     .target Mebok Mizzyrix
+step
+    #label KombiV41
+    #completewith LeaveRatchet
+    .goto 1413/1,-3770.20,-928.53
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: Höhlen des Wehklagens (WC). Bei |cRXP_FRIENDLY_Crane Operator Bigglefuzz|r annehmen. Für die Route nicht nötig.
+    .accept 959
+    .target Crane Operator Bigglefuzz
 step
     .goto 1413/1,-3664.82,-1050.14
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to|cRXP_FRIENDLY_Innkeeper Wiley|r
@@ -5770,6 +5829,15 @@ step
     .turnin 851 >>Turn in Verog the Dervish
     .accept 852 >>Accept Hezrul Bloodmark
     .target Regthar Deathgate
+step
+    #label KombiV42
+    #completewith Hezrul
+    .goto 1413/1,-2036.18,-796.40
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Höhlen des Wehklagens (WC). |cRXP_FRIENDLY_Nalpak|r und |cRXP_FRIENDLY_Ebru|r stehen über dem Höhleneingang bei der Oase. Die Quest von |cRXP_FRIENDLY_Ebru|r geht ab Stufe 15. Für die Route nicht nötig.
+    .accept 1486
+    .accept 1487
+    .target Ebru
+    .target Nalpak
 step
     #completewith Hezrul
     .subzone 387 >> Travel to the Lushwater Oasis
@@ -6666,17 +6734,18 @@ step
     .target Mebok Mizzyrix
     .dungeon WC
 step
-    #label KombiV30
-    #completewith next
-    .goto 1413/1,-3697.24,-929.20
-    >>Kombiguide: Dungeon-Vorquest, freiwillig: Wailing Caverns (WC). Bei |cRXP_FRIENDLY_Mebok Mizzyrix|r zusätzlich annehmen. Für die Route nicht nötig.
-    .accept 1491
-    .target Mebok Mizzyrix
-step
     .goto 1413/1,-3697.24,-929.20
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Mebok|r
     .turnin 865 >>Turn in Raptor Horns
     .turnin 1069 >>Turn in Deepmoss Spider Eggs
+    .target Mebok Mizzyrix
+step
+    #label KombiV30
+    #completewith next
+    .goto 1413/1,-3697.24,-929.20
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Nach der Abgabe bei |cRXP_FRIENDLY_Mebok Mizzyrix|r zusätzlich eine Quest für die Höhlen des Wehklagens (WC) annehmen, ab Stufe 20 auch eine für den Kral der Klingenhauer (RFK, laut Warcraft Tavern Stufe 29 bis 38, die Gegenstände dafür liegen neben |cRXP_FRIENDLY_Mebok Mizzyrix|r). Für die Route nicht nötig.
+    .accept 1491
+    .accept 1221
     .target Mebok Mizzyrix
 step
     .goto 1413/1,-3687.11,-981.22
@@ -6754,7 +6823,7 @@ step
     #label KombiV31
     #completewith next
     .goto 1413/1,-3770.20,-928.53
-    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Bei |cRXP_FRIENDLY_Crane Operator Bigglefuzz|r annehmen.
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: Höhlen des Wehklagens (WC). Bei |cRXP_FRIENDLY_Crane Operator Bigglefuzz|r annehmen, wenn du sie noch nicht hast.
     .accept 959
     .target Crane Operator Bigglefuzz
 step
@@ -7928,7 +7997,7 @@ step
     #label KombiV33
     #completewith next
     .goto 1456/1,-272.93,-1069.67
-    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Nach der Abgabe bei |cRXP_FRIENDLY_Nara Wildmane|r gleich die WC-Quest annehmen. Am Höhleneingang über den Wailing Caverns geben Nalpak und Ebru zwei weitere WC-Quests.
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Nach der Abgabe bei |cRXP_FRIENDLY_Nara Wildmane|r gleich die WC-Quest annehmen. Nalpak und Ebru über dem Höhleneingang geben zwei weitere (im Guide in «12-17» bei der Oase).
     .accept 914
     .target Nara Wildmane
 step << Druid
@@ -8594,6 +8663,11 @@ step
     .isQuestAvailable 6442
     .dungeon WC
 step
+    #label KombiV43
+    >>Kombiguide: Gleich schlägt RXP vor, Quests für die Höhlen des Wehklagens (WC) abzubrechen, weil die Speedrun-Route WC nicht macht. Willst du WC noch mit der Gruppe machen: dort das Häkchen setzen statt abbrechen.
+    +Gelesen
+    .isOnQuest 1486,1487,1491,959,914,962
+step
     #optional
     .abandon 1486 >>Abandon Deviate Hides
 step
@@ -9201,7 +9275,7 @@ step
     #label KombiV36
     #completewith next
     .goto 1440/1,1033.37,3354.89
-    >>Kombiguide: Dungeon-Vorquests, freiwillig: Blackfathom Deeps (BFD). Bei |cRXP_FRIENDLY_Je'neu Sancrea|r zusätzlich die zwei BFD-Quests annehmen (RXP führt sie hier nur für Priester).
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Tiefschwarze Grotte (BFD). Bei |cRXP_FRIENDLY_Je'neu Sancrea|r zusätzlich die zwei BFD-Quests annehmen, die zweite geht erst ab Stufe 21 (RXP führt sie hier nur für Priester).
     .accept 6563
     .accept 6921
     .target Je'neu Sancrea
@@ -9885,6 +9959,11 @@ step
 step
     #optional
     .abandon 6641 >>Abandon Vorsha the Lasher
+step
+    #label KombiV44
+    >>Kombiguide: Gleich schlägt RXP vor, die Quest für die Tiefschwarze Grotte (BFD) von Je'neu abzubrechen. Willst du BFD noch mit der Gruppe machen: dort das Häkchen setzen statt abbrechen.
+    +Gelesen
+    .isOnQuest 6563
 step
     #optional
     .abandon 6563 >>Abandon The Essence of Aku'Mai

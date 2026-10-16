@@ -113,6 +113,8 @@ def world(row, maps):
 #   gebiet        .zone id >>kurz                (id = Karten-ID; erledigt beim Betreten der Karte, functions.lua addon.functions.zone,
 #                                                 wie RXPs Zeppelin-Schritt «.zone Tirisfal Glades», Horde-01-12_Durotar.lua; Häkchen = nicht hin)
 # «bedingung» und «extra» nehmen mehrere rohe RXP-Zeilen, getrennt mit « // ».
+# «radius» kommt roh hinter den Ort: «30» macht das Hingehen zur Bedingung, «0,0» macht das Ziel nachrangig (RXP lowPrio: der
+# Pfeil zeigt erst dorthin, wenn kein anderes Ziel ansteht; so in RXPs Forever-Guides bei Schritten mit #completewith).
 AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis", "manuell",
             "gebiet")
 # Geselle als Zauber (seit 0.5.3, Prüfbericht 16.10., C1): RXP v4.11.23 prüft «.maxskill» nur, wenn der Schritt aktiv wird
@@ -333,6 +335,15 @@ for G in GRUPPEN:
     group = G["gruppe"]
     rows_g = plan + (vorquests if G["vorquests"] else [])
     blocks = make_blocks(rows_g)
+    # Keine ungewollten Ketten (16.10.): Zeigt «#completewith» auf einen Schritt, der selbst «#completewith» hat, erledigt RXP
+    # den ersten, sobald der zweite erledigt oder übersprungen ist (GuideWindow.lua UpdateStepCompletion: stepSkip des Ziels).
+    # Zwei Annahmen hintereinander mit «bis next»: Nimmt man die zweite Quest an oder blendet «.xp …,1» sie aus, verschwände
+    # die erste mit. Mehrere Annahmen am selben Ort zeigen darum auf ein Label danach (so der Abstecher: «KombiV17»). Ein Label
+    # als Ziel ist erlaubt, wenn das Ende so gewollt ist (Plan-Zeile 9: Leder-Ziel bis zum Hinweis bei «Gathering Leather»).
+    for rows in blocks.values():
+        for r1, r2 in zip(rows, rows[1:]):
+            if r1.get("bis") == "next" and r2.get("bis"):
+                problems.append(f"{group}: Plan-Zeile {r1['nr']}: «bis next» trifft Zeile {r2['nr']} mit eigenem «bis» (Kette)")
     used, guide_labels, tags_all, group_blocks = set(), {}, {}, []
     for path, only in G["quellen"]:
         for body in re.findall(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]\)", show(path), re.S):
