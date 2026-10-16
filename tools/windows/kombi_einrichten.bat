@@ -25,18 +25,11 @@ set "ADDONS=%BASIS%Interface\AddOns"
 set "NEU=%BASIS%_kombi_neu"
 set "ALT=%ADDONS%\_alt_kombi"
 
-if not exist "%ADDONS%\" (
-  echo AddOns-Ordner nicht gefunden: %ADDONS%
-  echo Diese Datei muss im Ordner _classic_beta_ liegen.
-  pause
-  exit /b 1
-)
-if not exist "%NEU%\" (
-  echo Ordner _kombi_neu fehlt: %NEU%
-  echo Claude legt ihn an; ohne ihn gibt es nichts zu installieren.
-  pause
-  exit /b 1
-)
+rem Pfade nie ungeschuetzt in Klammer-Bloecken ausgeben: "Program Files (x86)"
+rem enthaelt eine Klammer, die den Block beendet; cmd bricht dann sofort ab
+rem (Fenster geht gleich wieder zu, gemeldet am 16.10.2026).
+if not exist "%ADDONS%\" goto :keine_addons
+if not exist "%NEU%\" goto :kein_neu
 
 echo AddOns: %ADDONS%
 echo Neu:    %NEU%
@@ -53,6 +46,18 @@ if "%FEHLER%"=="0" (
 )
 pause
 exit /b 0
+
+:keine_addons
+echo AddOns-Ordner nicht gefunden: "%ADDONS%"
+echo Diese Datei muss im Ordner _classic_beta_ liegen.
+pause
+exit /b 1
+
+:kein_neu
+echo Ordner _kombi_neu fehlt: "%NEU%"
+echo Claude legt ihn an, ohne ihn gibt es nichts zu installieren.
+pause
+exit /b 1
 
 :ersetzen
 set "NAME=%~1"
