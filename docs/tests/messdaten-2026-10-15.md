@@ -1,6 +1,6 @@
 # Messdaten 14. und 15.10.2026
 
-Quelle: die Testlog-Datei des Nutzers, Stand 15.10. 19:38 (Testlog 3.3 und 3.5), am 15.10. über die Verbindung zum PC gelesen. Ohne Charakter-, Konto- und Realmnamen.
+Quelle: die Testlog-Datei des Nutzers, Stand 15.10. 22:16 (Testlog 3.3 bis 3.6), am 15.10. über die Verbindung zum PC gelesen. Ohne Charakter-, Konto- und Realmnamen.
 
 ## Sitzungen
 
@@ -62,6 +62,7 @@ Gleicher Charakter (Stufe 15 → 16), Kombiguide 0.4, Testlog 3.5. Der Repo-Klon
 - 19:49 Stufe 16 an der Sludge Fen (Schlickermoor). Die BERUF-Zeilen beim Stufenaufstieg zeigen Kochkunst 1/75 und Angeln 5/75: Er hat Angeln und Kochen.
 - Quests: 858 «Zündung» abgegeben (1350 XP), 863 angenommen; in Orgrimmar 97246 «Mahlzeit oder Spielzeit» (800 XP) und 97249, 97242.
 - Danach Durotar, Zeppelin nach Tirisfal, Undercity und «Die Ruinen von Lordaeron» (Quests 92421, 92422, 92401, 95204).
+- Zwei Tode in den Ruinen von Lordaeron, um 20:48 und 20:52 (Stufe 16, 65 %; TOD). Korrigiert am 16.10.: Bis dahin nannte dieser Bericht nur einen Tod, im Abschnitt danach.
 - Stelle im Kombi-Guide um 20:58: «12-17 The Barrens» #103.
 
 **Messwerte**
@@ -95,10 +96,10 @@ Gleicher Charakter (Stufe 15 → 16), Kombiguide 0.4, Testlog 3.5. Der Repo-Klon
 
 ## 15.10. 20:58–22:01 (Datei nach `/reload` um 22:01)
 
-Gleicher Charakter, Stufe 16 (65 %) → 18 (56 %). Bis 21:58 Kombiguide 0.4 und Testlog 3.5; um 21:58 hat der Nutzer `aktualisieren.bat` ausgeführt (`.git/FETCH_HEAD` im Klon 21:58:10) und `/reload` gemacht: SITZUNG 21:58:27 meldet «Kombiguide 0.5-v4.11.23 | Testlog 3.6 | KombiDaten 15.10. 20:12, 0 Tipps».
+Gleicher Charakter, Stufe 16 (68 %) → 18 (56 %). Bis 21:58 Kombiguide 0.4 und Testlog 3.5; um 21:58 hat der Nutzer `aktualisieren.bat` ausgeführt (`.git/FETCH_HEAD` im Klon 21:58:10) und `/reload` gemacht: SITZUNG 21:58:27 meldet «Kombiguide 0.5-v4.11.23 | Testlog 3.6 | KombiDaten 15.10. 20:12, 0 Tipps».
 
 **Verlauf**
-- 20:50–21:09 Ruinen von Lordaeron, ein Tod um 20:52 (Warte Lordamere). Beute u. a. «Rezept: Elixier der geringen Beweglichkeit» (3396), «Gravierter Umhang» (4701).
+- Bis 21:09 weiter in den Ruinen von Lordaeron (seit 20:29; die zwei Tode um 20:48 und 20:52 liegen vor dem `/reload` um 20:58, Abschnitt davor). Beute u. a. «Rezept: Elixier der geringen Beweglichkeit» (3396), «Gravierter Umhang» (4701).
 - Quests mit XP (Testlog QUEST AB):
   - Undercity und Umgebung: 95204 «Wappen von Lordaeron» 5450 XP (danach Stufe 17); 92421 «Die Gerechtigkeit des Lichts» 4600 XP und 45s; 92422 «Der Zorn von Rath'mael» 4600; 92401 «Eine verängstigte Bitte» 4600 (Silberwald)
   - Orgrimmar: 97242 «Yelmaks Mischmasch» 800, 97275 «Whuut Ding will Weile haben» 800, 97249 «Lieblingsessen» 1050 (danach Stufe 18)
@@ -108,7 +109,7 @@ Gleicher Charakter, Stufe 16 (65 %) → 18 (56 %). Bis 21:58 Kombiguide 0.4 und 
 - Neu angenommen: 5725 (Undercity), 1061 «Die Geister des Steinkrallengebirges» (Label «SpiritsPickup»), 97003 «Chol'aruk der Verschlinger».
 
 **Kombi-Guide**
-- Orgrimmar-Block (v0.4): #108 um 21:34 («SpiritsPickup»), #114 bis #143 in rund 5 Minuten. Laut Nutzer hat alles mit Lederverarbeitung und Verzauberkunst funktioniert (T11 teilweise: Charakter mit LW 109 und VZ 100).
+- Orgrimmar-Block (v0.4): #108 um 21:33 (Quest 1061 annehmen; das Label «SpiritsPickup» ist #109), #114 bis #143 in rund 5 Minuten. Laut Nutzer hat alles mit Lederverarbeitung und Verzauberkunst funktioniert (T11 teilweise: Charakter mit LW 109 und VZ 100).
 - Bei #115 (Plan-Zeile 23, Einkauf Stufe A, in v0.4 ohne die Bedingung «ab LW 80») kaufte er bei Tamar 44 Grober Faden und 27 Salz für zusammen 17s 90c (HÄNDLER 21:38, 33 Käufe; passt zu 10c und 50c je Stück, AHledger nennt 9c und 45c; die Aufteilung ist aus der Summe nicht eindeutig). Mit LW 109 braucht der Plan beides nicht mehr; v0.4.1 blendet den Schritt dann aus.
 - Stelle «12-17» #152 vor und nach dem Update auf 0.5 (Kombiguide (H)); #152 gehört nicht zu den Stellen, an denen eine alte Kennung im Neubau einen anderen Schritt trifft.
 - Die Versionsangabe aus der `.toc` liest WoW schon beim `/reload` neu: ENDE 21:58:18, SITZUNG 21:58:27 mit «Kombiguide 0.5» (9 Sekunden, also kein Neustart). T22 teilweise.
@@ -166,8 +167,8 @@ Gleicher Charakter, Stufe 18, Orgrimmar, Testlog 3.6. Danach hat der Nutzer das 
 
   Englisch–deutsch über die Item-ID oder, bei Verzauberungen, über die Zauber-ID der gelernten Rezepte (REZEPTE); «Stiefel - Schwache Ausdauer» und «Armschiene - Geringe Ausdauer» nur über den Namen zugeordnet (nicht gelernt, keine Zauber-ID).
 - Jedes Rezept der Routen ist lernbar, wenn die Route es braucht (wow-professions: Medium Leather ab 75, Heavy Leather ab 125, Hillman's Leather Gloves ab 130; kami-labs: Hillman's Shoulders ab 130, Lehrerliste 105).
-- Nicht auf den Listen, obwohl der Charakter sie kennt: Light Leather, Light Armor Kit, Handgenähte Lederstiefel (Lederverarbeitung), Runed Copper Rod, Enchant Bracer - Inferior Stamina, Übungszauberstab des Novizen, Staub zu Partikel (Verzauberkunst); sehr wahrscheinlich bringt sie der Lehrling mit. Ebenso nicht dabei: **Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr)**, Minor Wizard Oil (Formel beim Händler), Enchant 2H Weapon - Lesser Intellect (Formel beim Händler) und das Mystische mittlere Rüstungsset (Muster bei Tamar).
-- Lernkosten bis 150, gerechnet aus der Liste: Lederverarbeitung (Route wow-professions) 40s 10c, mit dem Tab «Cured Heavy Hide» 45s 10c; Verzauberkunst Staub-Weg 34s 10c, Essenz-Weg 21s 10c mit der Formel 2H Weapon - Lesser Intellect (5s), ohne Minor Deflect.
+- Nicht auf den Listen, obwohl der Charakter sie kennt: Light Leather, Light Armor Kit, Handgenähte Lederstiefel (Lederverarbeitung), Runed Copper Rod, Enchant Bracer - Inferior Stamina, Übungszauberstab des Novizen, Staub zu Partikel (Verzauberkunst); vermutlich bringt sie der Lehrling mit (ungeprüft). Ebenso nicht dabei: **Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr)**, Minor Wizard Oil (Formel beim Händler), Enchant 2H Weapon - Lesser Intellect (Formel beim Händler) und das Mystische mittlere Rüstungsset (Muster bei Tamar).
+- Lernkosten bis 150, gerechnet aus der Liste: Lederverarbeitung (Route wow-professions) 40s 10c, mit dem Tab «Cured Heavy Hide» 45s 10c; Verzauberkunst Staub-Weg 34s 10c (mit Enchant Boots - Minor Stamina, 14s), Essenz-Weg 21s 10c mit der Formel 2H Weapon - Lesser Intellect (5s), ohne Minor Deflect. Der Berufe-Plan nimmt pro Abschnitt das günstigste lernbare Rezept und lernt seit 16.10. Verzauberkunst für 33s 60c, zusammen mit Lederverarbeitung 73s 70c (`docs/plan/berufe-plan.md`, Stufen A–D).
 - Neue Forever-Rezepte: Dunkle Lederstiefel (252425), Mondscheinstiefel, Murlocschuppenschuhe, Schwarzwelpenpantoffeln (ab 35, je 5s), sieben «Ledergürtel des …» (ab 150, je 20s).
 - Orte (Standort beim Öffnen, Karte 1454): Kamari 63.2, 44.9; Karolek 62.8, 44.2; Jhag 53.5, 38.1; Godan 53.8, 38.6. Passt zu RXP (Kamari 63.3, 44.8) und Icy Veins (Karolek 62.8, 44.4; Jhag 53.6, 38.2; Godan 53.8, 38.4).
 

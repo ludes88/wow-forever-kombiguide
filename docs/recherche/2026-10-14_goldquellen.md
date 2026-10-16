@@ -2,6 +2,8 @@
 
 Frage des Nutzers: «Gibt es einen noch besseren Plan, an genügend Gold zu kommen?» Hier stehen die Kandidaten mit Zahlen und Quellen. Die Entscheidung liegt beim Nutzer.
 
+**Korrektur vom 15.10. (Prüfbericht A3) und 16.10.:** Die Fangrate vom Stonebull Lake ist 134 Fänge pro Stunde, nicht 144 (14 Fänge sind 13 Abstände in 349 s). Alle Angelwerte hier (Gold pro Stunde, Spalte «Angeln netto pro Stunde») sind darum rund 7 % zu hoch, die Break-even-Werte für Kräuter ebenso: etwa 13–14 statt 14–15 Knoten pro Stunde (NH jetzt) und 18–20 statt 19–22 (NH 30 Tage). Neu gerechnet: Angeln NH 2g 11s 20c vor und 2g 0s 64c nach 5 % Gebühr, PH 5g 15s 81c bzw. 4g 90s 2c (`docs/plan/berufe-plan.md` §1). Der Text unten bleibt, wie er am 14.10. war.
+
 **Was die Zahlen bedeuten**
 - Preise: AHledger, Forever-Beta, US-Märkte. NH = Normal Horde US, PH = PvP Horde US. 30T = Median über 30 Tage.
 - «netto» heisst: nach 5 % AH-Gebühr (AHledger, Seite «Auction House»).
