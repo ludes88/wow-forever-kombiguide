@@ -1530,6 +1530,7 @@ warn10 = [x for x in msgs10() if "Nicht beim Händler verkaufen" in x]
 check(len(warn10) == 1 and "(KombiDaten 15.10. 22:00): 10x Leichtes Leder (Leder für den Berufe-Plan)" in warn10[0]
       and "nicht in den Taschen" not in warn10[0], "3.7.1: Warnung beim Händler, einmal pro Besuch (%s)" % warn10)
 L10.execute("""interacting[21] = true
+currentMap = 1454
 auctions = { { id = 5467, n = 5, buy = 500, name = 'Kodofleisch' }, { id = 5467, n = 2, buy = 300, name = 'Kodofleisch' },
              { id = 2318, n = 3, buy = 90, name = 'Leichtes Leder' } }""")
 g10.SlashCmdList["KOMBITESTLOG"]("ah")
@@ -1540,7 +1541,19 @@ check("5467:" in (sc10.plan or "") and sc10.stufen[5467] is not None,
       "3.7.1: Gegenstand aus KombiDaten.beobachten mit Preisstufen (%s)" % sc10.plan)
 req10 = [g10.requested[i] for i in range(1, len(g10.requested) + 1)]
 check(5467 in req10 and len(req10) <= 200, "3.7.1: Daten von Gegenständen ohne Händlerpreis angefragt (%s)" % req10)
-check(any("Abnahme messen" in x for x in msgs10()), "3.7.1: Hinweis für das Scan-Paar")
+check(sum("Abnahme messen" in x for x in msgs10()) == 1, "3.7.1: Hinweis für das Scan-Paar in einer Stadt mit AH")
+check(len(req10) == len(set(req10)), "3.7.1: jeder Gegenstand höchstens einmal angefragt (%s)" % req10)
+# zweiter Scan 20 Minuten später, aber im Gasthaus der Crossroads (ausruhen ja, Auktionshaus nein): kein Hinweis,
+# und dieselben Gegenstände werden nicht nochmals angefragt
+n_scans10 = len(g10.KombiTestlogDB.ahScans)
+L10.execute("now_t = now_t + 1200; currentMap = 1413")
+g10.SlashCmdList["KOMBITESTLOG"]("ah")
+g10.fire("REPLICATE_ITEM_LIST_UPDATE")
+L10.execute("now_t = now_t + 3"); g10.ticker()
+req10b = [g10.requested[i] for i in range(1, len(g10.requested) + 1)]
+check(len(g10.KombiTestlogDB.ahScans) == n_scans10 + 1 and sum("Abnahme messen" in x for x in msgs10()) == 1
+      and len(req10b) == len(set(req10b)),
+      "3.7.1: kein Scan-Paar-Hinweis ohne AH in der Nähe, keine doppelte Anfrage (%s)" % req10b)
 c10 = g10.KombiTestlogDB.chars["Testheld-Testrealm"]
 check(c10.berufe is not None and c10.berufe["Kürschnerei"] == "10/75" and c10.geld == 12350 and c10.geldZeit,
       "3.7.1: Berufe und Geld pro Charakter (%s, %s)" % (c10.berufe and dict(c10.berufe), c10.geld))
@@ -1592,5 +1605,32 @@ L11 = runtime(pre=daten_s)
 g11 = L11.globals()
 check(g11.KombiDaten.nichtVerkaufen[2672] is not None and g11.KombiDaten.beobachten[10938] == True,
       "markt: KombiDaten mit nichtVerkaufen und beobachten lädt in Lua")
+# Gegenprüfung 16.10.: Weg im nächsten Schritt (A1), Grenzpreis der Grossen (B2), keine Händlerware bei «AH statt Händler»
+# (B3), Bündel beim Teilen (C1), Grosse ohne Angebotstiefe (C2), Ortszeit (C5)
+_, kauf_a1, summe_a1, _ = mk._mengen_text(me, [(10938, 18)], {})
+check("als 6 " in kauf_a1 and "kaufen und teilen" in kauf_a1 and summe_a1 == 6 * 145,
+      "markt: nächster Schritt nennt «Grosse kaufen und teilen» (%s)" % kauf_a1)
+db_b2 = {"chars": {"Testheld-Testrealm": {"rezepte": {"Verzauberkunst": {"stufe": "100", "max": "150",
+         "liste": "14810:11288:1:1:0:10938*2"}}}}, "info": {11288: {"n": "Grosser Stab", "s": 200}}, "rezeptNamen": {}}
+fb2 = mk.fuer_haendler(mk.Markt(db_b2, scan_e, {}))
+check(fb2 and fb2[0]["grenz"] == 300 and "je Geringe" in fb2[0]["haupt"],
+      "markt: Grenzpreis für die geteilte Grosse (%s)" % [(e["haupt"], e["grenz"]) for e in fb2])
+db_c1 = {"chars": {"Testheld-Testrealm": {"rezepte": {"Verzauberkunst": {"stufe": "100", "max": "150",
+         "liste": "14293:11287:1:1:2:10938*1"}}}}, "info": {11287: {"n": "Geringer Stab", "s": 60}}, "rezeptNamen": {}}
+fc1 = mk.fuer_haendler(mk.Markt(db_c1, scan_e, {}))
+check(fc1 and fc1[0]["n"] == 150 and fc1[0]["kosten"] == 50 * 145,
+      "markt: Bündel von 3 Herstellungen trägt eine geteilte Grosse (%s)" % [(e["n"], e["kosten"]) for e in fc1])
+scan_c2 = [dict(scan_e[0], preise={**scan_e[0]["preise"], 10939: {"tiefst": 145, "median": 150, "menge": 50, "angebote": 5,
+          "plan": True}})]
+k_c2, wo_c2, _ = mk.Markt({"chars": {}, "info": {}}, scan_c2, {}).einkauf_ex(10938, 3, {})
+check(k_c2 == 3 * 88 and wo_c2 == "AH", "markt: Grosse ohne Angebotstiefe nicht vor der Geringen mit Tiefe (%s %s)" % (k_c2, wo_c2))
+scan_b3 = [dict(scan_e[0], preise={**scan_e[0]["preise"], 4289: {"tiefst": 95, "median": 95, "menge": 60, "angebote": 4,
+          "stufen": [(95, 60)], "plan": True}})]
+mb3 = mk.Markt({"chars": {}, "info": {4289: {"n": "Salz", "s": 12, "q": 1, "b": 0}, 2672: {"n": "Sehniges Wolfsfleisch", "s": 4,
+               "q": 1, "b": 0}}}, scan_b3, {})
+ids_b3 = [x[0] for x in mk.ah_statt_haendler(mb3, [4289, 2672])]
+check(ids_b3 == [2672], "markt: Händlerware nicht bei «AH statt Händler» (%s)" % ids_b3)
+mz = mk.Markt({"chars": {}, "info": {}}, [dict(scan_e[0], datum="2026-10-15 22:00", zeit=1792094400)], {})
+check(mk.ortszeit(mz, 1792094400 + 3600) == "15.10. 23:00", "markt: Ortszeit aus dem Versatz des Scans (%s)" % mk.ortszeit(mz, 1792094400 + 3600))
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)

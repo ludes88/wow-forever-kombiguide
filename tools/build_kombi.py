@@ -103,11 +103,13 @@ AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben"
 # sich nach dem Lernen also nicht von selbst ab. «.istrained» hört auf TRAINER_SHOW, CHAT_MSG_SYSTEM, SKILL_LINES_CHANGED und
 # TRAINER_UPDATE (events.istrained = events.train) und erledigt den Schritt, sobald der Zauber bekannt ist; Lehrer-Automatik
 # hat es nicht (anders als «.train», das beim offenen Lehrerfenster selbst kauft, RXPGuides.lua OnTrainer).
-# IDs: RXP DB/forever/db.lua, addon.professionID (Reihenfolge Lehrling, Geselle, Experte …): Lederverarbeitung 2108, 3104;
-# Verzauberkunst 7411, 7412; Kürschnerei 8613, 8617; Angeln 7620, 7731 (7620 beim Lernen im Testlog 13.10. gesehen);
-# Kräuterkunde 2368 aus RXPs Guides/Herbalism.lua («.train 2368 >> Train Journeyman Herbalism»). Ob der Forever-Client
-# den Gesellen unter diesen IDs führt, ist ungeprüft; das Testlog schreibt die ID beim Lernen (GELERNT). Stimmt sie nicht,
-# bleibt alles wie vorher: Häkchen setzen.
+# IDs: RXP DB/forever/db.lua, addon.professionID (meist Lehrling, Geselle, Experte …; bei Verzauberkunst steht 13920 vorne:
+# 13920, 7411, 7412, 7413 …): Lederverarbeitung 2108, 3104; Verzauberkunst 7411, 7412; Kürschnerei 8613, 8617; Angeln
+# 7620, 7731 (7620 beim Lernen im Testlog 13.10. gesehen); Kräuterkunde 2368 aus RXPs Guides/Herbalism.lua («.train 2368
+# >> Train Journeyman Herbalism»). Kein RXP-Forever-Guide nutzt .istrained (Gegenprüfung 16.10.). Ob der Forever-Client
+# den Gesellen unter diesen IDs führt, ist ungeprüft; das Testlog schreibt die ID beim Lernen (GELERNT). Kennt der Client
+# die ID nicht, bleibt alles wie vorher (Häkchen setzen); kennt der Charakter sie schon vor dem Lernen, verschwände der
+# Schritt zu früh (Test T29 prüft beides).
 GESELLE = {"leatherworking": 3104, "enchanting": 7412, "skinning": 8617, "fishing": 7731, "herbalism": 2368}
 
 

@@ -60,7 +60,7 @@
 #                  Charakter nicht mehr braucht (Überschuss).
 import math, os, re, statistics, sys
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ah_aus_testlog as at
@@ -308,7 +308,10 @@ class Markt:
             # Mit Angebotsbuch zählt der Stückpreis (übrige Geringe aus dem Teilen braucht die nächste Herstellung, «rest»),
             # sonst der Preis für genau diese Menge
             billiger = (wahl is None or (ag[0] / (3 * ng) < wahl[0] / n2 if gemeinsam else ag[0] < wahl[0])) if ag else False
-            if ag and not ag[1].startswith("AH, nur") and billiger:
+            # ohne bekannte Angebotstiefe der Grossen («AH-Tiefstpreis») nicht, wenn die Geringe direkt mit Tiefe geht
+            # (Prüfer 16.10., C2: sonst verwirft fuer_haendler das ganze Rezept als unsicher)
+            tiefe_fehlt = ag is not None and ag[1].startswith(UNSICHER) and wahl is not None and not wahl[1].startswith(UNSICHER)
+            if ag and not ag[1].startswith("AH, nur") and billiger and not tiefe_fehlt:
                 wahl = (ag[0], f"{ag[1]}, als {ng} {self.name(g)} gekauft und geteilt", {g: ng, ("rest", i): 3 * ng - n2 - r})
         if h is not None and (wahl is None or h * n <= wahl[0]):
             return h * n, "Händler", {}
@@ -730,6 +733,7 @@ UNSICHER = ("AH, nur", "Tiefstpreis 7 Tage", "AH-Tiefstpreis")   # Herkunft ohne
 
 
 HAENDLER_MAX = 200   # Herstellungen pro Rezept höchstens gerechnet (Taschenplatz, Zeit, Risiko beim Händlerpreis; Wahl von Claude)
+BUENDEL = 3          # Herstellungen, die eine geteilte Grosse Essenz (3 Geringe) zusammen tragen
 
 
 def fuer_haendler(m, n_max=HAENDLER_MAX):
@@ -761,11 +765,13 @@ def fuer_haendler(m, n_max=HAENDLER_MAX):
                          "rezept": rezeptnamen.get(r["id"]) or rezeptnamen.get(str(r["id"])) or m.name(r["out"])})
     buch = defaultdict(int)
 
-    def eine(k):
-        """Kosten einer weiteren Herstellung mit dem jetzigen Angebotsbuch: (Kupfer, {Item: Stück}, Wege, geschätzt) oder None."""
+    def eine(k, basis=None):
+        """Kosten einer weiteren Herstellung mit dem Angebotsbuch «basis» (sonst dem jetzigen): (Kupfer, {Item: Stück}, Wege,
+        geschätzt) oder None."""
+        basis = buch if basis is None else basis
         tot, verb, wege, gesch = 0, defaultdict(int), set(), False
         for i, n in k["reag"]:
-            kk, wo, v = m.einkauf_ex(i, n, _plus(buch, verb))
+            kk, wo, v = m.einkauf_ex(i, n, _plus(basis, verb))
             ok = kk is not None and not wo.startswith(UNSICHER)
             z = k["macht"].get(i)
             if z and z is not k["r"]:
@@ -774,7 +780,7 @@ def fuer_haendler(m, n_max=HAENDLER_MAX):
                 for j, q in z["reag"]:
                     if q <= 0:
                         continue
-                    kj, woj, vj = m.einkauf_ex(j, q * zn, _plus(buch, verb, vz_))
+                    kj, woj, vj = m.einkauf_ex(j, q * zn, _plus(basis, verb, vz_))
                     if kj is None or woj.startswith(UNSICHER):
                         okz = False
                         break
@@ -795,25 +801,49 @@ def fuer_haendler(m, n_max=HAENDLER_MAX):
                 verb[x] += y
         return tot, verb, wege, gesch
 
+    def buendel(k, b):
+        """b Herstellungen nacheinander, als hätte das Angebotsbuch sie schon (Rest aus geteilten Grossen inbegriffen)."""
+        tmp = _plus(buch)
+        tot, verb, wege, gesch = 0, defaultdict(int), set(), False
+        for _ in range(b):
+            e = eine(k, tmp)
+            if not e:
+                return None
+            tot += e[0]
+            wege |= e[2]
+            gesch = gesch or e[3]
+            for x, y in e[1].items():
+                verb[x] += y
+                tmp[x] += y
+        return tot, verb, wege, gesch
+
     offen = list(kand)
     while offen:
         best, weiter = None, []
         for k in offen:
-            if k["n"] >= n_max:
+            frei = n_max - k["n"]
+            if frei <= 0:
                 continue
             e = eine(k)
-            if not e or k["wert"] - e[0] < HAENDLER_MIN_STK:
-                continue          # Preise steigen nur: dieses Rezept lohnt sich nicht mehr
+            wahl = (k["wert"] - e[0], 1, e) if e and k["wert"] - e[0] >= HAENDLER_MIN_STK else None
+            if wahl is None and frei >= BUENDEL and any(i in ESSENZEN for i, _ in k["reag"]):
+                # Eine Grosse ergibt 3 Geringe: im Bündel trägt nicht die erste Herstellung die ganze Grosse
+                # (Prüfer 16.10., C1; sonst fiele z. B. der Geringe Magiezauberstab gleich heraus)
+                e3 = buendel(k, BUENDEL)
+                if e3 and (BUENDEL * k["wert"] - e3[0]) / BUENDEL >= HAENDLER_MIN_STK:
+                    wahl = ((BUENDEL * k["wert"] - e3[0]) / BUENDEL, BUENDEL, e3)
+            if wahl is None:
+                continue          # weder einzeln noch im Bündel: dieses Rezept lohnt sich mit diesem Angebotsbuch nicht mehr
             weiter.append(k)
-            if best is None or k["wert"] - e[0] > best[0]:
-                best = (k["wert"] - e[0], k, e)
+            if best is None or wahl[0] > best[0]:
+                best = (wahl[0], k, wahl)
         offen = weiter
         if not best:
             break
-        _, k, (tot, verb, wege, gesch) = best
+        _, k, (_, b, (tot, verb, wege, gesch)) = best
         for x, y in verb.items():
             buch[x] += y
-        k["n"] += 1
+        k["n"] += b
         k["kosten"] += tot
         k["wege"] |= wege
         k["geschaetzt"] = k["geschaetzt"] or gesch
@@ -824,9 +854,14 @@ def fuer_haendler(m, n_max=HAENDLER_MAX):
         einzel = [(i, n, m.einkauf(i, n)[0] or 0) for i, n in k["reag"]]
         haupt = max(einzel, key=lambda x: x[2])
         grenz = (k["wert"] - sum(x[2] for x in einzel if x is not haupt)) / haupt[1]
+        haupt_name = m.name(haupt[0])
+        g = ESSENZEN.get(haupt[0])
+        if g and f"{m.name(g)} kaufen und teilen" in k["wege"]:
+            # gekauft wird die Grosse: ihr Grenzpreis ist 3 Geringe (Prüfer 16.10., B2)
+            haupt_name, grenz = f"{m.name(g)} (je Geringe {geld(math.floor(grenz))})", 3 * grenz
         out.append({"char": k["char"], "beruf": k["beruf"], "stufe": k["stufe"], "id": k["r"]["id"], "out": k["r"]["out"],
                     "rezept": k["rezept"], "farbe": FARBE.get(k["r"]["farbe"], "?"), "n": k["n"], "kosten": k["kosten"],
-                    "wert_je": k["wert"], "gewinn": k["wert"] * k["n"] - k["kosten"], "haupt": m.name(haupt[0]), "grenz": grenz,
+                    "wert_je": k["wert"], "gewinn": k["wert"] * k["n"] - k["kosten"], "haupt": haupt_name, "grenz": grenz,
                     "geschaetzt": k["geschaetzt"], "wege": sorted(k["wege"])})
     out.sort(key=lambda e: -e["gewinn"])
     return out
@@ -876,7 +911,12 @@ def _mengen_text(m, bedarf, mein):
                 kaufen.append(f"{n - hast} {m.name(i)} (kein Preis)")
             else:
                 summe += k
-                kaufen.append(f"{n - hast} {m.name(i)} ({'Händler' if wo == 'Händler' else 'AH'} {geld(round(k))})")
+                g = ESSENZEN.get(i)
+                if g and "geteilt" in wo:   # Prüfer 16.10., A1: sonst kauft man die Geringe direkt und zahlt mehr
+                    ng = math.ceil((n - hast) / 3)
+                    kaufen.append(f"{n - hast} {m.name(i)} (als {ng} {m.name(g)} kaufen und teilen, AH {geld(round(k))})")
+                else:
+                    kaufen.append(f"{n - hast} {m.name(i)} ({'Händler' if wo == 'Händler' else 'AH'} {geld(round(k))})")
     return ", ".join(braucht), ", ".join(kaufen), summe, fehlt_preis
 
 
@@ -1005,8 +1045,9 @@ def lage(m):
                      + (f" Kaufen: {best[4]} = {geld(round(best[5]))}." if best[4] else ""))
                 stab = next((k for k in kands if k[8]), None)
                 if stab and stab[0] < best[0] - 1:
-                    t += (f" Günstiger wäre {stab[1]} (Vorschlag, berufe-plan.md §9): netto etwa {geld(round(stab[0]))} "
-                          f"statt {geld(round(best[0]))} je Punkt, der Händler kauft die Stäbe zurück.")
+                    netto = (f"etwa {geld(round(-stab[0]))} Gewinn" if stab[0] < 0 else f"netto etwa {geld(round(stab[0]))}")
+                    t += (f" Günstiger wäre {stab[1]} (Vorschlag, berufe-plan.md §9): {netto} statt {geld(round(best[0]))} "
+                          f"Kosten je Punkt, der Händler kauft die Stäbe zurück.")
                 zeilen.append(t)
         # Überschuss: Material des Plans, das bei der jetzigen Fertigkeit nicht mehr gebraucht wird
         stufen = {BERUF_KURZ.get(bf): int(b["stufe"]) for bf, b in als_dict(c.get("rezepte")).items()
@@ -1104,18 +1145,36 @@ def sammler_zustand(m):
         if isinstance(c.get("geld"), (int, float)):
             e["geld"] = int(c["geld"])
             if c.get("geldZeit"):
-                e["datum"] = datetime.fromtimestamp(int(c["geldZeit"])).strftime("%d.%m. %H:%M")
+                e["datum"] = ortszeit(m, c["geldZeit"])
     return out
+
+
+def ortszeit(m, t):
+    """Zeit des Spielservers (Epoch) -> «TT.MM. HH:MM» in der Uhrzeit des Spiel-PCs. Den Versatz liefert der letzte AH-Scan
+    (das Testlog speichert dort Epoch und Ortszeit); ohne Scan nur das Datum in UTC (Prüfer 16.10., C5: vorher in der
+    Zeitzone des Rechners, auf dem markt.py läuft)."""
+    utc = datetime.fromtimestamp(int(t), timezone.utc).replace(tzinfo=None)
+    s = m.letzter
+    if s and s.get("zeit"):
+        try:
+            lokal = datetime.strptime(str(s["datum"]), "%Y-%m-%d %H:%M")
+            v = lokal - datetime.fromtimestamp(int(s["zeit"]), timezone.utc).replace(tzinfo=None)
+            v = timedelta(minutes=round(v.total_seconds() / 900) * 15)
+            return (utc + v).strftime("%d.%m. %H:%M")
+        except (ValueError, OverflowError):
+            pass
+    return utc.strftime("%d.%m.")
 
 
 def ah_statt_haendler(m, ids):
     """[(Item-ID, AH netto je Stück, Händler je Stück, Stück im Angebot)] für Beute, die im AH nach Gebühr mindestens VIELFACH
     mal so viel bringt wie beim Händler (ohne Absatz-Beleg; Preis wie verkauf(): mit Verlauf der kleinere aus jetzt und
-    7 Tagen). Ohne gebundene, graue und Plan-Leder."""
+    7 Tagen). Ohne gebundene, graue, Plan-Leder und Händlerware (der Händler verkauft sie; über seinem Preis hält sich ein
+    AH-Preis nicht, und die Warnung käme bei jedem Besuch; Prüfer 16.10., B3)."""
     out = []
     for i in ids:
         info = m.info.get(i) or {}
-        if info.get("b") == 1 or info.get("q") == 0 or i in PLAN_LEDER:
+        if info.get("b") == 1 or info.get("q") == 0 or i in PLAN_LEDER or m.haendler.get(i) is not None:
             continue
         v, _, _ = m.verkauf(i)
         p = m.jetzt.get(i)
@@ -1162,7 +1221,7 @@ def sammler(m, key, z, mein, stand):
     if gut:
         zeilen.append("AH statt Händler (Scan " + stand + ", ohne Absatz-Beleg): " + ", ".join(
             f"{m.name(i)} {geld(round(n))} nach Gebühr (Händler {geld(h)})" for i, n, h, _ in gut)
-            + ". Pfand pro Angebot (gemessen 1s für 1 Groben Faden), darum ganze Stapel einstellen.")
+            + ". Pfand pro Angebot (einmal gemessen: 1s für 1 Groben Faden; ob er mit der Menge steigt, ist ungeprüft).")
     return zeilen
 
 

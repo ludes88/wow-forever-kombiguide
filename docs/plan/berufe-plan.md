@@ -82,6 +82,7 @@ Verzaubern:
 - VZ 2–20: 18× Enchant Bracer - Inferior Stamina
 - VZ 20–50: 10× Enchant Bracer - Minor Deflect
 - VZ 20–50: 20× Enchant Chest - Inferior Stamina
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 23.6 Strange Dust, 6.3 Lesser Magic Essence; die Zähler im Guide zeigen Vorrat plus Einkauf
 
 Einkauf im AH: 22 Light Hide, 16 Ruined Leather Scraps, 4 Lesser Magic Essence = 21s 79c (derselbe Einkauf mit den 30-Tage-Medianen: 50s 41c)
 Einkauf beim Händler: 27 Salt, 42 Coarse Thread, 19 Mote of Magic, 1 Copper Rod = 20s 84c
@@ -100,6 +101,7 @@ Verzaubern:
 
 - VZ 50–70: 20× Enchant Bracer - Minor Deflect
 - VZ 70–100: 33× Enchant Chest - Minor Absorption
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 20.5 Strange Dust, 8.1 Lesser Magic Essence; die Zähler im Guide zeigen Vorrat plus Einkauf
 
 Einkauf im AH: 10 Medium Hide, 98 Light Leather, 45 Lesser Magic Essence = 1g 67s 20c (derselbe Einkauf mit den 30-Tage-Medianen: 4g 92s 32c)
 Einkauf beim Händler: 10 Salt, 38 Coarse Thread = 8s 80c
@@ -120,6 +122,7 @@ Verzaubern:
 - VZ 100–109: 9× Enchant Cloak - Minor Protection
 - VZ 109–110: 1× Runed Silver Rod
 - VZ 110–130: 32× Enchant Cloak - Minor Protection
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 20.5 Strange Dust; die Zähler im Guide zeigen Vorrat plus Einkauf
 
 Einkauf im AH: 240 Light Leather, 65 Strange Dust, 27 Medium Leather, 1 Silver Rod, 1 Shadowgem, 4 Lesser Magic Essence = 2g 50s 92c (derselbe Einkauf mit den 30-Tage-Medianen: 4g 50s 65c)
 Einkauf beim Händler: 44 Fine Thread, 10 Gray Dye = 79s
@@ -136,6 +139,7 @@ Entzaubern: 24× Hillman's Leather Gloves → erwartet 7.2 Greater Astral Essenc
 Verzaubern:
 
 - VZ 130–150: 20× Enchant Bracer - Lesser Stamina
+- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): 27.0 Soul Dust; die Zähler im Guide zeigen Vorrat plus Einkauf
 
 Ohne eigenen Soul Dust (Stufe D nicht gemacht oder zu wenige Hillman's Leather Gloves entzaubert): VZ 130–150 mit 20× Enchant Boots - Minor Stamina (80 Strange Dust, Lehrer 14s) kostet «jetzt» 81s 20c, mit gekauftem Soul Dust (20× Enchant Bracer - Lesser Stamina, Lehrer 15s) 1g 59s 20c; mit dem eigenen Scan 66s gegen 1g 95s. Stiefel: 4 Strange Dust je Verzauberung laut wow-professions (Tab Strange Dust, im Spiel ungeprüft), lernbar ab VZ 125 (Lehrerliste Godan, Orgrimmar); ob Teg Dawnstrider in Thunder Bluff sie führt, ist ungeprüft.
 

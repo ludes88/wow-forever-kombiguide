@@ -791,6 +791,15 @@ def main(OUT):
         L += ["", "Verzaubern:", ""]
         for (von, bis, rez), n in sorted(vz[i]["used"].items()):
             L.append(f"- VZ {von:.0f}–{bis:.0f}: {anzahl(n)}× {rez}")
+        # Vorrat für die Verzauberkunst dieser Stufe: Rest der Stufe davor und Entzaubern in dieser Stufe; die Zähler im Guide
+        # zeigen Vorrat plus Einkauf (Gegenprüfung 16.10., B1)
+        vorrat = dict(vz[i - 1]["stock"]) if i else {}
+        for m_, q_ in R["de_out"][i].items():
+            add(vorrat, "Lesser Magic Essence" if m_ == "Greater Magic Essence" else m_, 3 * q_ if m_ == "Greater Magic Essence" else q_)
+        vorrat = {m_: q_ for m_, q_ in vorrat.items() if m_ in ("Strange Dust", "Lesser Magic Essence", "Soul Dust") and q_ > 0.05}
+        if vorrat:
+            L.append(f"- Aus dem eigenen Entzaubern (Rest der Stufe davor und diese Stufe): {fmt_bag(vorrat, 1)}; "
+                     "die Zähler im Guide zeigen Vorrat plus Einkauf")
         if stufe == "D":
             L += ["", stiefel_text()]
         bag = dict(st["buy"])
