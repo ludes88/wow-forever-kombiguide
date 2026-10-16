@@ -2,11 +2,13 @@
 #
 # Aufruf:  tools/fetch_rxp.sh v4.11.23 && python3 tools/build_kombi.py v4.11.23 [Ausgabeordner]
 # Eingaben: data/kombi/plan.csv (eine Zeile pro Berufsschritt), data/karten/forever_karten.csv (Kartenecken), data/kombi/VERSION,
-#           data/kombi/dungeons.csv (welche Dungeons in der Dungeon-Route an sind)
+#           data/kombi/dungeons.csv (welche Dungeons in der Dungeon-Route an sind),
+#           data/kombi/vorquests.csv (Dungeon-Vorquests als Zusatzschritte, nur in «Kombiguide (H)»; seit 0.6, Entscheid 16.10.)
 # Ausgabe:  <Ausgabeordner, Standard build/>/RXPGuides_KombiGuide/{RXPGuides_KombiGuide.toc, Kombi_Guide.lua}
 #
 # Zwei Gruppen in einer Datei (eine Datei, damit beim Spieler /reload reicht):
-#   «Kombiguide (H)»          RXPs Speedrun-Route, Schritte unverändert (gespeicherte Stellen der Testcharaktere bleiben)
+#   «Kombiguide (H)»          RXPs Speedrun-Route, Schritte unverändert (gespeicherte Stellen der Testcharaktere bleiben);
+#                             seit 0.6 dazu die Dungeon-Vorquests aus vorquests.csv als Zusatzschritte
 #   «Kombiguide Dungeon (H)»  RXPs Dungeon-Route «(WIP) Dungeon Guide 1-22» (12-17, 17-22), Mulgore aus der Speedrun-Route
 #                             (RXPs Dungeon-Mulgore bindet sie über #include ein). Die Dungeons aus dungeons.csv sind fest
 #                             eingebaut: In Forever blendet RXP die Dungeon-Auswahl aus und setzt sie beim Laden auf «keine»
@@ -27,24 +29,36 @@ OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "build")
 VERSION = open(os.path.join(ROOT, "data", "kombi", "VERSION"), encoding="utf-8").read().strip()
 MULGORE = "Guides/forever/Horde-1-12_Mulgore.lua"
 GRUPPEN = [
-    # gruppe, Quellen (Datei, nur diese Guides oder None = alle), Dungeons fest einbauen, #subgroup ersetzen
+    # gruppe, Quellen (Datei, nur diese Guides oder None = alle), Dungeons fest einbauen, #subgroup ersetzen,
+    # Dungeon-Vorquests aus vorquests.csv einfügen (nur Speedrun: die Dungeon-Route führt RFC und WC schon selbst)
     {"gruppe": "Kombiguide (H)", "route": "Speedrun",
      "quellen": [(MULGORE, None), ("Guides/forever/Horde-12-22_Barrens.lua", None)],
-     "dungeons": False, "subgroup": None},
+     "dungeons": False, "subgroup": None, "vorquests": True},
     {"gruppe": "Kombiguide Dungeon (H)", "route": "Dungeon (WIP)",
      "quellen": [(MULGORE, None),
                  ("Guides/Forever/dungeon/Horde-12-22_Barrens.lua", ("12-17 The Barrens", "17-22 Stonetalon/Barrens/Ashenvale"))],
-     "dungeons": True, "subgroup": "(WIP) Dungeon Guide 1-22"},
+     "dungeons": True, "subgroup": "(WIP) Dungeon Guide 1-22", "vorquests": False},
 ]
 LAST_NEXT = "RestedXP Forever Guide (H)\\22-24 Hillsbrad"   # nur, wenn RXPs #next keine Gruppe nennt (Speedrun-Route);
 # nennt RXP eine Gruppe (Dungeon-Route: «RestedXP Horde 22-30\\22-24 Hillsbrad», v4.11.23 Zeile 3190), bleibt sein Ziel
 # (Prüfbericht 15.10., A9; ob das Ziel im gekauften Guide existiert, ist ungeprüft: Test T5)
-ZONES = {"1412": "Mulgore", "1413": "The Barrens", "1454": "Orgrimmar", "1456": "Thunder Bluff"}
+ZONES = {"1411": "Durotar", "1412": "Mulgore", "1413": "The Barrens", "1420": "Tirisfal Glades", "1421": "Silverpine Forest",
+         "1440": "Ashenvale", "1454": "Orgrimmar", "1456": "Thunder Bluff", "1458": "Undercity"}
+# Kontinent hinter der Karte in «.goto Karte/Kontinent,a,b» (RXP functions.lua: element.instance, 0 = Östliche Königreiche,
+# 1 = Kalimdor). Östliche Königreiche laut Testlog KARTE «Kontinent 0» (15.10.) und wie in RXPs eigenen Schritten
+# («.goto 1420/0,…», «1458/0,…», «1421/0,…», Horde-01-14_Undead.lua); alle anderen Karten im Plan liegen in Kalimdor.
+OSTEN = {"1415", "1420", "1421", "1458"}
 
 
 def read_csv(path):
     with open(path, encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f, delimiter=";"))
+        rows = list(csv.DictReader(f, delimiter=";"))
+    # Ein Semikolon im Text verschiebt die Spalten (DictReader legt den Rest unter None ab); dann stimmen «bis», «extra» und
+    # «status» nicht mehr. Lieber abbrechen (16.10.: so wäre «#maxlevel» in der Spalte «dungeon» gelandet).
+    bad = [r.get("nr") or str(i + 2) for i, r in enumerate(rows) if None in r or any(v is None for v in r.values())]
+    if bad:
+        raise SystemExit(f"{os.path.relpath(path, ROOT)}: falsche Spaltenzahl (Semikolon im Text?) in Zeile(n) " + ", ".join(bad))
+    return rows
 
 
 def show(path):
@@ -96,8 +110,11 @@ def world(row, maps):
 #                                                 wäre der Schritt nur Text, und RXP erledigt ihn sofort: GuideWindow.lua, UpdateStepCompletion)
 #   manuell       +kurz                          (Kästchen zum Abhaken. «.itemcount» in extra prüft RXP nur, wenn der Schritt aktiv wird:
 #                                                 fehlt das Material da schon, ist der Schritt erledigt; geht es mittendrin aus, Häkchen setzen)
+#   gebiet        .zone id >>kurz                (id = Karten-ID; erledigt beim Betreten der Karte, functions.lua addon.functions.zone,
+#                                                 wie RXPs Zeppelin-Schritt «.zone Tirisfal Glades», Horde-01-12_Durotar.lua; Häkchen = nicht hin)
 # «bedingung» und «extra» nehmen mehrere rohe RXP-Zeilen, getrennt mit « // ».
-AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis", "manuell")
+AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis", "manuell",
+            "gebiet")
 # Geselle als Zauber (seit 0.5.3, Prüfbericht 16.10., C1): RXP v4.11.23 prüft «.maxskill» nur, wenn der Schritt aktiv wird
 # (functions.lua: kein events.maxskill; GuideWindow.lua BindActiveStepElement ruft das Element einmal auf), ein Schritt hakt
 # sich nach dem Lernen also nicht von selbst ab. «.istrained» hört auf TRAINER_SHOW, CHAT_MSG_SYSTEM, SKILL_LINES_CHANGED und
@@ -124,7 +141,7 @@ def make_step(row, maps):
     pos = world(row, maps)
     if pos:
         a, b, xy = pos
-        goto = f"    .goto {row['karte']}/1,{a:.2f},{b:.2f}"
+        goto = f"    .goto {row['karte']}/{0 if row['karte'] in OSTEN else 1},{a:.2f},{b:.2f}"
         if row.get("radius"):
             goto += f",{row['radius']}"
         if xy:
@@ -160,6 +177,10 @@ def make_step(row, maps):
         lines.append(f"    +{kurz}")
     elif akt == "hinweis":
         lines.append(f"    +{kurz or 'Hinweis gelesen'}")
+    elif akt == "gebiet":
+        if not (row["id"].isdigit() and kurz):
+            raise SystemExit(f"Plan-Zeile {row['nr']}: «gebiet» braucht eine Karten-ID (id) und «kurz»")
+        lines.append(f"    .zone {row['id']} >>{kurz}")
     for cond in (row.get("bedingung") or "").split(" // "):
         if cond.strip():
             lines.append("    " + cond.strip())
@@ -283,20 +304,35 @@ for r in dungeon_rows:
     if r["an"].strip().lower() not in ("ja", "nein"):
         raise SystemExit(f"data/kombi/dungeons.csv: '{r['kuerzel']}' braucht an = ja oder nein")
 
+# Dungeon-Vorquests (seit 0.6): gleiche Spalten wie plan.csv, dazu «dungeon»; nur in Gruppen mit «vorquests». Nummern mit
+# «V» vorne, damit die Labels (KombiV1 …) nicht mit den Berufsschritten zusammenfallen.
+VORQ = os.path.join(ROOT, "data", "kombi", "vorquests.csv")
+vorquests = read_csv(VORQ) if os.path.exists(VORQ) else []
+nrs = [r["nr"] for r in plan + vorquests]
+if len(nrs) != len(set(nrs)):
+    raise SystemExit("plan.csv und vorquests.csv: Nummer doppelt: " + ", ".join(sorted({n for n in nrs if nrs.count(n) > 1})))
 # Zeilen mit Status «aus …» sind vorbereitet, aber nicht eingebaut (z. B. bis der Nutzer entscheidet, ob Schritte vor der
 # gespeicherten Stelle eines Testcharakters dazukommen dürfen; offene Entscheidung 11)
-aus = [r for r in plan if (r.get("status") or "").strip().lower().startswith("aus")]
+aus = [r for r in plan + vorquests if (r.get("status") or "").strip().lower().startswith("aus")]
 plan = [r for r in plan if r not in aus]
-# Zeilen mit gleichem Guide, Anker und Position bilden einen Block (Reihenfolge wie in der Tabelle)
-blocks = {}
-for row in plan:
-    blocks.setdefault((row["guide"], row["anker"], row["position"]), []).append(row)
+vorquests = [r for r in vorquests if r not in aus]
+
+
+def make_blocks(rows):
+    """Zeilen mit gleichem Guide, Anker und Position bilden einen Block (Reihenfolge wie in der Tabelle; Vorquests nach den
+    Berufsschritten, z. B. der Abstecher nach Unterstadt nach der Berufssitzung in Orgrimmar)."""
+    blocks = {}
+    for row in rows:
+        blocks.setdefault((row["guide"], row["anker"], row["position"]), []).append(row)
+    return blocks
 
 report, problems, out_blocks = [], [], []
 dg_text = ", ".join(sorted(DUNGEONS_ON)) or "keine"
 dg_off = ", ".join(sorted(DUNGEONS_KNOWN - DUNGEONS_ON)) or "keine"
 for G in GRUPPEN:
     group = G["gruppe"]
+    rows_g = plan + (vorquests if G["vorquests"] else [])
+    blocks = make_blocks(rows_g)
     used, guide_labels, tags_all, group_blocks = set(), {}, {}, []
     for path, only in G["quellen"]:
         for body in re.findall(r"RXPGuides\.RegisterGuide\(\[\[(.*?)\]\]\)", show(path), re.S):
@@ -355,18 +391,20 @@ for G in GRUPPEN:
             group_blocks.append(block)
     if G["dungeons"] and tags_all:
         report.append(f"{group}: Dungeon-Zeilen in den Quellen: " + ", ".join(f"{t} {c}" for t, c in sorted(tags_all.items())))
-    missing = [r["nr"] for r in plan if r["nr"] not in used]
+    missing = [r["nr"] for r in rows_g if r["nr"] not in used]
     if missing:
         problems.append(f"{group}: nicht eingefügt: Plan-Zeilen " + ", ".join(missing))
-    for row in plan:
+    for row in rows_g:
         bis = row.get("bis") or ""
         if bis and bis != "next" and bis not in guide_labels.get(row["guide"], set()):
             problems.append(f"{group}: Plan-Zeile {row['nr']}: Label '{bis}' (bis) gibt es in '{row['guide']}' nicht")
-    report.append(f"{group}: {len(group_blocks)} Guides, {len(used)} Plan-Zeilen eingefügt")
+    report.append(f"{group}: {len(group_blocks)} Guides, {len(used)} Plan-Zeilen eingefügt"
+                  + (f" (davon {sum(1 for r in vorquests if r['nr'] in used)} Vorquests)" if G["vorquests"] else ""))
     out_blocks.extend((group, b) for b in group_blocks)
 
 header = ("-- Kombi-Guide " + VERSION + " (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv\n"
-          "-- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route. Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der\n"
+          "-- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).\n"
+          "-- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der\n"
           "-- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an " + dg_text + ", aus " + dg_off + "\n"
           "-- Basis RestedXP " + TAG + ", Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz\n"
           "if not (RXPGuides and RXPGuides.RegisterGuide) then return end\n"
@@ -406,7 +444,7 @@ for i in range(1, len(cap) + 1):
     for m in re.finditer(r"^\s*\.(\w+)", t, re.M):
         if m.group(1) not in funcs:
             unknown.add(m.group(1))
-for row in plan:
+for row in plan + vorquests:
     for field in ("text", "kurz", "bedingung", "npc", "bis", "extra"):
         value = row.get(field) or ""
         if "--" in value:
@@ -425,7 +463,7 @@ os.makedirs(d, exist_ok=True)
 open(os.path.join(d, "Kombi_Guide.lua"), "w", encoding="utf-8").write(lua_src)
 open(os.path.join(d, "RXPGuides_KombiGuide.toc"), "w", encoding="utf-8").write(
     "## Interface: 16001\n## Title: RXP Guides Kombiguide\n"
-    "## Notes: Kombi-Guide " + VERSION + ": RXP-Route 1-22 (Basis " + TAG + "), Speedrun und Dungeon (WIP), mit Berufsschritten. CC BY-NC-SA 4.0\n"
+    "## Notes: Kombi-Guide " + VERSION + ": RXP-Route 1-22 (Basis " + TAG + "), Speedrun mit Dungeon-Vorquests und Dungeon (WIP), mit Berufsschritten. CC BY-NC-SA 4.0\n"
     "## Author: ludes88\n## Version: " + VERSION + "-" + TAG + "\n## Dependencies: RXPGuides\n\nKombi_Guide.lua\n")
 if aus:
     report.append("Vorbereitet, nicht eingebaut (Status «aus»): Plan-Zeilen " + ", ".join(r["nr"] for r in aus))

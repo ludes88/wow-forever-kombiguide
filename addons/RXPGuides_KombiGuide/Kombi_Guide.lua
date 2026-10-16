@@ -1,5 +1,6 @@
--- Kombi-Guide 0.5.3 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
--- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route. Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
+-- Kombi-Guide 0.6 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).
+-- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
 -- Basis RestedXP v4.11.23, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
 if not (RXPGuides and RXPGuides.RegisterGuide) then return end
@@ -2277,6 +2278,14 @@ step
     .turnin 776 >>Turn in Rites of the Earthmother
     .target Cairne Bloodhoof
     .isQuestComplete 776
+step
+    #label KombiV1
+    #completewith WildManeTurnIn
+    .goto 1456/1,-218.13,-1055.97
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Ragefire Chasm (RFC). Bei |cRXP_FRIENDLY_Rahauro|r die zwei RFC-Quests annehmen. Abgeben kannst du sie nach dem Dungeon wieder bei |cRXP_FRIENDLY_Rahauro|r, in «17-22» kommt dafür ein Schritt. Für die Route nicht nötig. Der Schritt bleibt stehen, bis die Route Mulgore Richtung Brachland verlässt.
+    .accept 5722
+    .accept 5723
+    .target Rahauro
 step
     .goto 1456/1,122.13,-1263.32--c:Thunder Bluff,37.8,59.4
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Eyahn|r
@@ -4880,6 +4889,22 @@ step << Warlock
     .target Kurgul
     .xp <18,1
 step
+    #label KombiV2
+    #completewith KombiV10
+    .goto 1454/1,-4125.79,1920.10
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Thrall|r die erste Quest der Kette annehmen. Vor dem Dungeon geht sie weiter: in Skull Rock (Durotar) Burning Blade töten, bis «Lieutenant's Insignia» fällt, zurück zu |cRXP_FRIENDLY_Thrall|r, dann Neeru Fireblade, dann wieder |cRXP_FRIENDLY_Thrall|r. Abgaben nach dem Dungeon hier in Orgrimmar.
+    .accept 5726
+    #maxlevel 17
+    .target Thrall
+step
+    #label KombiV3
+    #completewith KombiV10
+    .goto 1454/1,-4376.29,1802.43
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Neeru Fireblade|r annehmen. Abgabe nach dem Dungeon bei |cRXP_FRIENDLY_Neeru Fireblade|r.
+    .accept 5761
+    #maxlevel 17
+    .target Neeru Fireblade
+step
     #optional
     #label SpiritsPickup
 step
@@ -5112,6 +5137,91 @@ step
     >>Kombiguide: Fertig in Orgrimmar. Was jetzt noch fehlt, kommt in Thunder Bluff (Route «17-22», Stufe 20). Stückzahlen und Kosten: docs/plan/berufe-plan.md im Repo.
     +Weiter mit der Route
     .skill leatherworking,<1,1
+step
+    #label KombiV10
+    .goto 1411/1,-4648.55,1321.88
+    >>Kombiguide: Abstecher, freiwillig: Ruinen von Lordaeron (Dungeon für Stufe 15 bis 20, mit Gruppe). Mit dem Zeppelin am Turm vor Orgrimmar nach Tirisfal. Ohne Abstecher: Häkchen setzen, dann fallen die Abstecher-Schritte weg und es geht mit dem Ruhestein weiter. Den Ruhestein bis zum Ende des Abstechers aufsparen: er bringt dich danach zu den Crossroads, wie es die Route vorsieht.
+    .zone 1420 >>In Tirisfal angekommen
+    .xp <15,1
+    #maxlevel 17
+step
+    #label KombiV11
+    #completewith KombiV17
+    .goto 1420/0,84.90,2023.50
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Deathguard Kristof|r in Tirisfal annehmen.
+    .accept 92422
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Deathguard Kristof
+step
+    #label KombiV12
+    #completewith KombiV17
+    .goto 1458/0,318.67,1303.77--c:Undercity,57.8,89.7 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Morbin Lightbane|r im Königsviertel von Unterstadt annehmen.
+    .accept 92421
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Morbin Lightbane
+step
+    #label KombiV14
+    #completewith KombiV17
+    .goto 1458/0,333.38,1287.72
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Varimathras|r im Königsviertel annehmen. Abgabe wieder bei |cRXP_FRIENDLY_Varimathras|r, wenn du nach RFC in Unterstadt bist.
+    .accept 5725
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Varimathras
+step
+    #label KombiV15
+    #completewith KombiV17
+    .goto 1421/0,1579.60,461.70
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r im Grabmal (Silberwald) annehmen. Weiter Weg, also nur, wenn es passt, oder lass sie dir aus der Gruppe teilen. Abgabe ebenfalls bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r.
+    .accept 92401
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Tabitha Heartweaver::250686
+step
+    #label KombiV17
+    .goto 1458/0,185.32,1804.98--c:Undercity,71.7,11.4 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron mit der Gruppe, Eingang oben in den Ruinen. Im Dungeon starten zwei weitere Quests: «Wappen von Lordaeron» und eine aus dem Kopf von The Baron. Willst du doch nicht: Häkchen setzen, dann kommen nur noch die Abgaben, die erledigt sind.
+    +Ruinen von Lordaeron erledigt
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+step
+    #label KombiV18
+    .goto 1458/0,169.97,1668.63--c:Undercity,73.3,32.7 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron: «Wappen von Lordaeron» im Magieviertel abgeben.
+    .turnin 95204
+    .isQuestComplete 95204
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+step
+    #label KombiV21
+    .goto 1458/0,318.67,1303.77--c:Undercity,57.8,89.7 (Spielkoordinaten)
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Morbin Lightbane|r abgeben.
+    .turnin 92421
+    .isQuestComplete 92421
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Morbin Lightbane
+step
+    #label KombiV22
+    .goto 1420/0,84.90,2023.50
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Deathguard Kristof|r abgeben.
+    .turnin 92422
+    .isQuestComplete 92422
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Deathguard Kristof
+step
+    #label KombiV23
+    .goto 1421/0,1579.60,461.70
+    >>Kombiguide: Ruinen von Lordaeron: bei |cRXP_FRIENDLY_Tabitha Heartweaver::250686|r im Grabmal (Silberwald) abgeben. Danach mit dem Ruhestein zu den Crossroads.
+    .turnin 92401
+    .isQuestComplete 92401
+    .zoneskip 1420/1458/1421,1
+    #maxlevel 17
+    .target Tabitha Heartweaver::250686
 step
     #completewith FoodandWater2
     .hs >> Hearth to The Crossroads
@@ -6556,6 +6666,13 @@ step
     .target Mebok Mizzyrix
     .dungeon WC
 step
+    #label KombiV30
+    #completewith next
+    .goto 1413/1,-3697.24,-929.20
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: Wailing Caverns (WC). Bei |cRXP_FRIENDLY_Mebok Mizzyrix|r zusätzlich annehmen. Für die Route nicht nötig.
+    .accept 1491
+    .target Mebok Mizzyrix
+step
     .goto 1413/1,-3697.24,-929.20
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Mebok|r
     .turnin 865 >>Turn in Raptor Horns
@@ -6633,6 +6750,13 @@ step
     .accept 959 >>Accept Trouble at the Docks
     .target Crane Operator Bigglefuzz
     .dungeon WC
+step
+    #label KombiV31
+    #completewith next
+    .goto 1413/1,-3770.20,-928.53
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Bei |cRXP_FRIENDLY_Crane Operator Bigglefuzz|r annehmen.
+    .accept 959
+    .target Crane Operator Bigglefuzz
 step
     #label FlytoXroads
     #completewith XroadsHS2
@@ -7373,6 +7497,13 @@ step
     .turnin 853 >> Turn in Apothecary Zamah
     .target Apothecary Zamah
     .isOnQuest 853
+step
+    #label KombiV32
+    #completewith next
+    .goto 1456/1,278.48,-995.29
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Nach der Abgabe bei |cRXP_FRIENDLY_Apothecary Zamah|r gleich die WC-Quest annehmen.
+    .accept 962
+    .target Apothecary Zamah
 step << Priest
     .goto 1456/1,252.49,-956.04
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Miles|r
@@ -7759,6 +7890,20 @@ step << Rogue
     .collect 6452,1 --Anti Venom
     .itemcount 1475,1
 step
+    #label KombiV34
+    .goto 1456/1,-218.13,-1055.97
+    >>Kombiguide: RFC erledigt: bei |cRXP_FRIENDLY_Rahauro|r abgeben.
+    .turnin 5724
+    .isQuestComplete 5724
+    .target Rahauro
+step
+    #label KombiV35
+    .goto 1456/1,-218.13,-1055.97
+    >>Kombiguide: RFC erledigt: bei |cRXP_FRIENDLY_Rahauro|r abgeben.
+    .turnin 5723
+    .isQuestComplete 5723
+    .target Rahauro
+step
     #completewith next
     .goto 1456/1,-212.71,-1065.010,80 >> Travel to the Elder Rise
 step
@@ -7778,6 +7923,13 @@ step
     .goto 1456/1,-272.93,-1069.67
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Nara|r
     .turnin 1490 >> Turn in Nara Wildmane
+    .target Nara Wildmane
+step
+    #label KombiV33
+    #completewith next
+    .goto 1456/1,-272.93,-1069.67
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Nach der Abgabe bei |cRXP_FRIENDLY_Nara Wildmane|r gleich die WC-Quest annehmen. Am Höhleneingang über den Wailing Caverns geben Nalpak und Ebru zwei weitere WC-Quests.
+    .accept 914
     .target Nara Wildmane
 step << Druid
     .goto 1456/1,-281.59,-1039.61
@@ -9045,6 +9197,14 @@ step
    .accept 6442 >> Accept Naga at the Zoram Strand
    .target +Marukai
    .goto 1440/1,1025.88,3331.450
+step
+    #label KombiV36
+    #completewith next
+    .goto 1440/1,1033.37,3354.89
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Blackfathom Deeps (BFD). Bei |cRXP_FRIENDLY_Je'neu Sancrea|r zusätzlich die zwei BFD-Quests annehmen (RXP führt sie hier nur für Priester).
+    .accept 6563
+    .accept 6921
+    .target Je'neu Sancrea
 step
    .goto 1440/1,1004.54,3341.83
    >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Muglash|r

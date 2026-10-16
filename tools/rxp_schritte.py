@@ -3,7 +3,9 @@
 # Aufruf:
 #   python3 tools/rxp_schritte.py liste <Quelle> "<Guide-Name>" [--klasse druid] [--rasse tauren] [--von N] [--bis M] [--dungeons RFC,WC]
 #   python3 tools/rxp_schritte.py vergleich <alte Quelle> <neue Quelle> "<Guide-Name>" --stelle N [--klasse ...] [--rasse ...]
-#       Exit 1, wenn sich einer der Schritte 1..N in der Zeilennummer verschiebt (dann fände RXP die Stelle nicht mehr sicher);
+#       Exit 1, wenn sich einer der Schritte 1..N in der Zeilennummer verschiebt und RXP die Stelle N dann nicht mehr als
+#       denselben Schritt lädt (RXP sucht zuerst die Kennung aus der Zeile, sonst nimmt es die Nummer; seit 16.10. geprüft, z. B.
+#       für neue Schritte mit #maxlevel, die ein Testcharakter höherer Stufe nicht sieht: dann --stufe angeben);
 #       geänderter Inhalt bei gleicher Zeile wird nur gemeldet (RXP findet die Stelle über die Zeilennummer, Best Practice §6).
 #   --gruppe: nur Guides dieser Gruppe (Kombi_Guide.lua enthält jeden Guide-Namen zweimal: «Kombiguide (H)» zuerst, dann
 #       «Kombiguide Dungeon (H)»). Ohne die Angabe gilt der erste Guide mit dem Namen.
@@ -171,9 +173,21 @@ def main():
             first = first or (x, y)
             if x["idx"] <= a.stelle and x["line"] != y["line"]:
                 moved.append((x["idx"], x["line"], y["line"]))
-    who = f"{name} ({a.rasse} {a.klasse})"
+    who = f"{name} ({a.rasse} {a.klasse}" + (f", Stufe {a.stufe})" if a.stufe else ")")
     if moved:
         i, l1, l2 = moved[0]
+        # Wie RXP die Stelle beim Laden wiederfindet (GuideWindow.lua LoadGuide, v4.11.23): zuerst die Kennung (Zeile + guideId,
+        # GuideLoader.lua) unter den gezeigten Schritten, sonst die gespeicherte Nummer. Blendet ein Neubau seine neuen Schritte für
+        # den Testcharakter aus (z. B. mit #maxlevel), bleibt die Nummer gleich; dann reicht es, dass die alte Zeile keinen anderen
+        # gezeigten Schritt trifft.
+        stored = next((x for x in A if x["idx"] == a.stelle), None)
+        hit = next((y for y in B if stored and y["line"] == stored["line"]), None)
+        target = hit or next((y for y in B if y["idx"] == a.stelle), None)
+        if stored and target and (target["hdr"], target["body"]) == (stored["hdr"], stored["body"]):
+            how = "Kennung (gleiche Zeile)" if hit else "Nummer (die alte Zeile trifft keinen gezeigten Schritt)"
+            print(f"OK {who}: Zeilen verschieben sich ab #{i} ({l1} -> {l2}), RXP findet #{a.stelle} aber über die {how}: "
+                  f"gleicher Schritt")
+            return 0
         print(f"PROBLEM {who}: Schritt #{i} verschiebt sich (Zeile {l1} -> {l2}), die Stelle #{a.stelle} fände RXP nicht mehr sicher")
         return 1
     if first:
