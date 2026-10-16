@@ -1,6 +1,6 @@
 # Weg A: Kombi-Guide aus RXP-Route und Berufen – Best Practice
 
-Stand 16.10.2026. Gilt für die Forever-Beta: Client 1.60.1 (Build 70374 laut Testlog seit 14.10., davor 70338; Build 70425 im Blizzard-UI-Code seit 16.10. 00:52 UTC, Commit b401e03 in https://github.com/Gethe/wow-ui-source/tree/forever, die Spieldateien im Beta-Ordner tragen das Datum 16.10. 02:55; in der API-Doku nur Ergänzungen, nichts, was die Addons nutzen, fiel weg), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 998caf30 (14.10.; die Dungeon-Teile geprüft auf dec489a2, 15.10.).
+Stand 16.10.2026. Gilt für die Forever-Beta: Client 1.60.1 (Build 70374 laut Testlog seit 14.10., davor 70338; Build 70425 im Blizzard-UI-Code seit 16.10. 00:52 UTC, im Testlog seit 16.10. 17:40, Commit b401e03 in https://github.com/Gethe/wow-ui-source/tree/forever, die Spieldateien im Beta-Ordner tragen das Datum 16.10. 02:55; in der API-Doku nur Ergänzungen, nichts, was die Addons nutzen, fiel weg), RestedXP-Release v4.11.23 (10.10.), RXP-Hauptzweig 998caf30 (14.10.; die Dungeon-Teile geprüft auf dec489a2, 15.10.).
 Zweck: Nachschlagewerk für Claude und den Nutzer. Was steht, ist belegt (Link oder Code-Stelle) oder als **ungeprüft** markiert.
 
 ---
@@ -680,6 +680,11 @@ Teststand bis 15.10. 22:16 (Testläufe, Messdaten, `docs/tests/`):
   - **T22** teilweise: Nach `aktualisieren.bat` und `/reload` meldet SITZUNG Kombiguide 0.5; ob die Dungeon-Gruppe im Menü erscheint, ist nicht gemeldet.
   - **T13** bestanden (22:08–22:13): eine Zeile pro Lehrer und Filter, Status, Lernstufe und Kosten, der Geselle mit «(Rang)».
   - **T20** teilweise (22:15): `bandRoh` und `bandVersatz` stehen in der Datei; die Abnahme braucht einen zweiten Scan mit Testlog 3.6.
+- Stand 16.10. 17:47 (vier Charaktere ein- und ausgeloggt, Client 70425):
+  - **T28** bestanden: `KombiEinrichten.bat` (nach der Korrektur für «Program Files (x86)», PR #29) hat die drei Verknüpfungen nach `_alt_kombi` gelegt und die Ordner aus `_kombi_neu` installiert; alle vier SITZUNG-Zeilen zeigen «Kombiguide 0.6.1-v4.11.23», «Testlog 3.7.1» und KombiDaten.
+  - **T6** bestanden für 0.6.1: Der Tauren-Druide steht weiter in «6-12 Mulgore» #45, der Stufe-18-Charakter in «12-17 The Barrens» #152 (über `#maxlevel 17`, §6).
+  - **T16** teilweise: AH-POST mit drei Verkäufen (Preis, Gebühr 5 %, Pfand zurück); die Pfand-Werte je Edelstein stehen in den Briefen. Zwei weitere Briefe brachten zusammen 7g 0s 1c, ohne Rechnung des Auktionshauses (Herkunft nicht im Testlog).
+  - **T33** teilweise: Berufe und Geld pro Charakter beim Einloggen in `chars`.
 
 ---
 
