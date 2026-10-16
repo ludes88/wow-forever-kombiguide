@@ -47,7 +47,7 @@ python3 tools/rxp_schritte.py vergleich git:HEAD:addons/RXPGuides_KombiGuide/Kom
 python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/forever/Horde-12-22_Barrens.lua "12-17 The Barrens" --klasse druid   # Route lesen wie RXP sie zeigt
 python3 tools/rxp_schritte.py liste rxp:v4.11.23:Guides/Forever/dungeon/Horde-12-22_Barrens.lua "12-17 The Barrens" --dungeons RFC,WC,BFD   # RXPs Dungeon-Route mit diesen Dungeons
 python3 tools/rxp_schritte.py liste addons/RXPGuides_KombiGuide/Kombi_Guide.lua "12-17 The Barrens" --gruppe "Kombiguide Dungeon (H)"   # Dungeon-Gruppe des Kombi-Guides
-python3 tools/rxp_schritte.py ziele addons/RXPGuides_KombiGuide/Kombi_Guide.lua "12-17 The Barrens" --gruppe "Kombiguide (H)"   # Zusatzschritte: Ziel von #completewith gefunden, keine Kette (9 Klassen, 4 Rassen; Exit 1 sonst)
+python3 tools/rxp_schritte.py ziele addons/RXPGuides_KombiGuide/Kombi_Guide.lua "12-17 The Barrens" --gruppe "Kombiguide (H)"   # Zusatzschritte: Ziel von #completewith gefunden, keine Kette (9 Klassen, 5 Rassen; Exit 1 sonst)
 python3 tools/validate.py addons/RXPGuides_Kombi/WC_Vorquests.lua addons/RXPGuides_Kombi/RXPGuides_Kombi.toc
 python3 tools/testlog_harness.py addons/KombiTestlog/KombiTestlog.lua
 python3 tools/karte_aus_testlog.py <Testlog> v4.11.23      # KARTE-Zeilen -> data/karten/forever_karten.csv, prüft RXPs Kommentare dagegen

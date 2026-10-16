@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: RXP Guides Kombiguide
-## Notes: Kombi-Guide 0.6: RXP-Route 1-22 (Basis v4.11.23), Speedrun mit Dungeon-Vorquests und Dungeon (WIP), mit Berufsschritten. CC BY-NC-SA 4.0
+## Notes: Kombi-Guide 0.6.1: RXP-Route 1-22 (Basis v4.11.23), Speedrun mit Dungeon-Vorquests und Dungeon (WIP), mit Berufsschritten. CC BY-NC-SA 4.0
 ## Author: ludes88
-## Version: 0.6-v4.11.23
+## Version: 0.6.1-v4.11.23
 ## Dependencies: RXPGuides
 
 Kombi_Guide.lua

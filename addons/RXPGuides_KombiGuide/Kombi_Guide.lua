@@ -1,4 +1,4 @@
--- Kombi-Guide 0.6 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.6.1 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).
 -- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
@@ -2281,8 +2281,8 @@ step
 step
     #label KombiV1
     #completewith WildManeTurnIn
-    .goto 1456/1,-218.13,-1055.97
-    >>Kombiguide: Dungeon-Vorquests, freiwillig: Flammenschlund (RFC). Bei |cRXP_FRIENDLY_Rahauro|r die zwei RFC-Quests annehmen. Abgeben kannst du sie nach dem Dungeon wieder bei |cRXP_FRIENDLY_Rahauro|r, in «17-22» kommt dafür ein Schritt. Für die Route nicht nötig. Der Schritt bleibt stehen, bis die Route Mulgore Richtung Brachland verlässt.
+    .goto 1456/1,-218.13,-1055.97,0,0
+    >>Kombiguide: Dungeon-Vorquests, freiwillig: Flammenschlund (RFC). Bei |cRXP_FRIENDLY_Rahauro|r die zwei RFC-Quests annehmen. Die eine gibst du im Dungeon ab und bekommst dort eine neue, die bringst du mit der zweiten zu |cRXP_FRIENDLY_Rahauro|r zurück (in «17-22» kommt dafür ein Schritt). Für die Route nicht nötig. Der Schritt bleibt stehen, bis die Route Mulgore Richtung Brachland verlässt, der Pfeil bleibt bei der Route.
     .accept 5722
     .accept 5723
     .target Rahauro
@@ -4891,7 +4891,7 @@ step << Warlock
 step
     #label KombiV2
     #completewith KombiV10
-    .goto 1454/1,-4125.79,1920.10
+    .goto 1454/1,-4125.79,1920.10,0,0
     >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Thrall|r die erste Quest der Kette annehmen. Vor dem Dungeon geht sie weiter: in Skull Rock (Durotar) Burning Blade töten, bis «Lieutenant's Insignia» fällt, zurück zu |cRXP_FRIENDLY_Thrall|r, dann Neeru Fireblade, dann wieder |cRXP_FRIENDLY_Thrall|r. Abgaben nach dem Dungeon hier in Orgrimmar.
     .accept 5726
     #maxlevel 17
@@ -4899,7 +4899,7 @@ step
 step
     #label KombiV3
     #completewith KombiV10
-    .goto 1454/1,-4376.29,1802.43
+    .goto 1454/1,-4376.29,1802.43,0,0
     >>Kombiguide: Dungeon-Vorquest, freiwillig: RFC. Bei |cRXP_FRIENDLY_Neeru Fireblade|r annehmen.
     .accept 5761
     >>Abgabe nach dem Dungeon wieder bei |cRXP_FRIENDLY_Neeru Fireblade|r.
@@ -5204,7 +5204,7 @@ step
 step
     #label KombiV17
     .goto 1458/0,170.70,1804.70
-    >>Kombiguide: Ruinen von Lordaeron mit der Gruppe, der Eingang liegt in den Ruinen über Unterstadt. Im Dungeon starten zwei weitere Quests mit Gegenständen, die dort fallen: «Wappen von Lordaeron» und eine mit einem Kopf. Danach, oder wenn du nicht gehst: Häkchen setzen, dann kommen nur noch die Abgaben, die erledigt sind.
+    >>Kombiguide: Ruinen von Lordaeron mit der Gruppe, der Eingang liegt in den Ruinen über Unterstadt. Im Dungeon starten zwei weitere Quests: «Wappen von Lordaeron» (aus einem Objekt) und eine mit einem Kopf, der dort fällt. Danach, oder wenn du nicht gehst: Häkchen setzen, dann kommen nur noch die Abgaben, die erledigt sind. Erreichst du im Abstecher Stufe 18: bis zu den Crossroads kein /reload und nicht ausloggen, sonst springt RXP beim Laden ein paar Schritte zu weit.
     +Ruinen von Lordaeron erledigt
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
@@ -5213,7 +5213,7 @@ step
     .goto 1458/0,169.97,1669.27--c:Undercity,73.3,32.6 (Spielkoordinaten)
     >>Kombiguide: Ruinen von Lordaeron: «Wappen von Lordaeron» bei |cRXP_FRIENDLY_Oran Snakewrithe|r im Magieviertel abgeben.
     .turnin 95204
-    .isQuestComplete 95204
+    .isOnQuest 95204
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
     .target Oran Snakewrithe
@@ -5231,7 +5231,7 @@ step
     .goto 1458/0,404.63,1434.67
     >>Kombiguide: Ruinen von Lordaeron: die Quest mit dem Kopf bei |cRXP_FRIENDLY_Master Apothecary Faranell|r im Apothecarium abgeben. Danach geht die Kette mit vier weiteren Quests in Unterstadt weiter (laut AHledger Questlevel 21, je 1650 XP und 13s), die stehen nicht im Guide.
     .turnin 97288
-    .isQuestComplete 97288
+    .isOnQuest 97288
     .zoneskip 1420/1458/1421,1
     #maxlevel 17
     .target Master Apothecary Faranell
@@ -5462,8 +5462,8 @@ step
 step
     #label KombiV41
     #completewith LeaveRatchet
-    .goto 1413/1,-3770.20,-928.53
-    >>Kombiguide: Dungeon-Vorquest, freiwillig: Höhlen des Wehklagens (WC). Bei |cRXP_FRIENDLY_Crane Operator Bigglefuzz|r annehmen. Für die Route nicht nötig.
+    .goto 1413/1,-3770.20,-928.53,0,0
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: Höhlen des Wehklagens (WC). Bei |cRXP_FRIENDLY_Crane Operator Bigglefuzz|r annehmen. Für die Route nicht nötig, der Pfeil bleibt bei der Route.
     .accept 959
     .target Crane Operator Bigglefuzz
 step
@@ -5832,7 +5832,7 @@ step
 step
     #label KombiV42
     #completewith Hezrul
-    .goto 1413/1,-2036.18,-796.40
+    .goto 1413/1,-2036.18,-796.40,0,0
     >>Kombiguide: Dungeon-Vorquests, freiwillig: Höhlen des Wehklagens (WC). |cRXP_FRIENDLY_Nalpak|r und |cRXP_FRIENDLY_Ebru|r stehen über dem Höhleneingang bei der Oase. Die Quest von |cRXP_FRIENDLY_Ebru|r geht ab Stufe 15. Für die Route nicht nötig.
     .accept 1486
     .accept 1487
@@ -7568,9 +7568,9 @@ step
     .isOnQuest 853
 step
     #label KombiV32
-    #completewith next
-    .goto 1456/1,278.48,-995.29
-    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Nach der Abgabe bei |cRXP_FRIENDLY_Apothecary Zamah|r gleich die WC-Quest annehmen.
+    #completewith KombiV34
+    .goto 1456/1,278.48,-995.29,0,0
+    >>Kombiguide: Dungeon-Vorquest, freiwillig: WC. Nach der Abgabe bei |cRXP_FRIENDLY_Apothecary Zamah|r gleich die WC-Quest annehmen. Die Erinnerung bleibt bis zur Elder Rise stehen, der Pfeil bei der Route.
     .accept 962
     .target Apothecary Zamah
 step << Priest
@@ -7963,7 +7963,7 @@ step
     .goto 1456/1,-218.13,-1055.97
     >>Kombiguide: RFC erledigt: bei |cRXP_FRIENDLY_Rahauro|r abgeben.
     .turnin 5724
-    .isQuestComplete 5724
+    .isOnQuest 5724
     .target Rahauro
 step
     #label KombiV35
