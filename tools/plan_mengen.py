@@ -49,7 +49,7 @@ def silber(s):
     sv, k = divmod(r, 100)
     parts = []
     if g: parts.append(f"{g}g")
-    if sv: parts.append(f"{sv}s")
+    if sv or (g and k): parts.append(f"{sv}s")   # «2g 0s 64c», nicht «2g 64c» (liest sich wie ein Tippfehler)
     if k or not parts: parts.append(f"{k}c")
     return " ".join(parts)
 

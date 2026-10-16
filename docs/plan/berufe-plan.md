@@ -17,7 +17,7 @@ Nicht von Hand ändern: Eingaben anpassen (Preise, Route, Modell) und neu erzeug
 
 - **Sweetspot** für das eigene Leder (Lesart von Claude, Abschnitt 1): Lederverarbeitung 1–80 (Stufe A). Dafür braucht es 99 Fetzen, 62 Leichtes Leder (dazu 33 aus den Fetzen) und 27 Light Hide.
 - Laut Modell bringt die Route bis Orgrimmar 66 Leichtes Leder und 76 Fetzen, mit dem Grinden auf Stufe 16 an Raptoren (Farm-Stopp S1, RXP schlägt das Grinden dort ohnehin vor) 79–86 und 83–87. Laut Modell reicht das Leder; die fehlenden Fetzen und Bälge kosten im AH wenig (Stufe A unten).
-- Ab LW 80 bringt jedes Leichte Leder 2- bis 5-mal weniger Punkte als davor (Tabelle in Abschnitt 1). Mehr Leder zu farmen bringt 21–34 Silber pro Stunde Materialwert (Beta); Angeln ergäbe etwa 2g 64c pro Stunde nach 5 % Gebühr (nur Deviate Fish, Rate ungeprüft, Abschnitt 1).
+- Ab LW 80 bringt jedes Leichte Leder 2- bis 5-mal weniger Punkte als davor (Tabelle in Abschnitt 1). Mehr Leder zu farmen bringt 21–34 Silber pro Stunde Materialwert (Beta); Angeln ergäbe etwa 2g 0s 64c pro Stunde nach 5 % Gebühr (nur Deviate Fish, Rate ungeprüft, Abschnitt 1).
 - Lesser Magic Essence rechnet der Plan zum kleineren Preis: direkt oder ein Drittel einer Greater Magic Essence (1 → 3, gemessen 13.10.). «Jetzt»: direkt 69c, über Greater 65c; eigener Scan (2026-10-15 22:15, ? Horde R2d38 Beta): über Greater 50c, direkt 91c (Regel in Abschnitt 6).
 - Einkauf (Beta-Preise «jetzt»): Stufe A 42s 63c, B 1g 76s, C 3g 29s 92c, D 7g 37s 76c. Derselbe Einkauf mit den 30-Tage-Medianen: A 71s 25c, B 5g 1s 12c, C 5g 29s 65c, D 9g 56s 16c.
 - **Netto** heisst in diesem Bericht: Einkauf + Lehrer − was der Händler für verkaufte Teile zahlt (Lernkosten gemessen in Orgrimmar, `data/kombi/lehrer.csv`). Den Rest, der am Ende übrig bleibt, rechnet erst die nächste Zeile ab. Stufe A 42s 63c + Lehrer 17s 70c − Händler 0c = netto 60s 33c, Stufe B 1g 76s + Lehrer 6s − Händler 0c = netto 1g 82s, Stufe C 3g 29s 92c + Lehrer 30s − Händler 2g 14s 6c = netto 1g 45s 86c, Stufe D 7g 37s 76c + Lehrer 20s − Händler 0c = netto 7g 57s 76c. Zusammen netto 11g 45s 96c.
@@ -58,7 +58,7 @@ Punkte pro Leichtem Leder und Kosten pro Punkt (Plan-Route). «zurück» = was a
 Zeit gegen Gold (Beta-Preise; Raten sind Annahmen, siehe Abschnitt 8):
 
 - Grinden für Leder, Gegner Stufe 11–15: 21–34 Silber pro Stunde Materialwert bei 50–80 Häuten (30-Tage-Preise: 31–49). Dazu gibt es XP; RXP schlägt das Grinden auf Stufe 16 an der Sludge Fen ohnehin vor.
-- Angeln an der Lushwater Oasis, nur Deviate Fish gerechnet: rund 47 pro Stunde bei der Fangrate vom Stonebull Lake ergibt 2g 11s 20c pro Stunde vor und 2g 64c nach 5 % Gebühr (Normal Horde US), bzw. 5g 15s 81c und 4g 90s 2c (PvP Horde US). Ungeprüft: Fangrate und nötige Angelfertigkeit im Brachland (keine Forever-Quelle).
+- Angeln an der Lushwater Oasis, nur Deviate Fish gerechnet: rund 47 pro Stunde bei der Fangrate vom Stonebull Lake ergibt 2g 11s 20c pro Stunde vor und 2g 0s 64c nach 5 % Gebühr (Normal Horde US), bzw. 5g 15s 81c und 4g 90s 2c (PvP Horde US). Ungeprüft: Fangrate und nötige Angelfertigkeit im Brachland (keine Forever-Quelle).
 - Folgerung (bei diesen Preisen, Fisch nach Gebühr): Grinden nur für Leder lohnt sich erst, wenn Leichtes Leder etwa 4s 18c–6s 69c kostet (heute 50c).
 
 ## 2. Ablauf: Stufen A bis D
@@ -199,7 +199,7 @@ Wann sich eine Wahl umdreht. Spalten: Wert mit den Beta-Preisen «jetzt» und mi
 | VZ 10–75: Geringer Magiezauberstab | statt des Plan-Wegs (1 Strange Dust pro Punkt, ab VZ 40 auch 1 Lesser Magic Essence: das billigere): 1 Simple Wood und 1 Lesser Magic Essence, der Händler zahlt den Stab zurück | −7c gegen 65c: Zauberstab | 6s 47c gegen 2s 42c: Plan-Weg |
 | VZ 70–110: Grosser Magiezauberstab | statt des Plan-Wegs (pro Punkt 1,1 Lesser Magic Essence mit Chest - Minor Absorption oder 2 Strange Dust mit Bracer - Minor Stamina: das billigere): 1 Simple Wood und 2 Lesser Magic Essence, der Händler zahlt den Stab zurück | −31c gegen 72c: Zauberstab | 12s 77c gegen 4s 84c: Plan-Weg |
 | Lesser Magic Essence: direkt oder über Greater | Greater Magic Essence kaufen und teilen (1 → 3), wenn sie weniger als 3 Lesser kostet (gemessen 13.10.: aus 9 wurden 27) | 65c gegen 69c: Greater kaufen und teilen | 7s 19c gegen 7s 35c: Greater kaufen und teilen |
-| Leder grinden statt angeln | Grinden (50–80 Häute pro Stunde, Gegner 11–15) bringt mehr als Angeln (nur Deviate Fish nach 5 % Gebühr, Rate ungeprüft) | 21s 10c–33s 76c gegen 2g 64c pro Stunde: Angeln | 30s 55c–48s 88c gegen 1g 86s 82c pro Stunde: Angeln |
+| Leder grinden statt angeln | Grinden (50–80 Häute pro Stunde, Gegner 11–15) bringt mehr als Angeln (nur Deviate Fish nach 5 % Gebühr, Rate ungeprüft) | 21s 10c–33s 76c gegen 2g 0s 64c pro Stunde: Angeln | 30s 55c–48s 88c gegen 1g 86s 82c pro Stunde: Angeln |
 
 ## 7. Gegenstände im Guide (Item-IDs)
 
