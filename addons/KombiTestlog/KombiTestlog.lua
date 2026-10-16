@@ -2277,6 +2277,7 @@ end
 -- Warnung beim Händler: KombiDaten.nichtVerkaufen = { [Item-ID] = "Text" } (tools/markt.py: Material des Plans und Beute,
 -- die im AH ein Vielfaches des Händlerpreises bringt). Eine Chat-Zeile pro Besuch; verkauft wird nichts automatisch.
 W.WARN_MAX, W.PAAR_NACH, W.ANFRAGEN_MAX = 6, 1200, 200
+W.AH_KARTEN = { [1454] = true, [1456] = true, [1458] = true }   -- Orgrimmar, Thunder Bluff, Undercity (gemeinsames AH)
 function W.haendlerWarnung()
     local k = rawget(_G, "KombiDaten")
     local liste = type(k) == "table" and type(k.nichtVerkaufen) == "table" and k.nichtVerkaufen
@@ -2304,8 +2305,9 @@ function W.paarPlanen()
     local token = W.paar
     C_Timer.After(W.PAAR_NACH, function()
         if token ~= W.paar then return end
-        local ok, rest = pcall(IsResting)
-        if ok and rest == true then
+        -- nur in einer Stadt mit Auktionshaus (IsResting gilt auch im Gasthaus, z. B. in den Crossroads; Prüfer 16.10., C4)
+        local okm, map = pcall(bestMap)
+        if okm and map and W.AH_KARTEN[map] then
             say("Abnahme messen: Der letzte AH-Scan ist 20 Minuten her. Öffnest du jetzt das Auktionshaus (oder /tl ah), "
                 .. "entsteht ein Scan-Paar; gut sind 20 bis 110 Minuten Abstand.")
         end
@@ -2316,13 +2318,17 @@ end
 -- höchstens W.ANFRAGEN_MAX pro Scan, damit der Client nicht tausende auf einmal lädt.
 function W.datenAnfragen(id)
     W.anfragen = W.anfragen or 0
-    if W.anfragen >= W.ANFRAGEN_MAX or not (C_Item and C_Item.RequestLoadItemDataByID) then return end
+    W.angefragt = W.angefragt or {}
+    -- schon angefragt (diese Sitzung): nicht nochmals, damit beim nächsten Scan die nächsten drankommen (Prüfer 16.10., C11)
+    if W.angefragt[id] or W.anfragen >= W.ANFRAGEN_MAX or not (C_Item and C_Item.RequestLoadItemDataByID) then return end
     W.anfragen = W.anfragen + 1
+    W.angefragt[id] = true
     pcall(C_Item.RequestLoadItemDataByID, id)
 end
 
 -- Berufe und Geld pro Charakter: für den «nächsten Schritt» in KombiDaten auch ohne Berufsfenster (Sammelberufe)
 function W.berufeMerken(cur)
+    if type(cur) ~= "table" or next(cur) == nil then return end   -- leere Antwort: alten Stand behalten (Prüfer 16.10., C3)
     local b = {}
     for name, v in pairs(cur) do b[name] = string.format("%d/%d", v[1], v[2]) end
     local c = charDB()
@@ -2607,6 +2613,8 @@ end
 -- (Testlog 13.10. 22:07): darum warten, bis der Client eine Zone meldet, höchstens etwa 12 Sekunden.
 local function beginLogging()
     snapshot()
+    pcall(W.berufeMerken, skillLast)   -- Version 3.7.1: Stand auch beim Einloggen, nicht erst bei einer Änderung
+    if type(moneyLast) == "number" and moneyLast > 0 then pcall(W.geldMerken, moneyLast) end
     sessionStart()
     inventoryBags("beim Einloggen")
     local tips = tipsData()
