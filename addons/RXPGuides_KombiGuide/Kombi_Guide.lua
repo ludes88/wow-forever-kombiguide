@@ -1,4 +1,4 @@
--- Kombi-Guide 0.5.2 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.5.3 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route. Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
 -- Basis RestedXP v4.11.23, Quelle github.com/RestedXP/RXPGuides (CC BY-NC-SA 4.0), bearbeitet, gleiche Lizenz
@@ -1365,7 +1365,7 @@ step
 step
     #label Kombi6
     .goto 1456/1,95.10,-1210.23,15
-    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c), 1 pro Lagerfeuer und 2 für den Camp Chair. Gekochtes Essen gibt 5 % mehr XP aus Kills für 15 Minuten.
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (gemessen 1s für 1 Groben Faden), darum ganze Stapel einstellen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
 step
     #label Kombi7
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
@@ -1376,8 +1376,9 @@ step
 step
     #label Kombi8
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie. Verlangt der Lehrer eine höhere Stufe (ungeprüft, Widerspruch 6), Häkchen setzen.
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
+    .istrained 8617
     .skill skinning,<50,1
     .target Mooranta
 step
@@ -2123,8 +2124,9 @@ step
 step
     #label Kombi11
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Verlangt der Lehrer eine höhere Stufe (ungeprüft), Häkchen setzen.
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
+    .istrained 8617
     .skill skinning,<50,1
     .target Mooranta
 step
@@ -2167,6 +2169,7 @@ step
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Komin Winterhoof|r Geselle Kräuterkunde. Ohne Gesellen bleibt Kräuterkunde bei 75 stehen.
     .maxskill herbalism,150 >>Geselle Kräuterkunde (Maximum 150)
+    .istrained 2368
     .skill herbalism,<50,1
     .target Komin Winterhoof
 step
@@ -2361,6 +2364,7 @@ step
     .goto 1456/1,-69.19,-1172.80--c:Thunder Bluff,56.1,46.4 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kah Mistrunner|r Geselle Angeln (ab Angeln 50 und Stufe 10).
     .maxskill fishing,150 >>Geselle Angeln (Maximum 150)
+    .istrained 7731
     .skill fishing,<50,1
     .xp <10,1
     .target Kah Mistrunner
@@ -4881,13 +4885,13 @@ step
 step
     #label Kombi18
     .goto 1454/1,-4460.31,1685.31,15
-    >>Kombiguide: Berufswechsel in Orgrimmar (Kombi-Plan Stufe A: Lederverarbeitung 1 bis 80, Verzauberkunst 1 bis 50; etwa 41s Material und 18s beim Lehrer, Beta-Preise; die Dauer ist noch nicht gemessen). Zuerst ins Auktionshaus im Valley of Strength.
+    >>Kombiguide: Berufswechsel in Orgrimmar (Kombi-Plan Stufe A: Lederverarbeitung 1 bis 80, Verzauberkunst 1 bis 50; etwa 43s Material und 18s beim Lehrer, Beta-Preise; zu wenig Gold: vorher Beute im AH von Thunder Bluff verkaufen oder Gold schicken lassen, sonst nur mit eigenem Material arbeiten und bei den Zählern Häkchen setzen; die Dauer ist noch nicht gemessen). Zuerst ins Auktionshaus im Valley of Strength.
     .skill skinning,<1,1
     .target Auctioneer Thathung
 step
     #label Kombi19
     .goto 1454/1,-4460.31,1685.31
-    >>Kombiguide: Verkaufe alle Kräuter (Kräuterkunde wird gleich verlernt). Kaufe, bis die Zähler voll sind, eigene zählen mit: Fetzen 99, Light Hide 27, Leichtes Leder 62. Beta-Preise (Normal Horde US): Fetzen 25c, Light Hide 69c, Leder 50c. Leder von der Bank holen, falls dort welches liegt.
+    >>Kombiguide: Verkaufe alle Kräuter (Kräuterkunde wird gleich verlernt). Kaufe, bis die Zähler voll sind, eigene zählen mit: Fetzen 99, Light Hide 27, Leichtes Leder 62. Preise AHledger (Normal Horde US) und eigener Scan vom 15.10. (PvP-Beta): Fetzen 25c bzw. 15c, Light Hide 69c bzw. 64c, Leder 50c bzw. 35c. Leder von der Bank holen, falls dort welches liegt.
     .collect 2934,99,0,1,24 >>Fetzen für LW 1 bis 30
     .skill skinning,<1,1
     .collect 783,27,0,1,24 >>Light Hide für LW 30 bis 55
@@ -4906,13 +4910,13 @@ step
 step
     #label Kombi22
     .goto 1454/1,-4568.10,1855.20
-    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, 10c, The Drag). Light Leather (Leichtes Leder) steht nicht in der Lehrerliste, kommt also sehr wahrscheinlich mit dem Lehrling. Ohne Berufswechsel: Häkchen setzen.
+    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, 10c, The Drag). Light Leather (Leichtes Leder) steht nicht in der Lehrerliste, kommt also vermutlich mit dem Lehrling (ungeprüft). Ohne Berufswechsel: Häkchen setzen.
     .train 2108 >>Lerne Lederverarbeitung
     .skill leatherworking,1,1
     .target Kamari
 step
     #label Kombi23
-    .goto 1454/1,-4564.24,1848.26--c:Orgrimmar,63.0,45.5 (Spielkoordinaten)
+    .goto 1454/1,-4567.05,1850.13--c:Orgrimmar,63.2,45.3 (Spielkoordinaten)
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Tamar|r (Leatherworking Supplies, gleich bei Kamari) 27 Salt und 42 Coarse Thread.
     .collect 4289,27 >>Salt
     .skill leatherworking,<1,1
@@ -4947,7 +4951,7 @@ step
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Karolek|r Geselle Lederverarbeitung (ab LW 50 und Stufe 10, 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
-    .skill leatherworking,<1,1
+    .istrained 3104
     .skill leatherworking,<50,1
     .target Karolek
 step
@@ -4961,7 +4965,7 @@ step
 step
     #label Kombi29
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Medium Leather (Mittleres Leder, ab LW 75, 5s) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Medium Leather (Mittleres Leder, ab LW 75, 5s) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht, oder ohne Gesellen (dann geht es nur bis 75): Häkchen setzen.
     .skill leatherworking,80 >>LW 80
     .skill leatherworking,<1,1
     .itemcount 2318,4,1
@@ -4969,14 +4973,14 @@ step
 step
     #label Kombi30
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, 10c, Godan's Runeworks in The Drag). Runed Copper Rod und Enchant Bracer - Inferior Stamina stehen nicht in der Lehrerliste, kommen also sehr wahrscheinlich mit dem Lehrling.
+    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, 10c, in Godan's Runeworks). Runed Copper Rod und Enchant Bracer - Inferior Stamina stehen nicht in der Lehrerliste, kommen also vermutlich mit dem Lehrling (ungeprüft).
     .train 7411 >>Lerne Verzauberkunst
     .skill leatherworking,<1,1
     .skill enchanting,1,1
     .target Jhag
 step
     #label Kombi31
-    >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Kithas|r (Enchanting Supplies, gleich bei den Lehrern) 1 Copper Rod (1s 24c) und 19 Mote of Magic (10c).
+    >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Kithas|r (Enchanting Supplies; laut wow-professions neben dem Lehrer, Ort in Forever ungeprüft) 1 Copper Rod (1s 24c laut AHledger) und 19 Mote of Magic (10c).
     .collect 6217,1 >>Copper Rod
     .skill enchanting,<1,1
     .skill enchanting,50,1
@@ -5017,7 +5021,7 @@ step
     .target Jhag
 step
     #label Kombi37
-    >>Kombiguide: Fehlt noch etwas bis VZ 50: Strange Dust im AH kaufen (1 pro Punkt, Beta 84c). Lesser Magic Essence geht erst ab VZ 40 (Brust - Schwache Absorption, je 1 Essenz, Beta 69c); darunter nur Staub.
+    >>Kombiguide: Fehlt noch etwas bis VZ 50: unter VZ 40 Strange Dust im AH kaufen (1 pro Punkt, Beta 84c), ab VZ 40 Lesser Magic Essence für Brust - Schwache Absorption (1 pro Punkt, Beta 69c; oder Greater Magic Essence kaufen und per Rechtsklick in 3 teilen, wenn sie weniger als 3 Lesser kostet).
     .skill enchanting,50 >>VZ 50
     .skill enchanting,<1,1
 step
@@ -5025,22 +5029,22 @@ step
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Godan|r Geselle Verzauberkunst (ab VZ 50 und Stufe 10, 5s). Ende von Stufe A.
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
-    .skill enchanting,<1,1
+    .istrained 7412
     .skill enchanting,<50,1
     .target Godan
 step
     #label Kombi39
     .goto 1454/1,-4460.31,1685.31
-    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 59s im AH, 9s beim Händler und 8s 50c beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen, dann kommt Stufe B in Thunder Bluff (Route «17-22», Stufe 20). Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 31. Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
+    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 67s im AH, 9s beim Händler und 6s beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen, dann kommt Stufe B in Thunder Bluff (Route «17-22», Stufe 20). Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 45 (oder Greater Magic Essence kaufen und per Rechtsklick in 3 teilen, wenn sie weniger als 3 Lesser kostet; der Zähler zählt die geteilten mit). Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
     .collect 4232,10,0,1,24 >>Medium Hide (Stufe B)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2318,114,0,1,24 >>Leichtes Leder (Stufe B)
-    .collect 10938,31,0,1,24 >>Lesser Magic Essence (Stufe B)
+    .collect 10938,45,0,1,24 >>Lesser Magic Essence (Stufe B)
     .target Auctioneer Thathung
 step
     #label Kombi40
-    .goto 1454/1,-4564.24,1848.26--c:Orgrimmar,63.0,45.5 (Spielkoordinaten)
+    .goto 1454/1,-4567.05,1850.13--c:Orgrimmar,63.2,45.3 (Spielkoordinaten)
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Tamar|r 10 Salt und 38 Coarse Thread.
     .collect 4289,10 >>Salt (Stufe B)
     .skill leatherworking,<1,1
@@ -5090,7 +5094,7 @@ step
 step
     #label Kombi46
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht, oder ohne Gesellen (dann geht es nur bis 75): Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -7416,37 +7420,37 @@ step
 step
     #label Kombi50
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 59s im AH, 9s beim Händler und 8s 50c beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen. Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 31. Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
+    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 67s im AH, 9s beim Händler und 6s beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen. Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 45 (oder Greater Magic Essence kaufen und per Rechtsklick in 3 teilen, wenn sie weniger als 3 Lesser kostet; der Zähler zählt die geteilten mit). Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
     .collect 4232,10,0,1,24 >>Medium Hide (Stufe B)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2318,114,0,1,24 >>Leichtes Leder (Stufe B)
-    .collect 10938,31,0,1,24 >>Lesser Magic Essence (Stufe B)
+    .collect 10938,45,0,1,24 >>Lesser Magic Essence (Stufe B)
     .target Auctioneer Stampi
 step
     #label Kombi51
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 65s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 69, Lesser Magic Essence bis 51 (31 für B und 20 für C), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 49 (45 für B und 4 für C; oder Greater Magic Essence kaufen und teilen), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
     .collect 2318,354,0,1,24 >>Leichtes Leder (Stufen B und C)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,69,0,1,24 >>Strange Dust (Stufe C)
-    .collect 10938,51,0,1,24 >>Lesser Magic Essence (Stufen B und C)
+    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10938,49,0,1,24 >>Lesser Magic Essence (Stufen B und C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
     .target Auctioneer Stampi
 step
     #label Kombi52
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 65s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 69, Lesser Magic Essence bis 20, 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 4 (für die Silberrute), 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen. Steht deine LW schon über 100 (Quereinsteiger), brauchst du weniger: bis LW 115 pro fehlendem Punkt etwa 16 Leichtes Leder; die genaue Menge für deinen Stand zeigt /tl tipp. Häkchen setzen, sobald du genug hast.
     .collect 2318,240,0,1,24 >>Leichtes Leder (Stufe C)
     .skill leatherworking,<1,1
     .skill leatherworking,<100,1
     .skill leatherworking,130,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,69,0,1,24 >>Strange Dust (Stufe C)
-    .collect 10938,20,0,1,24 >>Lesser Magic Essence (Stufe C)
+    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10938,4,0,1,24 >>Lesser Magic Essence (Stufe C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
     .target Auctioneer Stampi
@@ -7459,8 +7463,24 @@ step
     .skill leatherworking,130,1
     .target Auctioneer Stampi
 step
+    #label Kombi85
+    >>Kombiguide: Quereinsteiger (LW schon über 100, ohne Geschmeidige leichte Bälge): Jede Leichte Lederhose braucht 1 Geschmeidigen leichten Balg. Kaufe sie im AH (Scan 15.10.: 1s 15c) oder kaufe Leichte Bälge (64c) und hol beim Händler Salz (50c), dann stellst du sie selbst her. Bis LW 115 etwa 1,6 Hosen pro fehlendem Punkt; die genaue Zahl für deinen Stand zeigt /tl tipp. Danach Häkchen setzen.
+    +Bälge für die Hosen besorgt
+    .skill leatherworking,<100,1
+    .skill leatherworking,115,1
+    .itemcount 4231,<24,1
+    .target Auctioneer Stampi
+step
+    #label Kombi86
+    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Feine Ledergürtel): Der Dunkle Ledergürtel (LW 115 bis 125) braucht 10 Feine Ledergürtel und 10 Geschmeidige mittlere Bälge. Kaufe dafür zusätzlich 60 Leichtes Leder und 10 Medium Hide (Mittlerer Balg), beim Händler 20 Groben Faden und 10 Salz; hergestellt wird nach den Hosen. Danach Häkchen setzen.
+    +Material für Gürtel und Bälge besorgt
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4246,<10,1
+    .target Auctioneer Stampi
+step
     #label Kombi54
-    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Danach Häkchen setzen.
+    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Quereinsteiger zusätzlich: 1 Salz je Geschmeidiger Balg, den du selbst herstellst, und 2 Grober Faden je Feiner Ledergürtel (Schritte davor). Danach Häkchen setzen.
     +Faden, Salz und Farbe gekauft
     .skill leatherworking,<1,1
     .skill leatherworking,150,1
@@ -7470,7 +7490,7 @@ step
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
     >>Kombiguide: Noch kein Geselle in Lederverarbeitung: bei |cRXP_FRIENDLY_Tarn|r lernen (ab LW 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
-    .skill leatherworking,<1,1
+    .istrained 3104
     .skill leatherworking,<50,1
     .target Tarn
 step
@@ -7478,7 +7498,7 @@ step
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
     >>Kombiguide: Noch kein Geselle in Verzauberkunst: bei |cRXP_FRIENDLY_Teg Dawnstrider|r lernen (ab VZ 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
-    .skill enchanting,<1,1
+    .istrained 7412
     .skill enchanting,<50,1
     .target Teg Dawnstrider
 step
@@ -7546,6 +7566,13 @@ step
     .itemcount 10940,2,1
     .target Teg Dawnstrider
 step
+    #label Kombi87
+    >>Kombiguide: Leichte Bälge verarbeiten: Stelle für jede Hose, die noch fehlt, einen Geschmeidigen leichten Balg her (1 Leichter Balg, 1 Salz). Danach Häkchen setzen.
+    +Geschmeidige leichte Bälge hergestellt
+    .skill leatherworking,<100,1
+    .skill leatherworking,115,1
+    .itemcount 783,1,1
+step
     #label Kombi65
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
     >>Kombiguide: Lerne Light Leather Pants (Leichte Lederhose, ab LW 70, 4s in Orgrimmar) und stelle sie her (je 10 Leichtes Leder, 1 Cured Light Hide, 1 Fine Thread, etwa 24 mal) bis LW 115. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
@@ -7554,6 +7581,20 @@ step
     .itemcount 2318,10,1
     .itemcount 4231,1,1
     .target Tarn
+step
+    #label Kombi88
+    >>Kombiguide: Fehlen Feine Ledergürtel: stelle 10 her (je 6 Leichtes Leder, 2 Grober Faden). Sie geben keine Punkte mehr, sind aber Material für den Dunklen Ledergürtel. Danach Häkchen setzen.
+    +10 Feine Ledergürtel da
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4246,<10,1
+step
+    #label Kombi89
+    >>Kombiguide: Fehlen Geschmeidige mittlere Bälge: stelle 10 her (je 1 Medium Hide, 1 Salt). Danach Häkchen setzen.
+    +10 Geschmeidige mittlere Bälge da
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4233,<10,1
 step
     #label Kombi66
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
@@ -7572,6 +7613,18 @@ step
     .skill leatherworking,<125,1
     .itemcount 2319,5,1
     .target Tarn
+step
+    #label Kombi71
+    >>Kombiguide: Verkaufe alle Leichten Lederhosen (Light Leather Pants) beim Händler: Der Forever-Händler zahlt 5s 99c je Hose, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 2s 31c, Beta). Den Staub für Verzauberkunst hast du im AH gekauft. Danach Häkchen setzen.
+    +Leichte Lederhosen verkauft
+    .skill leatherworking,<1,1
+    .itemcount 7282,1,1
+step
+    #label Kombi72
+    >>Kombiguide: Verkaufe alle Dunklen Ledergürtel (Dark Leather Belts) beim Händler: Der Forever-Händler zahlt 7s 3c je Gürtel, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 5s 11c, Beta). Danach Häkchen setzen.
+    +Dunkle Ledergürtel verkauft
+    .skill leatherworking,<1,1
+    .itemcount 4249,1,1
 step
     #label Kombi68
     .goto 1456/1,95.10,-1210.23
@@ -7598,63 +7651,42 @@ step
     .skill leatherworking,<125,1
     .itemcount 4246,1,1
 step
-    #label Kombi71
-    >>Kombiguide: Verkaufe alle Leichten Lederhosen (Light Leather Pants) beim Händler: Der Forever-Händler zahlt 5s 99c je Hose, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 2s 31c, Beta). Den Staub für Verzauberkunst hast du im AH gekauft. Danach Häkchen setzen.
-    +Leichte Lederhosen verkauft
-    .skill leatherworking,<1,1
-    .itemcount 7282,1,1
-step
-    #label Kombi72
-    >>Kombiguide: Verkaufe alle Dunklen Ledergürtel (Dark Leather Belts) beim Händler: Der Forever-Händler zahlt 7s 3c je Gürtel, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 5s 11c, Beta). Danach Häkchen setzen.
-    +Dunkle Ledergürtel verkauft
-    .skill leatherworking,<1,1
-    .itemcount 4249,1,1
-step
     #label Kombi73
     >>Kombiguide: Entzaubere alle Hillman's Leather Gloves. Erwartet pro Paar etwa 1,1 Soul Dust und 0,3 Greater Astral Essence. Danach Häkchen setzen.
     +Hillman's Leather Gloves entzaubert
     .skill enchanting,<1,1
     .itemcount 4247,1,1
 step
+    #label Kombi76
+    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
+    >>Kombiguide: Lerne Runed Silver Rod (Runenverzierte Silberrute, ab VZ 100, 10s in Orgrimmar) und stelle sie gleich her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem; gibt einen Punkt). Die Rute behalten: spätere Verzauberungen brauchen sie. Danach Häkchen setzen.
+    +Runenverzierte Silberrute hergestellt
+    .skill enchanting,<1,1
+    .skill enchanting,<100,1
+    .itemcount 6338,1,1
+    .target Teg Dawnstrider
+step
+    #label Kombi75
+    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
+    >>Kombiguide: Lerne Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz, ab VZ 70, 2s in Orgrimmar), falls noch nicht geschehen, und verzaubere (je 2 Strange Dust, etwa 41 mal) bis VZ 130. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    .skill enchanting,130 >>VZ 130
+    .skill enchanting,<1,1
+    .skill enchanting,<100,1
+    .itemcount 10940,2,1
+    .target Teg Dawnstrider
+step
     #label Kombi74
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Chest - Minor Absorption (je 1 Lesser Magic Essence, etwa 18 mal) bis VZ 109. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlt Staub: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, je 1 Lesser Magic Essence, ab VZ 100 gelb, etwa 2 pro Punkt) bis VZ 109. Darüber geht es mit Staub weiter (nächster Schritt). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,109 >>VZ 109
     .skill enchanting,<1,1
     .skill enchanting,<100,1
     .itemcount 10938,1,1
     .target Teg Dawnstrider
 step
-    #label Kombi75
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Lerne Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz, ab VZ 70, 2s in Orgrimmar) und verzaubere (je 2 Strange Dust) bis VZ 109. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
-    .skill enchanting,109 >>VZ 109
-    .skill enchanting,<1,1
-    .skill enchanting,<100,1
-    .itemcount 10940,2,1
-    .target Teg Dawnstrider
-step
-    #label Kombi76
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Runed Silver Rod (Runenverzierte Silberrute, ab VZ 100, 10s in Orgrimmar) und stelle sie her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem). Die Rute behalten.
-    .skill enchanting,110 >>VZ 110
-    .skill enchanting,<1,1
-    .skill enchanting,<100,1
-    .itemcount 6338,1,1
-    .target Teg Dawnstrider
-step
-    #label Kombi77
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Cloak - Minor Protection (je 2 Strange Dust, etwa 32 mal) bis VZ 130. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
-    .skill enchanting,130 >>VZ 130
-    .skill enchanting,<1,1
-    .skill enchanting,<110,1
-    .itemcount 10940,2,1
-    .target Teg Dawnstrider
-step
     #label Kombi78
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlt noch etwas bis VZ 130: Strange Dust im AH kaufen (2 pro Punkt, Beta 84c) oder mit Lesser Magic Essence Enchant 2H Weapon - Lesser Intellect (Formel bei Nata Dawnstrider 5s, verlangt VZ 100, je 4 Essenzen; lohnt, wenn eine Essenz weniger als 0,8 Strange Dust kostet).
+    >>Kombiguide: Fehlt noch etwas bis VZ 130: Strange Dust im AH kaufen (etwa 3 pro Punkt: der Plan rechnet 64 für 20 Punkte; Beta 84c) oder mit Lesser Magic Essence Enchant 2H Weapon - Lesser Intellect (Formel bei Nata Dawnstrider, 5s laut AHledger, verlangt VZ 100, je 4 Essenzen; lohnt, wenn eine Essenz weniger als 0,8 Strange Dust kostet).
     .skill enchanting,130 >>VZ 130
     .skill enchanting,<1,1
     .skill enchanting,<110,1
@@ -7669,14 +7701,22 @@ step
     .itemcount 11083,1,1
     .target Teg Dawnstrider
 step
+    #label Kombi90
+    >>Kombiguide: Ohne eigenen Soul Dust (Stufe D nicht gemacht): Lerne Enchant Boots - Minor Stamina (Stiefel - Schwache Ausdauer, ab VZ 125, 14s bei Godan in Orgrimmar; ob Teg Dawnstrider es führt, ist ungeprüft) und verzaubere bis VZ 150 (je 4 Strange Dust laut wow-professions, ungeprüft; etwa 80 Strange Dust im AH). Das ist billiger als Soul Dust zu kaufen (Beta: etwa 81s gegen 1g 59s mit Lehrer). Ziel: deine Stiefel. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    .skill enchanting,150 >>VZ 150
+    .skill enchanting,<1,1
+    .skill enchanting,<130,1
+    .itemcount 11083,<20,1
+    .target Teg Dawnstrider
+step
     #label Kombi81
-    >>Kombiguide: Fehlt noch etwas bis VZ 150: Soul Dust im AH kaufen (1 pro Punkt, Beta 7s 21c) für Bracer - Lesser Stamina.
+    >>Kombiguide: Fehlt noch etwas bis VZ 150 und keine Stiefel: Soul Dust im AH kaufen (1 pro Punkt, Beta 7s 21c) für Bracer - Lesser Stamina. Das ist teurer als die Stiefel (berufe-plan.md, Stufe D). Danach Häkchen setzen.
     .skill enchanting,150 >>VZ 150
     .skill enchanting,<1,1
     .skill enchanting,<130,1
 step
     #label Kombi82
-    >>Kombiguide: Im AH verkaufen, was LW und VZ bis 150 nicht mehr brauchen: Greater Astral Essence, übriger Soul Dust, Large Glimmering Shard, Heavy Leather, übrige Cured Light Hide. Willst du über 150 hinaus, behalte Heavy Leather (LW) und Soul Dust (VZ). Wert laut Plan etwa 3g 33s (Beta).
+    >>Kombiguide: Im AH verkaufen, was LW und VZ bis 150 nicht mehr brauchen: Greater Astral Essence, übriger Soul Dust, Large Glimmering Shard, Heavy Leather, übrige Cured Light Hide. Willst du über 150 hinaus, behalte Heavy Leather (LW) und Soul Dust (VZ). Wert laut Plan etwa 3g 33s vor und 3g 16s nach 5 % Gebühr (Beta), dazu Heavy Leather und übrige Cured Light Hide.
     +Übriges verkauft oder behalten
     .skill leatherworking,<1,1
 step << Shaman
@@ -11044,7 +11084,7 @@ step
 step
     #label Kombi6
     .goto 1456/1,95.10,-1210.23,15
-    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c), 1 pro Lagerfeuer und 2 für den Camp Chair. Gekochtes Essen gibt 5 % mehr XP aus Kills für 15 Minuten.
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (gemessen 1s für 1 Groben Faden), darum ganze Stapel einstellen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
 step
     #label Kombi7
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
@@ -11055,8 +11095,9 @@ step
 step
     #label Kombi8
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie. Verlangt der Lehrer eine höhere Stufe (ungeprüft, Widerspruch 6), Häkchen setzen.
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
+    .istrained 8617
     .skill skinning,<50,1
     .target Mooranta
 step
@@ -11802,8 +11843,9 @@ step
 step
     #label Kombi11
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Verlangt der Lehrer eine höhere Stufe (ungeprüft), Häkchen setzen.
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
+    .istrained 8617
     .skill skinning,<50,1
     .target Mooranta
 step
@@ -11846,6 +11888,7 @@ step
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Komin Winterhoof|r Geselle Kräuterkunde. Ohne Gesellen bleibt Kräuterkunde bei 75 stehen.
     .maxskill herbalism,150 >>Geselle Kräuterkunde (Maximum 150)
+    .istrained 2368
     .skill herbalism,<50,1
     .target Komin Winterhoof
 step
@@ -12039,6 +12082,7 @@ step
     .goto 1456/1,-69.19,-1172.80--c:Thunder Bluff,56.1,46.4 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Kah Mistrunner|r Geselle Angeln (ab Angeln 50 und Stufe 10).
     .maxskill fishing,150 >>Geselle Angeln (Maximum 150)
+    .istrained 7731
     .skill fishing,<50,1
     .xp <10,1
     .target Kah Mistrunner
@@ -14431,13 +14475,13 @@ step
 step
     #label Kombi18
     .goto 1454/1,-4460.31,1685.31,15
-    >>Kombiguide: Berufswechsel in Orgrimmar (Kombi-Plan Stufe A: Lederverarbeitung 1 bis 80, Verzauberkunst 1 bis 50; etwa 41s Material und 18s beim Lehrer, Beta-Preise; die Dauer ist noch nicht gemessen). Zuerst ins Auktionshaus im Valley of Strength.
+    >>Kombiguide: Berufswechsel in Orgrimmar (Kombi-Plan Stufe A: Lederverarbeitung 1 bis 80, Verzauberkunst 1 bis 50; etwa 43s Material und 18s beim Lehrer, Beta-Preise; zu wenig Gold: vorher Beute im AH von Thunder Bluff verkaufen oder Gold schicken lassen, sonst nur mit eigenem Material arbeiten und bei den Zählern Häkchen setzen; die Dauer ist noch nicht gemessen). Zuerst ins Auktionshaus im Valley of Strength.
     .skill skinning,<1,1
     .target Auctioneer Thathung
 step
     #label Kombi19
     .goto 1454/1,-4460.31,1685.31
-    >>Kombiguide: Verkaufe alle Kräuter (Kräuterkunde wird gleich verlernt). Kaufe, bis die Zähler voll sind, eigene zählen mit: Fetzen 99, Light Hide 27, Leichtes Leder 62. Beta-Preise (Normal Horde US): Fetzen 25c, Light Hide 69c, Leder 50c. Leder von der Bank holen, falls dort welches liegt.
+    >>Kombiguide: Verkaufe alle Kräuter (Kräuterkunde wird gleich verlernt). Kaufe, bis die Zähler voll sind, eigene zählen mit: Fetzen 99, Light Hide 27, Leichtes Leder 62. Preise AHledger (Normal Horde US) und eigener Scan vom 15.10. (PvP-Beta): Fetzen 25c bzw. 15c, Light Hide 69c bzw. 64c, Leder 50c bzw. 35c. Leder von der Bank holen, falls dort welches liegt.
     .collect 2934,99,0,1,24 >>Fetzen für LW 1 bis 30
     .skill skinning,<1,1
     .collect 783,27,0,1,24 >>Light Hide für LW 30 bis 55
@@ -14456,13 +14500,13 @@ step
 step
     #label Kombi22
     .goto 1454/1,-4568.10,1855.20
-    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, 10c, The Drag). Light Leather (Leichtes Leder) steht nicht in der Lehrerliste, kommt also sehr wahrscheinlich mit dem Lehrling. Ohne Berufswechsel: Häkchen setzen.
+    >>Kombiguide: Lerne Lederverarbeitung bei |cRXP_FRIENDLY_Kamari|r (Lehrling, 10c, The Drag). Light Leather (Leichtes Leder) steht nicht in der Lehrerliste, kommt also vermutlich mit dem Lehrling (ungeprüft). Ohne Berufswechsel: Häkchen setzen.
     .train 2108 >>Lerne Lederverarbeitung
     .skill leatherworking,1,1
     .target Kamari
 step
     #label Kombi23
-    .goto 1454/1,-4564.24,1848.26--c:Orgrimmar,63.0,45.5 (Spielkoordinaten)
+    .goto 1454/1,-4567.05,1850.13--c:Orgrimmar,63.2,45.3 (Spielkoordinaten)
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Tamar|r (Leatherworking Supplies, gleich bei Kamari) 27 Salt und 42 Coarse Thread.
     .collect 4289,27 >>Salt
     .skill leatherworking,<1,1
@@ -14497,7 +14541,7 @@ step
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Karolek|r Geselle Lederverarbeitung (ab LW 50 und Stufe 10, 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
-    .skill leatherworking,<1,1
+    .istrained 3104
     .skill leatherworking,<50,1
     .target Karolek
 step
@@ -14511,7 +14555,7 @@ step
 step
     #label Kombi29
     .goto 1454/1,-4561.44,1858.55--c:Orgrimmar,62.8,44.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Medium Leather (Mittleres Leder, ab LW 75, 5s) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Medium Leather (Mittleres Leder, ab LW 75, 5s) und stelle es her (je 4 Leichtes Leder, etwa 8 mal) bis LW 80. Mittleres Leder behalten (Heavy Leather in Stufe C). Damit ist dein eigenes Leder verarbeitet (Sweetspot). Material alle, Stufe aber nicht erreicht, oder ohne Gesellen (dann geht es nur bis 75): Häkchen setzen.
     .skill leatherworking,80 >>LW 80
     .skill leatherworking,<1,1
     .itemcount 2318,4,1
@@ -14519,14 +14563,14 @@ step
 step
     #label Kombi30
     .goto 1454/1,-4432.40,1916.55--c:Orgrimmar,53.6,38.2 (Spielkoordinaten)
-    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, 10c, Godan's Runeworks in The Drag). Runed Copper Rod und Enchant Bracer - Inferior Stamina stehen nicht in der Lehrerliste, kommen also sehr wahrscheinlich mit dem Lehrling.
+    >>Kombiguide: Lerne Verzauberkunst bei |cRXP_FRIENDLY_Jhag|r (Lehrling, 10c, in Godan's Runeworks). Runed Copper Rod und Enchant Bracer - Inferior Stamina stehen nicht in der Lehrerliste, kommen also vermutlich mit dem Lehrling (ungeprüft).
     .train 7411 >>Lerne Verzauberkunst
     .skill leatherworking,<1,1
     .skill enchanting,1,1
     .target Jhag
 step
     #label Kombi31
-    >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Kithas|r (Enchanting Supplies, gleich bei den Lehrern) 1 Copper Rod (1s 24c) und 19 Mote of Magic (10c).
+    >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Kithas|r (Enchanting Supplies; laut wow-professions neben dem Lehrer, Ort in Forever ungeprüft) 1 Copper Rod (1s 24c laut AHledger) und 19 Mote of Magic (10c).
     .collect 6217,1 >>Copper Rod
     .skill enchanting,<1,1
     .skill enchanting,50,1
@@ -14567,7 +14611,7 @@ step
     .target Jhag
 step
     #label Kombi37
-    >>Kombiguide: Fehlt noch etwas bis VZ 50: Strange Dust im AH kaufen (1 pro Punkt, Beta 84c). Lesser Magic Essence geht erst ab VZ 40 (Brust - Schwache Absorption, je 1 Essenz, Beta 69c); darunter nur Staub.
+    >>Kombiguide: Fehlt noch etwas bis VZ 50: unter VZ 40 Strange Dust im AH kaufen (1 pro Punkt, Beta 84c), ab VZ 40 Lesser Magic Essence für Brust - Schwache Absorption (1 pro Punkt, Beta 69c; oder Greater Magic Essence kaufen und per Rechtsklick in 3 teilen, wenn sie weniger als 3 Lesser kostet).
     .skill enchanting,50 >>VZ 50
     .skill enchanting,<1,1
 step
@@ -14575,22 +14619,22 @@ step
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
     >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Godan|r Geselle Verzauberkunst (ab VZ 50 und Stufe 10, 5s). Ende von Stufe A.
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
-    .skill enchanting,<1,1
+    .istrained 7412
     .skill enchanting,<50,1
     .target Godan
 step
     #label Kombi39
     .goto 1454/1,-4460.31,1685.31
-    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 59s im AH, 9s beim Händler und 8s 50c beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen, dann kommt Stufe B in Thunder Bluff (Route «17-22», Stufe 20). Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 31. Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
+    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 67s im AH, 9s beim Händler und 6s beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen, dann kommt Stufe B in Thunder Bluff (Route «17-22», Stufe 20). Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 45 (oder Greater Magic Essence kaufen und per Rechtsklick in 3 teilen, wenn sie weniger als 3 Lesser kostet; der Zähler zählt die geteilten mit). Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
     .collect 4232,10,0,1,24 >>Medium Hide (Stufe B)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2318,114,0,1,24 >>Leichtes Leder (Stufe B)
-    .collect 10938,31,0,1,24 >>Lesser Magic Essence (Stufe B)
+    .collect 10938,45,0,1,24 >>Lesser Magic Essence (Stufe B)
     .target Auctioneer Thathung
 step
     #label Kombi40
-    .goto 1454/1,-4564.24,1848.26--c:Orgrimmar,63.0,45.5 (Spielkoordinaten)
+    .goto 1454/1,-4567.05,1850.13--c:Orgrimmar,63.2,45.3 (Spielkoordinaten)
     >>Kombiguide: Kaufe bei |cRXP_FRIENDLY_Tamar|r 10 Salt und 38 Coarse Thread.
     .collect 4289,10 >>Salt (Stufe B)
     .skill leatherworking,<1,1
@@ -14640,7 +14684,7 @@ step
 step
     #label Kombi46
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Lerne Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s), falls noch nicht geschehen, und verzaubere (je 1 Lesser Magic Essence, etwa 33 mal) bis VZ 100. Material alle, Stufe aber nicht erreicht, oder ohne Gesellen (dann geht es nur bis 75): Häkchen setzen.
     .skill enchanting,100 >>VZ 100
     .skill enchanting,<1,1
     .itemcount 10938,1,1
@@ -16855,37 +16899,37 @@ step
 step
     #label Kombi50
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 59s im AH, 9s beim Händler und 8s 50c beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen. Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 31. Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
+    >>Kombiguide: Stufe B (LW 80 bis 100, VZ 50 bis 100), etwa 1g 67s im AH, 9s beim Händler und 6s beim Lehrer (Beta-Preise). Zu wenig Gold: Häkchen bei allen Zählern setzen. Kaufe, bis die Zähler voll sind: 10 Medium Hide, Leichtes Leder bis 114, Lesser Magic Essence bis 45 (oder Greater Magic Essence kaufen und per Rechtsklick in 3 teilen, wenn sie weniger als 3 Lesser kostet; der Zähler zählt die geteilten mit). Preisregel: Kostet eine Lesser Magic Essence mehr als 1,8 Strange Dust, kaufe stattdessen 60 Strange Dust für Bracer - Minor Stamina (berufe-plan.md §6).
     .collect 4232,10,0,1,24 >>Medium Hide (Stufe B)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2318,114,0,1,24 >>Leichtes Leder (Stufe B)
-    .collect 10938,31,0,1,24 >>Lesser Magic Essence (Stufe B)
+    .collect 10938,45,0,1,24 >>Lesser Magic Essence (Stufe B)
     .target Auctioneer Stampi
 step
     #label Kombi51
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 65s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 69, Lesser Magic Essence bis 51 (31 für B und 20 für C), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 49 (45 für B und 4 für C; oder Greater Magic Essence kaufen und teilen), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
     .collect 2318,354,0,1,24 >>Leichtes Leder (Stufen B und C)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,69,0,1,24 >>Strange Dust (Stufe C)
-    .collect 10938,51,0,1,24 >>Lesser Magic Essence (Stufen B und C)
+    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10938,49,0,1,24 >>Lesser Magic Essence (Stufen B und C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
     .target Auctioneer Stampi
 step
     #label Kombi52
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 65s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 69, Lesser Magic Essence bis 20, 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 4 (für die Silberrute), 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen. Steht deine LW schon über 100 (Quereinsteiger), brauchst du weniger: bis LW 115 pro fehlendem Punkt etwa 16 Leichtes Leder; die genaue Menge für deinen Stand zeigt /tl tipp. Häkchen setzen, sobald du genug hast.
     .collect 2318,240,0,1,24 >>Leichtes Leder (Stufe C)
     .skill leatherworking,<1,1
     .skill leatherworking,<100,1
     .skill leatherworking,130,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,69,0,1,24 >>Strange Dust (Stufe C)
-    .collect 10938,20,0,1,24 >>Lesser Magic Essence (Stufe C)
+    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10938,4,0,1,24 >>Lesser Magic Essence (Stufe C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
     .target Auctioneer Stampi
@@ -16898,8 +16942,24 @@ step
     .skill leatherworking,130,1
     .target Auctioneer Stampi
 step
+    #label Kombi85
+    >>Kombiguide: Quereinsteiger (LW schon über 100, ohne Geschmeidige leichte Bälge): Jede Leichte Lederhose braucht 1 Geschmeidigen leichten Balg. Kaufe sie im AH (Scan 15.10.: 1s 15c) oder kaufe Leichte Bälge (64c) und hol beim Händler Salz (50c), dann stellst du sie selbst her. Bis LW 115 etwa 1,6 Hosen pro fehlendem Punkt; die genaue Zahl für deinen Stand zeigt /tl tipp. Danach Häkchen setzen.
+    +Bälge für die Hosen besorgt
+    .skill leatherworking,<100,1
+    .skill leatherworking,115,1
+    .itemcount 4231,<24,1
+    .target Auctioneer Stampi
+step
+    #label Kombi86
+    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Feine Ledergürtel): Der Dunkle Ledergürtel (LW 115 bis 125) braucht 10 Feine Ledergürtel und 10 Geschmeidige mittlere Bälge. Kaufe dafür zusätzlich 60 Leichtes Leder und 10 Medium Hide (Mittlerer Balg), beim Händler 20 Groben Faden und 10 Salz; hergestellt wird nach den Hosen. Danach Häkchen setzen.
+    +Material für Gürtel und Bälge besorgt
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4246,<10,1
+    .target Auctioneer Stampi
+step
     #label Kombi54
-    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Danach Häkchen setzen.
+    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Quereinsteiger zusätzlich: 1 Salz je Geschmeidiger Balg, den du selbst herstellst, und 2 Grober Faden je Feiner Ledergürtel (Schritte davor). Danach Häkchen setzen.
     +Faden, Salz und Farbe gekauft
     .skill leatherworking,<1,1
     .skill leatherworking,150,1
@@ -16909,7 +16969,7 @@ step
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
     >>Kombiguide: Noch kein Geselle in Lederverarbeitung: bei |cRXP_FRIENDLY_Tarn|r lernen (ab LW 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill leatherworking,150 >>Geselle Lederverarbeitung (Maximum 150)
-    .skill leatherworking,<1,1
+    .istrained 3104
     .skill leatherworking,<50,1
     .target Tarn
 step
@@ -16917,7 +16977,7 @@ step
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
     >>Kombiguide: Noch kein Geselle in Verzauberkunst: bei |cRXP_FRIENDLY_Teg Dawnstrider|r lernen (ab VZ 50 und Stufe 10; in Orgrimmar 5s).
     .maxskill enchanting,150 >>Geselle Verzauberkunst (Maximum 150)
-    .skill enchanting,<1,1
+    .istrained 7412
     .skill enchanting,<50,1
     .target Teg Dawnstrider
 step
@@ -16985,6 +17045,13 @@ step
     .itemcount 10940,2,1
     .target Teg Dawnstrider
 step
+    #label Kombi87
+    >>Kombiguide: Leichte Bälge verarbeiten: Stelle für jede Hose, die noch fehlt, einen Geschmeidigen leichten Balg her (1 Leichter Balg, 1 Salz). Danach Häkchen setzen.
+    +Geschmeidige leichte Bälge hergestellt
+    .skill leatherworking,<100,1
+    .skill leatherworking,115,1
+    .itemcount 783,1,1
+step
     #label Kombi65
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
     >>Kombiguide: Lerne Light Leather Pants (Leichte Lederhose, ab LW 70, 4s in Orgrimmar) und stelle sie her (je 10 Leichtes Leder, 1 Cured Light Hide, 1 Fine Thread, etwa 24 mal) bis LW 115. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
@@ -16993,6 +17060,20 @@ step
     .itemcount 2318,10,1
     .itemcount 4231,1,1
     .target Tarn
+step
+    #label Kombi88
+    >>Kombiguide: Fehlen Feine Ledergürtel: stelle 10 her (je 6 Leichtes Leder, 2 Grober Faden). Sie geben keine Punkte mehr, sind aber Material für den Dunklen Ledergürtel. Danach Häkchen setzen.
+    +10 Feine Ledergürtel da
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4246,<10,1
+step
+    #label Kombi89
+    >>Kombiguide: Fehlen Geschmeidige mittlere Bälge: stelle 10 her (je 1 Medium Hide, 1 Salt). Danach Häkchen setzen.
+    +10 Geschmeidige mittlere Bälge da
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4233,<10,1
 step
     #label Kombi66
     .goto 1456/1,74.12,-1149.21--c:Thunder Bluff,42.4,43.0 (Spielkoordinaten)
@@ -17011,6 +17092,18 @@ step
     .skill leatherworking,<125,1
     .itemcount 2319,5,1
     .target Tarn
+step
+    #label Kombi71
+    >>Kombiguide: Verkaufe alle Leichten Lederhosen (Light Leather Pants) beim Händler: Der Forever-Händler zahlt 5s 99c je Hose, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 2s 31c, Beta). Den Staub für Verzauberkunst hast du im AH gekauft. Danach Häkchen setzen.
+    +Leichte Lederhosen verkauft
+    .skill leatherworking,<1,1
+    .itemcount 7282,1,1
+step
+    #label Kombi72
+    >>Kombiguide: Verkaufe alle Dunklen Ledergürtel (Dark Leather Belts) beim Händler: Der Forever-Händler zahlt 7s 3c je Gürtel, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 5s 11c, Beta). Danach Häkchen setzen.
+    +Dunkle Ledergürtel verkauft
+    .skill leatherworking,<1,1
+    .itemcount 4249,1,1
 step
     #label Kombi68
     .goto 1456/1,95.10,-1210.23
@@ -17037,63 +17130,42 @@ step
     .skill leatherworking,<125,1
     .itemcount 4246,1,1
 step
-    #label Kombi71
-    >>Kombiguide: Verkaufe alle Leichten Lederhosen (Light Leather Pants) beim Händler: Der Forever-Händler zahlt 5s 99c je Hose, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 2s 31c, Beta). Den Staub für Verzauberkunst hast du im AH gekauft. Danach Häkchen setzen.
-    +Leichte Lederhosen verkauft
-    .skill leatherworking,<1,1
-    .itemcount 7282,1,1
-step
-    #label Kombi72
-    >>Kombiguide: Verkaufe alle Dunklen Ledergürtel (Dark Leather Belts) beim Händler: Der Forever-Händler zahlt 7s 3c je Gürtel, mehr als ihr Entzauberungs-Ertrag im AH kostet (etwa 5s 11c, Beta). Danach Häkchen setzen.
-    +Dunkle Ledergürtel verkauft
-    .skill leatherworking,<1,1
-    .itemcount 4249,1,1
-step
     #label Kombi73
     >>Kombiguide: Entzaubere alle Hillman's Leather Gloves. Erwartet pro Paar etwa 1,1 Soul Dust und 0,3 Greater Astral Essence. Danach Häkchen setzen.
     +Hillman's Leather Gloves entzaubert
     .skill enchanting,<1,1
     .itemcount 4247,1,1
 step
+    #label Kombi76
+    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
+    >>Kombiguide: Lerne Runed Silver Rod (Runenverzierte Silberrute, ab VZ 100, 10s in Orgrimmar) und stelle sie gleich her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem; gibt einen Punkt). Die Rute behalten: spätere Verzauberungen brauchen sie. Danach Häkchen setzen.
+    +Runenverzierte Silberrute hergestellt
+    .skill enchanting,<1,1
+    .skill enchanting,<100,1
+    .itemcount 6338,1,1
+    .target Teg Dawnstrider
+step
+    #label Kombi75
+    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
+    >>Kombiguide: Lerne Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz, ab VZ 70, 2s in Orgrimmar), falls noch nicht geschehen, und verzaubere (je 2 Strange Dust, etwa 41 mal) bis VZ 130. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    .skill enchanting,130 >>VZ 130
+    .skill enchanting,<1,1
+    .skill enchanting,<100,1
+    .itemcount 10940,2,1
+    .target Teg Dawnstrider
+step
     #label Kombi74
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Chest - Minor Absorption (je 1 Lesser Magic Essence, etwa 18 mal) bis VZ 109. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Fehlt Staub: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, je 1 Lesser Magic Essence, ab VZ 100 gelb, etwa 2 pro Punkt) bis VZ 109. Darüber geht es mit Staub weiter (nächster Schritt). Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,109 >>VZ 109
     .skill enchanting,<1,1
     .skill enchanting,<100,1
     .itemcount 10938,1,1
     .target Teg Dawnstrider
 step
-    #label Kombi75
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlen Essenzen: Lerne Enchant Cloak - Minor Protection (Umhang - Schwacher Schutz, ab VZ 70, 2s in Orgrimmar) und verzaubere (je 2 Strange Dust) bis VZ 109. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
-    .skill enchanting,109 >>VZ 109
-    .skill enchanting,<1,1
-    .skill enchanting,<100,1
-    .itemcount 10940,2,1
-    .target Teg Dawnstrider
-step
-    #label Kombi76
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Lerne Runed Silver Rod (Runenverzierte Silberrute, ab VZ 100, 10s in Orgrimmar) und stelle sie her (1 Silver Rod, 3 Strange Dust, 4 Lesser Magic Essence, 1 Shadowgem). Die Rute behalten.
-    .skill enchanting,110 >>VZ 110
-    .skill enchanting,<1,1
-    .skill enchanting,<100,1
-    .itemcount 6338,1,1
-    .target Teg Dawnstrider
-step
-    #label Kombi77
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Cloak - Minor Protection (je 2 Strange Dust, etwa 32 mal) bis VZ 130. Ziel: dein Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
-    .skill enchanting,130 >>VZ 130
-    .skill enchanting,<1,1
-    .skill enchanting,<110,1
-    .itemcount 10940,2,1
-    .target Teg Dawnstrider
-step
     #label Kombi78
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Fehlt noch etwas bis VZ 130: Strange Dust im AH kaufen (2 pro Punkt, Beta 84c) oder mit Lesser Magic Essence Enchant 2H Weapon - Lesser Intellect (Formel bei Nata Dawnstrider 5s, verlangt VZ 100, je 4 Essenzen; lohnt, wenn eine Essenz weniger als 0,8 Strange Dust kostet).
+    >>Kombiguide: Fehlt noch etwas bis VZ 130: Strange Dust im AH kaufen (etwa 3 pro Punkt: der Plan rechnet 64 für 20 Punkte; Beta 84c) oder mit Lesser Magic Essence Enchant 2H Weapon - Lesser Intellect (Formel bei Nata Dawnstrider, 5s laut AHledger, verlangt VZ 100, je 4 Essenzen; lohnt, wenn eine Essenz weniger als 0,8 Strange Dust kostet).
     .skill enchanting,130 >>VZ 130
     .skill enchanting,<1,1
     .skill enchanting,<110,1
@@ -17108,14 +17180,22 @@ step
     .itemcount 11083,1,1
     .target Teg Dawnstrider
 step
+    #label Kombi90
+    >>Kombiguide: Ohne eigenen Soul Dust (Stufe D nicht gemacht): Lerne Enchant Boots - Minor Stamina (Stiefel - Schwache Ausdauer, ab VZ 125, 14s bei Godan in Orgrimmar; ob Teg Dawnstrider es führt, ist ungeprüft) und verzaubere bis VZ 150 (je 4 Strange Dust laut wow-professions, ungeprüft; etwa 80 Strange Dust im AH). Das ist billiger als Soul Dust zu kaufen (Beta: etwa 81s gegen 1g 59s mit Lehrer). Ziel: deine Stiefel. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    .skill enchanting,150 >>VZ 150
+    .skill enchanting,<1,1
+    .skill enchanting,<130,1
+    .itemcount 11083,<20,1
+    .target Teg Dawnstrider
+step
     #label Kombi81
-    >>Kombiguide: Fehlt noch etwas bis VZ 150: Soul Dust im AH kaufen (1 pro Punkt, Beta 7s 21c) für Bracer - Lesser Stamina.
+    >>Kombiguide: Fehlt noch etwas bis VZ 150 und keine Stiefel: Soul Dust im AH kaufen (1 pro Punkt, Beta 7s 21c) für Bracer - Lesser Stamina. Das ist teurer als die Stiefel (berufe-plan.md, Stufe D). Danach Häkchen setzen.
     .skill enchanting,150 >>VZ 150
     .skill enchanting,<1,1
     .skill enchanting,<130,1
 step
     #label Kombi82
-    >>Kombiguide: Im AH verkaufen, was LW und VZ bis 150 nicht mehr brauchen: Greater Astral Essence, übriger Soul Dust, Large Glimmering Shard, Heavy Leather, übrige Cured Light Hide. Willst du über 150 hinaus, behalte Heavy Leather (LW) und Soul Dust (VZ). Wert laut Plan etwa 3g 33s (Beta).
+    >>Kombiguide: Im AH verkaufen, was LW und VZ bis 150 nicht mehr brauchen: Greater Astral Essence, übriger Soul Dust, Large Glimmering Shard, Heavy Leather, übrige Cured Light Hide. Willst du über 150 hinaus, behalte Heavy Leather (LW) und Soul Dust (VZ). Wert laut Plan etwa 3g 33s vor und 3g 16s nach 5 % Gebühr (Beta), dazu Heavy Leather und übrige Cured Light Hide.
     +Übriges verkauft oder behalten
     .skill leatherworking,<1,1
 step << Shaman
