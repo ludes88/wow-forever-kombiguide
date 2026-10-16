@@ -1,6 +1,6 @@
 # Messplan Beta: Daten mit den Druiden sammeln (14.–22.10.2026)
 
-Stand 16.10.2026 (früh). Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
+Stand 16.10.2026. Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
 
 Jede Messung beantwortet eine offene Frage im Plan. Bei jeder steht, welche Zahl sie ersetzt. Ob, welche und wann gemessen wird, entscheidest du. Die Reihenfolge unten ist ein Vorschlag.
 
@@ -9,19 +9,46 @@ Grundlagen:
 - Pläne: `docs/plan/berufe-plan.md`, `docs/plan/mengen-leder.md`
 - Tests T0–T33: Best Practice §10
 
-## Ab 16.10.: der Stufe-8-Druide bis Orgrimmar oder weiter (Vorschlag von Claude, Stand 16.10. früh)
+## Ab 16.10.: der Stufe-8-Druide bis Orgrimmar oder weiter (Vorschlag von Claude, Stand 16.10.)
 
 Dein Plan (15.10.): «ich spiele ab jetzt den level 8er bis sicher og oder weiter. umso mehr ich spiele umso genauer». Dein Ziel: herausfinden, was den Kreislauf verbessert und wie effizient es wirklich geht. Das Testlog schreibt fast alles selbst; die Liste sagt, wo ein paar Handgriffe viel bringen. Reihenfolge und Umfang entscheidest du; gemessene Dauern gibt es noch keine, darum stehen keine da.
 
-**Einmal vorher (T28):** Im Ordner `World of Warcraft\_classic_beta_` die Datei `KombiEinrichten.bat` doppelklicken (eine Kopie von `tools\windows\kombi_einrichten.bat`; die Vorlage im Repo-Klon bricht ab, weil sie `Interface\AddOns` neben sich sucht). Sie entfernt die drei Verknüpfungen auf deinen Repo-Klon und holt die neuen Addon-Ordner aus `_classic_beta_\_kombi_neu`. Danach das Spiel starten (ob `/reload` reicht, ist ungeprüft). SITZUNG zeigt «Testlog 3.7.1», «Kombiguide 0.5.3-v4.11.23» und «KombiDaten …». Ab dann schreibe ich neue Versionen direkt, und bei dir reicht `/reload`.
+**Einmal vorher (T28):** Im Ordner `World of Warcraft\_classic_beta_` die Datei `KombiEinrichten.bat` doppelklicken (eine Kopie von `tools\windows\kombi_einrichten.bat`; die Vorlage im Repo-Klon bricht ab, weil sie `Interface\AddOns` neben sich sucht). Sie entfernt die drei Verknüpfungen auf deinen Repo-Klon und holt die neuen Addon-Ordner aus `_classic_beta_\_kombi_neu`. Danach das Spiel starten (ob `/reload` reicht, ist ungeprüft). Das Fenster der Datei meldet dreimal «[installiert]» und dann «Fertig». SITZUNG zeigt «Testlog 3.7.1», «Kombiguide 0.6.1-v4.11.23» und «KombiDaten …» (die Zeile steht nur im Protokoll, nicht im Chat). Ab dann schreibe ich neue Versionen direkt, und bei dir reicht `/reload`. Am 16.10. nach dem Merge von 0.6.1 auf deinem PC nachgesehen: Die drei Ordner sind noch Verknüpfungen auf den Klon, in `_kombi_neu` liegen Testlog 3.7.1 und Kombiguide 0.6.1.
 
 **Was der Druide mitbringt** (Testlog bis 14.10.): Stufe 7 (laut dir 8), Kürschnerei 25, Kräuterkunde 11, Angeln 15, Kochkunst 1, Geld zuletzt 30c. Stufe A in Orgrimmar kostet etwa 59s (Material nach dem eigenen Scan vom 15.10. und Lehrer, `docs/plan/berufe-plan.md`). `/tl tipp` zeigt das als nächsten Schritt, mit dem Leder für Stufe A und der Beute, die im AH ein Vielfaches des Händlerpreises bringt.
+
+**Kurz: Checkliste (16.10.)** Du levelst normal nach «Kombiguide (H)», das Testlog schreibt das meiste selbst. Hier steht nur, was es nicht sehen kann (Pfeil, ob ein Schritt aufhält oder sich abhakt) oder wofür ein Fenster offen sein muss. Ausführlich: die Tabelle darunter und Best Practice §10.
+
+Einmal vorher
+- [ ] Spiel schliessen, im Ordner `_classic_beta_` die Datei `KombiEinrichten.bat` doppelklicken (dreimal «[installiert]», dann «Fertig»), Spiel starten (T28).
+- [ ] RXP steht in «Kombiguide (H)», «6-12 Mulgore», beim letzten Schritt (laut Testlog vom 14.10. #45 «Accept The Ravaged Caravan»; T6).
+- [ ] Einmal `/tl tipp`: Passt «Nächster Schritt für dich» (Leder und Gold für Orgrimmar)? (T27, T33)
+
+Mulgore und Thunder Bluff
+- [ ] Auktionshaus in Thunder Bluff öffnen, bis «AH-Scan fertig» im Chat steht; nach 20 Minuten oder mehr nochmals, der Chat erinnert dich (T15, T32).
+- [ ] Je einmal öffnen: Bank, Kochfenster, jedes Lehrerfenster mit dem Filter einmal auf alle drei Arten (T13, T17, T18). Wenn du magst, auch Una, Mot und Teg Dawnstrider (Lederverarbeitung, Verzauberkunst): Die Lehrer in Thunder Bluff sind noch nicht gemessen (M1).
+- [ ] Gesellen-Schritte (Kürschnerei bei Mooranta, erscheint erst ab Kürschnerei 50; in Orgrimmar Lederverarbeitung und Verzauberkunst): Hakt sich der Schritt nach dem Lernen selbst ab? Sonst Häkchen setzen und `/tl bug Geselle hakt nicht ab` (T29).
+- [ ] Rahauro nach Cairne (T34): Der Schritt hält die Route nicht auf, der Pfeil bleibt bei der Route (auch auf dem Sprungweg von der Hunter Rise), Rahauro hat eine Stecknadel, beim Ansprechen nimmt RXP die Quests an. Die Quests gibt es ab Stufe 9 (`docs/recherche/2026-10-16_dungeon-vorquests.md` §6); darunter verschwindet der Schritt am Ende von Mulgore.
+- [ ] Beim Händler mit Leder in der Tasche: Kommt die Zeile «Nicht beim Händler verkaufen …», einmal pro Besuch? (T31)
+
+Orgrimmar (etwa Stufe 16)
+- [ ] Thrall und Neeru Fireblade stehen als Erinnerung neben der Route, bis zum Zeppelin-Schritt (T35).
+- [ ] Nach «Lerne Verzauberkunst» einmal das Berufsfenster öffnen (kommt Armschiene - Schwache Abwehr mit dem Rang? Widerspruch 17).
+- [ ] Zeppelin-Schritt: Ohne Abstecher Häkchen setzen, dann fallen alle Abstecher-Schritte weg, weiter mit dem Ruhestein (T35). Mit Abstecher: Zeigen die Pfeile in Tirisfal und Unterstadt richtig, stehen Griffs, Bel'dugur und Faranell dort, wo der Pfeil hinzeigt?
+- [ ] Erreichst du im Abstecher Stufe 18: bis zu den Crossroads kein `/reload` und nicht ausloggen (offener Punkt 37).
+
+Immer
+- [ ] Meldet das Spiel ein volles Questlog: `/tl bug Questlog voll` (RXP rechnet mit 40 Plätzen, ungeprüft).
+- [ ] Was hängt, falsch zeigt oder fehlt: `/tl bug <was>`.
+- [ ] Am Schluss `/reload` und hier «fertig».
+
+Von selbst im Protokoll: Laufweg, XP pro Gegner und Quest, Kürschnern, Beute, Händler, Geld, Lehrerlisten, Rezepte, AH-Scans, Dungeon-Läufe, Berufe und Geld pro Charakter; beim Lernen in Orgrimmar auch, ob RXP nur den Beruf kauft (T30). Erst später, falls du so weit kommst: Ratchet und Lushwater Oasis (T36), «17-22» (T36, T37), Ende und Sprung in den gekauften Guide (T5, T14).
 
 **Beim Spielen (alles automatisch, ausser wo «du» steht)**
 
 | Was | Wo | Was zurückkommt | Wofür |
 |---|---|---|---|
-| Normal nach dem Kombi-Guide leveln; welche Gruppe, entscheidest du (offener Punkt 29) | überall | Laufweg alle 10 s, XP pro Gegner und Quest, Tode, Zeit im Kampf, auf dem Weg, auf Flügen (T23) | Stufen und XP pro Stunde pro Gebiet; welche Gegner sich lohnen; wo Zeit verloren geht |
+| Normal nach dem Kombi-Guide leveln, Gruppe «Kombiguide (H)» (Entscheid 16.10., Punkt 29) | überall | Laufweg alle 10 s, XP pro Gegner und Quest, Tode, Zeit im Kampf, auf dem Weg, auf Flügen (T23) | Stufen und XP pro Stunde pro Gebiet; welche Gegner sich lohnen; wo Zeit verloren geht |
 | Jedes Tier kürschnern, Kräuter am Weg; Leder behalten | Mulgore, Brachland | SAMMELN mit Kreatur, Beute, Zeit; Leder-Zähler gegen das Modell (T9) | Sweetspot (99 Fetzen, 62 Leichtes Leder, 27 Leichte Bälge) und Farm-Stopp S1 (M6) |
 | Du, wenn du magst: Fleisch und Eier ins AH statt zum Händler, als ganze Stapel; später den Briefkasten öffnen | Thunder Bluff | AH-ANGEBOT mit dem Pfand aus dem Geldabzug (T25), AH-POST: verkauft oder abgelaufen (T16) | die ersten echten Absatz-Belege; die Pfand-Regel (gemessen bisher 1s für 1 Groben Faden und 8s 50c für 4 Edelsteine, Formel ungeprüft). Im Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises; ob sie sich verkaufen, zeigt erst so ein Versuch |
 | Beim Händler: Steht im Chat «Nicht beim Händler verkaufen …», sind Plan-Leder oder Beute mit hohem AH-Wert in den Taschen (T31) | jeder Händler | – | kein Gold verschenken (am 15.10. um 20:10 gingen 5 Graue Farbstoffe und 7 Einfaches Holz für zusammen 4s 98c an den Händler; im AH lagen sie bei 4s bzw. 53c pro Stück, und der Plan braucht 10 Graue Farbstoffe) |
@@ -48,7 +75,7 @@ Dein Plan (15.10.): «ich spiele ab jetzt den level 8er bis sicher og oder weite
 
 Du willst in der Beta nur noch wenig spielen, damit die Lust zum Start bleibt (15.10.; ob das noch gilt, ist offener Punkt 31). Die Liste nimmt nur, was der Plan zum Start braucht und was sich beim Spielen zum Start nicht ohnehin nebenbei misst. Was du davon machst, entscheidest du.
 
-Vorher einmal: T28 (oben), danach reicht `/reload`. Die Zeile SITZUNG zeigt «Testlog 3.7.1», «Kombiguide 0.5.3-v4.11.23» und «KombiDaten …».
+Vorher einmal: T28 (oben), danach reicht `/reload`. Die Zeile SITZUNG zeigt «Testlog 3.7.1», «Kombiguide 0.6.1-v4.11.23» und «KombiDaten …».
 
 Neu seit 15.10. (Nacht), Kombi-Guide 0.5: die Gruppe «Kombiguide Dungeon (H)» (Dungeon-Route, Best Practice §5). Wenn du magst, 1 Minute: im RXP-Menü die Gruppe öffnen, «12-17 The Barrens» wählen, die ersten Schritte ansehen (RFC) und wieder zum bisherigen Guide zurück. Erscheint die Gruppe mit 4 Guides und ohne Fehlermeldung? (T22) Die Stelle in «Kombiguide (H)» bleibt dabei erhalten (Fortschritt pro Guide, Best Practice §3).
 
@@ -81,7 +108,7 @@ Weggelassen, weil es beim Spielen zum Start ohnehin mitläuft oder teuer ist: M6
 
 ## So läuft eine Messung
 
-1. Einmal T28 (oben), danach nur `/reload`. SITZUNG zeigt «Testlog 3.7.1» und «Kombiguide 0.5.3-v4.11.23». Seit 3.4: die Zeile LEHRER, die beim Öffnen eines Lehrerfensters die ganze Liste schreibt. Seit 3.5: AH-SCAN beim Öffnen des Auktionshauses (M11). Neu in 3.6: REZEPTE (Berufsfenster), INVENTAR (Taschen, Bank), AH-POST (Briefkasten), AH-ANGEBOT (eigenes Angebot) und die Abnahme zwischen zwei AH-Scans (M12).
+1. Einmal T28 (oben), danach nur `/reload`. SITZUNG zeigt «Testlog 3.7.1» und «Kombiguide 0.6.1-v4.11.23». Seit 3.4: die Zeile LEHRER, die beim Öffnen eines Lehrerfensters die ganze Liste schreibt. Seit 3.5: AH-SCAN beim Öffnen des Auktionshauses (M11). Neu in 3.6: REZEPTE (Berufsfenster), INVENTAR (Taschen, Bank), AH-POST (Briefkasten), AH-ANGEBOT (eigenes Angebot) und die Abnahme zwischen zwei AH-Scans (M12).
 2. Zu Beginn `/tl M3 Start`, am Ende `/tl M3 Ende` (mit der Nummer der Messung). Die Notiz schreibt Ort, Stufe und Berufe dazu. So finde ich die Abschnitte im Protokoll.
 3. Spielen wie unten beschrieben. Das Testlog schreibt das meiste selbst: SAMMELN, ANGELN, HERSTELLEN, ENTZAUBERN, LEHRER, GELD, QUEST AB, BERUF, AH-SCAN.
 4. Danach `/reload` und das Protokoll schicken:
