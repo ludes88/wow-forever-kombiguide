@@ -88,7 +88,8 @@ def world(row, maps):
 #   ziel          .collect id,menge,0,1,24       (Fortschritt «x/menge»; Flags 8 = Bank zählt mit, 16 = keine Quest;
 #                                                 Quest 0 und Ziel-Maske 1, weil RXP leere Argumente überspringt)
 #   fertigkeit    .skill id,menge                (id = Berufsname, z. B. herbalism; erfüllt ab menge)
-#   maxfertigkeit .maxskill id,menge             (z. B. Geselle gelernt: Maximum 150)
+#   maxfertigkeit .maxskill id,menge             (z. B. Geselle gelernt: Maximum 150); bei 150 dazu .istrained <Zauber des Gesellen>
+#                                                 (GESELLE unten), weil RXP .maxskill nur beim Aktivieren prüft
 #   abgeben       .turnin id   ·   annehmen  .accept id
 #   hingehen      nur .goto mit radius           (erledigt beim Ankommen)
 #   hinweis       Text und +kurz                 (braucht «bis»; bleibt sichtbar, bis der Ziel-Schritt erledigt ist. Ohne das Kästchen
@@ -97,6 +98,17 @@ def world(row, maps):
 #                                                 fehlt das Material da schon, ist der Schritt erledigt; geht es mittendrin aus, Häkchen setzen)
 # «bedingung» und «extra» nehmen mehrere rohe RXP-Zeilen, getrennt mit « // ».
 AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis", "manuell")
+# Geselle als Zauber (seit 0.5.3, Prüfbericht 16.10., C1): RXP v4.11.23 prüft «.maxskill» nur, wenn der Schritt aktiv wird
+# (functions.lua: kein events.maxskill; GuideWindow.lua BindActiveStepElement ruft das Element einmal auf), ein Schritt hakt
+# sich nach dem Lernen also nicht von selbst ab. «.istrained» hört auf TRAINER_SHOW, CHAT_MSG_SYSTEM, SKILL_LINES_CHANGED und
+# TRAINER_UPDATE (events.istrained = events.train) und erledigt den Schritt, sobald der Zauber bekannt ist; Lehrer-Automatik
+# hat es nicht (anders als «.train», das beim offenen Lehrerfenster selbst kauft, RXPGuides.lua OnTrainer).
+# IDs: RXP DB/forever/db.lua, addon.professionID (Reihenfolge Lehrling, Geselle, Experte …): Lederverarbeitung 2108, 3104;
+# Verzauberkunst 7411, 7412; Kürschnerei 8613, 8617; Angeln 7620, 7731 (7620 beim Lernen im Testlog 13.10. gesehen);
+# Kräuterkunde 2368 aus RXPs Guides/Herbalism.lua («.train 2368 >> Train Journeyman Herbalism»). Ob der Forever-Client
+# den Gesellen unter diesen IDs führt, ist ungeprüft; das Testlog schreibt die ID beim Lernen (GELERNT). Stimmt sie nicht,
+# bleibt alles wie vorher: Häkchen setzen.
+GESELLE = {"leatherworking": 3104, "enchanting": 7412, "skinning": 8617, "fishing": 7731, "herbalism": 2368}
 
 
 def make_step(row, maps):
@@ -134,6 +146,8 @@ def make_step(row, maps):
         lines.append(f"    .skill {row['id']},{row['menge']}{k}")
     elif akt == "maxfertigkeit":
         lines.append(f"    .maxskill {row['id']},{row['menge']}{k}")
+        if row["menge"] == "150" and row["id"] in GESELLE:
+            lines.append(f"    .istrained {GESELLE[row['id']]}")
     elif akt == "abgeben":
         lines.append(f"    .turnin {row['id']}{k}")
     elif akt == "annehmen":

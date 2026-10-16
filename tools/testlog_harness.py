@@ -1357,7 +1357,8 @@ g7.fire("ADDON_LOADED", "KombiTestlog")
 g7.fire("PLAYER_ENTERING_WORLD", True, False)
 c7 = lambda: g7.KombiTestlogDB.chars["Testheld-Testrealm"]
 weg = lambda: [c7().weg[i] for i in range(1, len(c7().weg) + 1)]
-check(weg()[0].startswith("S ") and weg()[0].endswith(" 3.7") and len(weg()) == 2 and " 1412 46.80 58.10 12 100 1000 0 " in weg()[1] + " ",
+VERSION_LUA = _re.search(r'local VERSION = "([^"]+)"', src).group(1)
+check(weg()[0].startswith("S ") and weg()[0].endswith(" " + VERSION_LUA) and len(weg()) == 2 and " 1412 46.80 58.10 12 100 1000 0 " in weg()[1] + " ",
       "3.7: Laufweg beginnt mit S und einer Probe (%s)" % weg())
 # Kill im Kampf: Kreatur und Stufe vom toten Ziel
 g7.fire("PLAYER_REGEN_DISABLED"); g7.fire("PLAYER_TARGET_CHANGED")
@@ -1430,6 +1431,11 @@ check(len(dz_s) == 2 and dz_s[0]["name"] == "Höhlen des Wehklagens" and dz_s[0]
       and dz_s[0]["beute"] == "6447:1", "spiel: Dungeon-Läufe (%s)" % [(d["name"], d["xp"], d["ende"]) for d in dz_s])
 check(any(r["karte"] == "1412" and float(r["minuten"]) > 0 for r in wz_s) and any(r["karte"] == "I43" for r in wz_s)
       and all("Testheld" not in str(r) for r in wz_s + dz_s), "spiel: Laufweg pro Karte, ohne Namen (%s)" % [(r["karte"], r["minuten"], r["xp"]) for r in wz_s])
+# Sitzungsmarke und erste Probe in derselben Sekunde: die Marke zuerst, unabhängig von der Reihenfolge der Menge
+_reihe = sorted({"1000 1412 50.0 50.0 5 10 400 0 -", "S 1000 3.7.1", "990 1412 49.0 50.0 5 5 400 0 -", "1010 1412 51.0 50.0 5 20 400 0 -"},
+               key=sp.weg_ordnung)
+check(_reihe[1].startswith("S ") and _reihe[2].startswith("1000 ") and sp.weg_ordnung("S 5 x") < sp.weg_ordnung("5 1412 1 1 1 1 1 0 -"),
+      "spiel: Sitzungsmarke vor der Probe derselben Sekunde (%s)" % _reihe)
 # Pfand aus dem Geldabzug, in beiden Reihenfolgen; ein Abzug ohne Angebot (Kauf) zählt nicht
 L8 = runtime()
 g8 = L8.globals()
@@ -1504,5 +1510,87 @@ g9.SlashCmdList["KOMBITESTLOG"]("tipp")
 msgs9 = [g9.messages[i] for i in range(1, len(g9.messages) + 1)]
 check(any("2 Tipps und 1 Schritte für dich" in m for m in msgs9) and any(m.endswith("Nächster Schritt für dich:") for m in msgs9)
       and any("- LW 109: weiter bis 115" in m for m in msgs9), "3.7: /tl tipp zeigt den nächsten Schritt für den Charakter (%s)" % msgs9[-6:])
+# --- Version 3.7.1: Warnung beim Händler, beobachtete Gegenstände aus KombiDaten, Datenanfrage, Scan-Paar, Berufe und Geld ---
+kd371 = """requested = {}
+C_Item.RequestLoadItemDataByID = function(id) table.insert(requested, id) end
+IsResting = function() return true end
+KombiDaten = { stand = "15.10. 22:00", tipps = {}, hinweise = {},
+  nichtVerkaufen = { [2318] = "Leichtes Leder (Leder für den Berufe-Plan)", [9999] = "nicht in den Taschen" },
+  beobachten = { [5467] = true } }"""
+L10 = runtime(pre=kd371)
+g10 = L10.globals()
+g10.fire("ADDON_LOADED", "KombiTestlog"); g10.fire("PLAYER_ENTERING_WORLD", True, False)
+g10.fire("SKILL_LINES_CHANGED")
+L10.execute("money = money + 5"); g10.fire("PLAYER_MONEY")
+L10.execute("bags[0][3] = { id = 2318, n = 10, name = 'Leichtes Leder' }; MerchantFrame.shown = true")
+g10.fire("MERCHANT_SHOW"); g10.fire("MERCHANT_SHOW")
+L10.execute("MerchantFrame.shown = false"); g10.fire("MERCHANT_CLOSED")
+msgs10 = lambda: [g10.messages[i] for i in range(1, len(g10.messages) + 1)]
+warn10 = [x for x in msgs10() if "Nicht beim Händler verkaufen" in x]
+check(len(warn10) == 1 and "(KombiDaten 15.10. 22:00): 10x Leichtes Leder (Leder für den Berufe-Plan)" in warn10[0]
+      and "nicht in den Taschen" not in warn10[0], "3.7.1: Warnung beim Händler, einmal pro Besuch (%s)" % warn10)
+L10.execute("""interacting[21] = true
+auctions = { { id = 5467, n = 5, buy = 500, name = 'Kodofleisch' }, { id = 5467, n = 2, buy = 300, name = 'Kodofleisch' },
+             { id = 2318, n = 3, buy = 90, name = 'Leichtes Leder' } }""")
+g10.SlashCmdList["KOMBITESTLOG"]("ah")
+g10.fire("REPLICATE_ITEM_LIST_UPDATE")
+L10.execute("now_t = now_t + 3"); g10.ticker()
+sc10 = g10.KombiTestlogDB.ahScans[len(g10.KombiTestlogDB.ahScans)]
+check("5467:" in (sc10.plan or "") and sc10.stufen[5467] is not None,
+      "3.7.1: Gegenstand aus KombiDaten.beobachten mit Preisstufen (%s)" % sc10.plan)
+req10 = [g10.requested[i] for i in range(1, len(g10.requested) + 1)]
+check(5467 in req10 and len(req10) <= 200, "3.7.1: Daten von Gegenständen ohne Händlerpreis angefragt (%s)" % req10)
+check(any("Abnahme messen" in x for x in msgs10()), "3.7.1: Hinweis für das Scan-Paar")
+c10 = g10.KombiTestlogDB.chars["Testheld-Testrealm"]
+check(c10.berufe is not None and c10.berufe["Kürschnerei"] == "10/75" and c10.geld == 12350 and c10.geldZeit,
+      "3.7.1: Berufe und Geld pro Charakter (%s, %s)" % (c10.berufe and dict(c10.berufe), c10.geld))
+# --- markt.py seit 16.10.: Essenzen teilen, gemeinsames Angebotsbuch, Zwischenprodukt selbst, Sammler, Listen ---
+scan_e = [{"datum": "2026-10-15 22:00", "zeit": 1, "markt": "EU Horde Rx", "phase": "Beta", "unvollstaendig": False,
+           "abnahme": {}, "abstand": 0, "angebote": 10, "preise": {
+    10938: {"tiefst": 88, "median": 90, "menge": 100, "angebote": 5, "stufen": [(88, 100)], "plan": True},
+    10939: {"tiefst": 145, "median": 150, "menge": 50, "angebote": 5, "stufen": [(145, 50)], "plan": True},
+    3001: {"tiefst": 10, "median": 10, "menge": 15, "angebote": 2, "stufen": [(10, 5), (99, 10)], "plan": False},
+    4231: {"tiefst": 115, "median": 116, "menge": 50, "angebote": 3, "stufen": [(115, 50)], "plan": True},
+    783: {"tiefst": 64, "median": 64, "menge": 50, "angebote": 3, "stufen": [(64, 50)], "plan": True},
+    2318: {"tiefst": 30, "median": 35, "menge": 500, "angebote": 3, "stufen": [(30, 500)], "plan": True},
+    2672: {"tiefst": 150, "median": 150, "menge": 300, "angebote": 30, "stufen": [(150, 300)], "plan": False}}}]
+me = mk.Markt({"chars": {}, "info": {}}, scan_e, {})
+k3, wo3 = me.einkauf(10938, 3)
+k1, wo1 = me.einkauf(10938, 1)
+kb, wob, vb = me.einkauf_ex(10938, 1, {})
+check(k3 == 145 and "geteilt" in wo3 and k1 == 88 and wo1 == "AH" and kb == 145 and vb.get(("rest", 10938)) == 2,
+      "markt: Geringe Essenz direkt oder als Grosse geteilt (%s %s / %s %s / %s %s)" % (k3, wo3, k1, wo1, kb, vb))
+db_b = {"chars": {"Testheld-Testrealm": {"rezepte": {"Schneiderei": {"stufe": "50", "max": "75",
+        "liste": "1:7001:1:1:0:3001*1;2:7002:1:1:0:3001*1"}}}}, "info": {7001: {"s": 100}, 7002: {"s": 90}}, "rezeptNamen": {}}
+fb = mk.fuer_haendler(mk.Markt(db_b, scan_e, {}))
+check(len(fb) == 1 and fb[0]["out"] == 7001 and fb[0]["n"] == 5 and fb[0]["kosten"] == 50,
+      "markt: ein Angebotsbuch für alle Tipps (%s)" % [(e["out"], e["n"], e["kosten"]) for e in fb])
+db_z = {"chars": {"Testheld-Testrealm": {"rezepte": {"Lederverarbeitung": {"stufe": "109", "max": "150",
+        "liste": "9068:7282:1:1:1:2318*10,4231*1,2321*1;3816:4231:1:1:3:783*1,4289*1"}}}},
+        "info": {7282: {"n": "Leichte Lederhose", "s": 599}}, "rezeptNamen": {9068: "Leichte Lederhose", 3816: "Geschmeidiger leichter Balg"}}
+fz = mk.fuer_haendler(mk.Markt(db_z, scan_e, {}))
+check(fz and fz[0]["out"] == 7282 and fz[0]["n"] == 50 and any("selbst herstellen" in w for w in fz[0]["wege"]),
+      "markt: Zwischenprodukt selbst herstellen, wenn billiger (%s)" % [(e["out"], e["n"], e["wege"]) for e in fz])
+db_s = {"log": [
+    "14.10. 20:00:00 | SITZUNG | L8 50% | Mulgore > Ort | 1412 46.0,58.0 | RXP 6-12 Mulgore #45 | Druide-Testrealm | Client 1.60.1 (70374) | RXP v4.11.23 | Kombi-Test 1 | Kombiguide 0.5.2 | Testlog 3.7 | Geld 30c | KombiDaten -",
+    "14.10. 20:01:00 | BERUF | L8 50% | Mulgore > Ort | 1412 46.0,58.0 | RXP 6-12 Mulgore #45 | Kürschnerei 25/75",
+    "14.10. 20:02:00 | BEUTE | L8 50% | Mulgore > Ort | 1412 46.0,58.0 | RXP 6-12 Mulgore #45 | Kreatur 2958 | 1x Sehniges Wolfsfleisch (2672)",
+    "14.10. 20:03:00 | GELD | L8 50% | Mulgore > Ort | 1412 46.0,58.0 | RXP 6-12 Mulgore #45 | sonst +5c | Bestand 35c",
+    "14.10. 20:10:00 | ENDE | L8 50% | Mulgore > Ort | 1412 46.0,58.0 | RXP 6-12 Mulgore #45 | Dauer 10 Min"],
+    "chars": {}, "info": {2672: {"n": "Sehniges Wolfsfleisch", "s": 4, "q": 1, "b": 0}}}
+ms = mk.Markt(db_s, scan_e, {})
+zs = mk.lage(ms).get("Druide-Testrealm", [])
+check(len(zs) == 3 and zs[0].startswith("Sammler (Kürschnerei 25): bis Orgrimmar Leder behalten") and "zuletzt gesehen: 35c" in zs[1]
+      and "Sehniges Wolfsfleisch 1s 42c nach Gebühr (Händler 4c)" in zs[2], "markt: nächster Schritt für Sammler (%s)" % zs)
+warn_s, beob_s = mk.testlog_listen(ms, mk.sammler_zustand(ms))
+check(2318 in warn_s and "Berufe-Plan" in warn_s[2318] and "AH etwa 1s 42c" in warn_s.get(2672, "") and 2672 in beob_s and 10938 in beob_s,
+      "markt: Listen für das Testlog (%s / %s)" % ({k: v for k, v in warn_s.items() if k in (2318, 2672)}, beob_s[:8]))
+with tempfile.TemporaryDirectory() as tmp:
+    mk.kombidaten(tmp, ms, [], ["Hinweis"], "15.10. 22:00", 1, {}, (warn_s, beob_s))
+    daten_s = open(os.path.join(tmp, "Daten.lua"), encoding="utf-8").read()
+L11 = runtime(pre=daten_s)
+g11 = L11.globals()
+check(g11.KombiDaten.nichtVerkaufen[2672] is not None and g11.KombiDaten.beobachten[10938] == True,
+      "markt: KombiDaten mit nichtVerkaufen und beobachten lädt in Lua")
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)
