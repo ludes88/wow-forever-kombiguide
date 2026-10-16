@@ -3,8 +3,13 @@
 # Aufruf:
 #   python3 tools/rxp_schritte.py liste <Quelle> "<Guide-Name>" [--klasse druid] [--rasse tauren] [--von N] [--bis M] [--dungeons RFC,WC]
 #   python3 tools/rxp_schritte.py vergleich <alte Quelle> <neue Quelle> "<Guide-Name>" --stelle N [--klasse ...] [--rasse ...]
-#       Exit 1, wenn sich einer der Schritte 1..N in der Zeilennummer verschiebt (dann fände RXP die Stelle nicht mehr sicher);
+#       Exit 1, wenn sich einer der Schritte 1..N in der Zeilennummer verschiebt und RXP die Stelle N dann nicht mehr als
+#       denselben Schritt lädt (RXP sucht zuerst die Kennung aus der Zeile, sonst nimmt es die Nummer; seit 16.10. geprüft, z. B.
+#       für neue Schritte mit #maxlevel, die ein Testcharakter höherer Stufe nicht sieht: dann --stufe angeben);
 #       geänderter Inhalt bei gleicher Zeile wird nur gemeldet (RXP findet die Stelle über die Zeilennummer, Best Practice §6).
+#   python3 tools/rxp_schritte.py ziele <Quelle> "<Guide-Name>" [--gruppe ...] [--stufe N]
+#       Zusatzschritte (Label «Kombi…») mit #completewith: für 9 Klassen und 4 Rassen das Ziel suchen. Exit 1, wenn eins fehlt
+#       oder «next» einen Zusatzschritt mit #completewith trifft (Kette; seit 16.10.).
 #   --gruppe: nur Guides dieser Gruppe (Kombi_Guide.lua enthält jeden Guide-Namen zweimal: «Kombiguide (H)» zuerst, dann
 #       «Kombiguide Dungeon (H)»). Ohne die Angabe gilt der erste Guide mit dem Namen.
 #   --dungeons: eingeschaltete Dungeons (Kürzel wie in RXP, z. B. RFC,WC,BFD). Ohne die Angabe sind alle aus, wie in Forever:
@@ -138,9 +143,50 @@ def steps(text, name, me, level=None, dungeons=frozenset(), group=None):
     return shown
 
 
+KLASSEN = ("warrior", "hunter", "rogue", "priest", "shaman", "mage", "warlock", "druid", "paladin")
+RASSEN = ("orc", "troll", "tauren", "undead")
+
+
+def ziele(text, name, group, level=None):
+    """Zusatzschritte mit «#completewith X» (Label «Kombi…»): Für jede Klasse und Rasse das Ziel X unter den gezeigten Schritten
+    suchen (RXP: «next» = nächster gezeigter Schritt, sonst guide.labels, GuideWindow.lua UpdateStepCompletion). Fehler:
+    kein Ziel (der Schritt bliebe stehen, bis man ihn erledigt) oder «next» trifft einen Zusatzschritt mit #completewith
+    (Kette: der erste verschwände mit dem zweiten). Hinweis: Ziel hat selbst #completewith (dann gilt dessen Ende, z. B. ein
+    Flug oder, mit einem Label gewollt, ein anderer Zusatzschritt)."""
+    def cw(s):
+        return next((b.split()[1] for b in s["body"] if re.match(r"^#completewith\s+\S", b)), None)
+
+    def kombi(s):
+        return any(re.match(r"^#label\s+Kombi", b) for b in s["body"])
+
+    fehler, hinweise = {}, {}
+    for klasse in KLASSEN:
+        for rasse in RASSEN:
+            st = steps(text, name, {klasse, rasse, "horde", "forever", "dede"}, level, frozenset(), group)
+            labels = {}
+            for s in st:
+                for b in s["body"]:
+                    m = re.match(r"^#label\s+(\S+)", b)
+                    if m:
+                        labels[m.group(1)] = s          # wie RXP: guide.labels[label] = Schritt, der letzte gilt
+            for s in st:
+                t = cw(s) if kombi(s) else None
+                if not t:
+                    continue
+                lab = next(b.split()[1] for b in s["body"] if b.startswith("#label"))
+                target = (st[s["idx"]] if s["idx"] < len(st) else None) if t == "next" else labels.get(t)
+                if target is None:
+                    fehler.setdefault((lab, t, "Ziel fehlt"), []).append(f"{rasse} {klasse}")
+                elif cw(target) and kombi(target) and t == "next":
+                    fehler.setdefault((lab, t, "Kette"), []).append(f"{rasse} {klasse}")
+                elif cw(target):
+                    hinweise.setdefault((lab, t, target["hdr"] + " " + " ; ".join(target["body"][:2])[:60]), []).append(klasse)
+    return fehler, hinweise
+
+
 def main():
     ap = argparse.ArgumentParser(description="RXP-Schritte für einen Charakter lesen oder Stellen vergleichen")
-    ap.add_argument("modus", choices=["liste", "vergleich"])
+    ap.add_argument("modus", choices=["liste", "vergleich", "ziele"])
     ap.add_argument("quellen", nargs="+")
     ap.add_argument("--klasse", default="druid")
     ap.add_argument("--rasse", default="tauren")
@@ -153,6 +199,19 @@ def main():
     a = ap.parse_args()
     me = {a.klasse.lower(), a.rasse.lower(), "horde", "forever", "dede"}   # Klasse, Rasse, Fraktion, Spiel, Sprache (applies)
     dg = frozenset(x.strip().upper() for x in a.dungeons.split(",") if x.strip())
+    if a.modus == "ziele":
+        src, name = a.quellen
+        fehler, hinweise = ziele(load(src), name, a.gruppe, a.stufe)
+        for (lab, t, info), who in sorted(hinweise.items()):
+            print(f"Hinweis {name}: {lab} #completewith {t} trifft einen Schritt mit eigenem #completewith ({info}), dessen Ende gilt: "
+                  f"{len(set(who))} Klassen")
+        for (lab, t, why), who in sorted(fehler.items()):
+            print(f"PROBLEM {name}: {lab} #completewith {t}: {why} für {len(who)} von {len(KLASSEN) * len(RASSEN)} "
+                  f"Klasse/Rasse ({', '.join(who[:6])}{' …' if len(who) > 6 else ''})")
+        if not fehler:
+            print(f"OK {name}: Ziele aller Zusatzschritte mit #completewith gefunden, keine Kette "
+                  f"({len(KLASSEN)} Klassen x {len(RASSEN)} Rassen)")
+        return 1 if fehler else 0
     if a.modus == "liste":
         src, name = a.quellen
         for s in steps(load(src), name, me, a.stufe, dg, a.gruppe):
@@ -171,9 +230,21 @@ def main():
             first = first or (x, y)
             if x["idx"] <= a.stelle and x["line"] != y["line"]:
                 moved.append((x["idx"], x["line"], y["line"]))
-    who = f"{name} ({a.rasse} {a.klasse})"
+    who = f"{name} ({a.rasse} {a.klasse}" + (f", Stufe {a.stufe})" if a.stufe else ")")
     if moved:
         i, l1, l2 = moved[0]
+        # Wie RXP die Stelle beim Laden wiederfindet (GuideWindow.lua LoadGuide, v4.11.23): zuerst die Kennung (Zeile + guideId,
+        # GuideLoader.lua) unter den gezeigten Schritten, sonst die gespeicherte Nummer. Blendet ein Neubau seine neuen Schritte für
+        # den Testcharakter aus (z. B. mit #maxlevel), bleibt die Nummer gleich; dann reicht es, dass die alte Zeile keinen anderen
+        # gezeigten Schritt trifft.
+        stored = next((x for x in A if x["idx"] == a.stelle), None)
+        hit = next((y for y in B if stored and y["line"] == stored["line"]), None)
+        target = hit or next((y for y in B if y["idx"] == a.stelle), None)
+        if stored and target and (target["hdr"], target["body"]) == (stored["hdr"], stored["body"]):
+            how = "Kennung (gleiche Zeile)" if hit else "Nummer (die alte Zeile trifft keinen gezeigten Schritt)"
+            print(f"OK {who}: Zeilen verschieben sich ab #{i} ({l1} -> {l2}), RXP findet #{a.stelle} aber über die {how}: "
+                  f"gleicher Schritt")
+            return 0
         print(f"PROBLEM {who}: Schritt #{i} verschiebt sich (Zeile {l1} -> {l2}), die Stelle #{a.stelle} fände RXP nicht mehr sicher")
         return 1
     if first:
