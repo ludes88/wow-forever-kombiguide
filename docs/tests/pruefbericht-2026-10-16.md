@@ -8,7 +8,7 @@ Geprüft haben vier eigene Prüf-Agenten, die die Arbeit nicht selbst gemacht ha
 - **Markt** (M): die drei AH-Scans vom 15.10. (20:12, 21:54, 22:15) mit Angebotstiefe, Händlerpreisen und Beute.
 - **Testlog**: Testlog 3.7 gegen die Forever-API 1.60.1 (70374). Dieser Prüfer brach vor seinem Bericht ab (Sitzungsgrenze). Sein Protokoll nennt keinen Fehler; offen blieb eine Frage zur Reihenfolge der Laufweg-Proben, die Claude geprüft und behoben hat (unten).
 
-Die Umsetzung stammt von Claude (Branch `pruefung-2`, Kombi-Guide 0.5.3, Testlog 3.7.1). Ein fünfter Prüfer hat die Umsetzung gegengeprüft (Abschnitt «Gegenprüfung»).
+Die Umsetzung stammt von Claude (Branch `pruefung-2`, Kombi-Guide 0.5.3, Testlog 3.7.1). Ein fünfter Prüfer hat sie gegengeprüft; seine Befunde sind ebenfalls umgesetzt (Abschnitt «Gegenprüfung»).
 
 «umgesetzt» = im Branch `pruefung-2` erledigt; «teilweise»; «offen» = noch nicht gemacht; «Entscheid» = liegt beim Nutzer (`docs/entscheidungen.md`).
 
@@ -93,7 +93,28 @@ Die Umsetzung stammt von Claude (Branch `pruefung-2`, Kombi-Guide 0.5.3, Testlog
 
 ## Gegenprüfung der Umsetzung
 
-Wird nach dem Bericht des fünften Prüfers ergänzt.
+Ein fünfter Prüfer hat die Umsetzung (Commit 01d00bc) in einer Kopie gegengeprüft: Testlog 3.7.1 gegen die Forever-API 1.60.1 (70374), die RXP-Semantik der neuen Guide-Zeilen (Code v4.11.23), zwei Fälle in Thunder Bluff durchgespielt (Main mit LW 100 und VZ 100 nach Stufe B; Quereinsteiger mit LW 109 und VZ 100 ohne Zwischenprodukte) und die Kernzahlen mit eigenem Code nachgerechnet. Ergebnis: 1 A-, 3 B- und 11 C-Befunde. Die Stufen A–D, Tipp 1 und Tipp 2 stimmen, die Stellen #45 und #152 halten (geprüft gegen jeden Bau seit v0.3 bzw. v0.4.1), kein Schritt hängt.
+
+| Nr. | Befund | Stand |
+|---|---|---|
+| G-A1 | `/tl tipp` nannte im nächsten Schritt nur «18 Geringe Magieessenz (AH 8s 70c)». Der Preis gilt nur, wenn man 6 Grosse kauft und teilt; direkt kosten 18 Geringe im Scan etwa 15s 84c | umgesetzt: «als 6 Große Magieessenz kaufen und teilen» |
+| G-B1 | Berufe-Plan und Reihenfolge im Guide verteilten Staub und Essenz verschieden: Der Plan spart den Staub für die Umhänge der Stufe C, der Guide verbrauchte ihn bei VZ 50–70; der Staub-Zähler der Stufe C stand darum etwa 20 zu tief (ein zweiter Gang ins AH, Essenzen blieben liegen) | umgesetzt: in Orgrimmar und Thunder Bluff zuerst Essenzen; Staub-Zähler 85 (Stufe C allein) bzw. 68 (B und C zusammen); der Berufe-Plan nennt pro Stufe den eigenen Vorrat aus dem Entzaubern |
+| G-B2 | Der Grenzpreis im Zauberstab-Tipp nannte die Geringe (81c), gekauft wird aber die Grosse | umgesetzt: «Große Magieessenz (je Geringe 81c) höchstens 2s 43c» |
+| G-B3 | Händlerware (Salz, Fäden, Einfaches Holz, Grauer Farbstoff, Magiepartikel, Kupferrute) stand mit ihrem AH-Wert in der Warnliste und bei «AH statt Händler»; beim LW-Charakter wäre die Warnung bei jedem Händlerbesuch gekommen | umgesetzt: Händlerware ausgenommen |
+| G-C1 | Für den Händler herstellen: Der Geringe Magiezauberstab fiel sofort heraus, weil die erste Herstellung die ganze Grosse Essenz trug | umgesetzt: Bündel von 3 Herstellungen (Scan 15.10.: 198 Stück, etwa 46s Gewinn neben den Grossen Stäben, die dafür etwa 2s weniger bringen) |
+| G-C2 | Eine Grosse ohne Angebotstiefe hätte die Geringe mit Tiefe verdrängt, das Rezept wäre dann als unsicher weggefallen (heute nicht ausgelöst) | umgesetzt |
+| G-C3 | Das Testlog merkte Berufe und Geld nur bei Änderungen; eine leere Fertigkeitsliste hätte die Berufe gelöscht | umgesetzt: auch beim Einloggen; eine leere Liste ändert nichts |
+| G-C4 | Hinweis für das Scan-Paar auch im Gasthaus ohne Auktionshaus (`IsResting`, z. B. Crossroads) | umgesetzt: nur in Orgrimmar, Thunder Bluff und Undercity |
+| G-C5 | «zuletzt gesehen» in der Zeitzone des Rechners, auf dem `markt.py` läuft | umgesetzt: Versatz aus dem letzten AH-Scan (dort stehen Epoch und Ortszeit) |
+| G-C6 | Quereinsteiger: Text «über 100» gegen die Bedingung «ab 100»; Zeile 86 verlangte Mittlere Bälge auch bei vorhandenen Geschmeidigen; «stelle 10 her» statt «bis 10» | umgesetzt: Texte, neue Plan-Zeile 91 für die Bälge |
+| G-C7, G-C8 | Feiner Faden und Leder-Zähler der Stufe C zeigen die Mengen des Mains auch für Quereinsteiger | teilweise: die Texte nennen die Mengen pro Hose und Gürtel; die Zähler bleiben (ein Zähler nach Fertigkeit bräuchte weitere Schritte) |
+| G-C9 | Kommentar zur Reihenfolge der Zauber-IDs (bei Verzauberkunst steht 13920 vorne); `.istrained` nutzt kein RXP-Forever-Guide | umgesetzt (Kommentar, Best Practice §4, T29 prüft auch, dass der Schritt vor dem Lernen da ist) |
+| G-C10 | «Pfand pro Angebot … ganze Stapel» beruht auf einer Messung mit 1 Stück | umgesetzt: «ob er mit der Menge steigt, ist ungeprüft» |
+| G-C11 | Die Datenanfrage hätte bei jedem Scan dieselben ersten 200 Gegenstände angefragt | umgesetzt: jeder Gegenstand höchstens einmal pro Sitzung |
+
+Nicht prüfbar ohne Spiel: T29–T33; ob der Forever-Client die Gesellen unter den Zauber-IDs aus RXP führt; ob `IsPlayerSpell` greift (steht in der Forever-UI nur im Rückfall-Ordner `Blizzard_DeprecatedSpellBook`; RXP nutzt es auch für `.train`); ob die Datenanfrage den Cache für den nächsten Scan füllt; die Reagenzien der Stiefel (4 Strange Dust laut wow-professions).
+
+KOMMENTAR: Seit G-B3 warnt das Testlog nicht mehr, wenn Händlerware verkauft wird, die der Plan noch braucht (am 15.10. gingen 5 Graue Farbstoffe weg, der Plan braucht 10). Eine Warnung «für deinen nächsten Schritt noch nötig» pro Charakter wäre ein möglicher nächster Schritt.
 
 ## Datenschutz
 

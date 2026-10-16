@@ -1365,7 +1365,7 @@ step
 step
     #label Kombi6
     .goto 1456/1,95.10,-1210.23,15
-    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (gemessen 1s für 1 Groben Faden), darum ganze Stapel einstellen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (einmal gemessen: 1s für 1 Groben Faden; ob er mit der Menge steigt, ist ungeprüft). Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
 step
     #label Kombi7
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
@@ -5076,20 +5076,20 @@ step
     .skill enchanting,<1,1
     .itemcount 4246,11,1
 step
-    #label Kombi44
-    .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Enchant Chest - Inferior Stamina (je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
-    .skill enchanting,70 >>VZ 70
-    .skill enchanting,<1,1
-    .itemcount 10940,1,1
-    .target Godan
-step
     #label Kombi45
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Bis VZ 70 zuerst mit Essenzen: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Den Strange Dust aufheben, Stufe C braucht ihn für den Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
+    .target Godan
+step
+    #label Kombi44
+    .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
+    >>Kombiguide: Fehlen Essenzen: Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer, je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
+    .skill enchanting,70 >>VZ 70
+    .skill enchanting,<1,1
+    .itemcount 10940,1,1
     .target Godan
 step
     #label Kombi46
@@ -7430,12 +7430,12 @@ step
 step
     #label Kombi51
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 49 (45 für B und 4 für C; oder Greater Magic Essence kaufen und teilen), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 68 (der Staub aus den Feinen Ledergürteln der Stufe B kommt danach dazu, dann sind es etwa 85), Lesser Magic Essence bis 49 (45 für B und 4 für C; oder Greater Magic Essence kaufen und teilen), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
     .collect 2318,354,0,1,24 >>Leichtes Leder (Stufen B und C)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10940,68,0,1,24 >>Strange Dust (Stufe C)
     .collect 10938,49,0,1,24 >>Lesser Magic Essence (Stufen B und C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
@@ -7443,13 +7443,13 @@ step
 step
     #label Kombi52
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 4 (für die Silberrute), 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen. Steht deine LW schon über 100 (Quereinsteiger), brauchst du weniger: bis LW 115 pro fehlendem Punkt etwa 16 Leichtes Leder; die genaue Menge für deinen Stand zeigt /tl tipp. Häkchen setzen, sobald du genug hast.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 85 (dein Staub aus dem Entzaubern zählt mit, gekauft werden etwa 65), Lesser Magic Essence bis 4 (für die Silberrute), 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen. Steht deine LW schon über 100 (Quereinsteiger), brauchst du weniger: bis LW 115 pro fehlendem Punkt etwa 16 Leichtes Leder; die genaue Menge für deinen Stand zeigt /tl tipp; den Leder-Zähler dann nicht ganz füllen. Häkchen setzen, sobald du genug hast.
     .collect 2318,240,0,1,24 >>Leichtes Leder (Stufe C)
     .skill leatherworking,<1,1
     .skill leatherworking,<100,1
     .skill leatherworking,130,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10940,85,0,1,24 >>Strange Dust (Stufe C)
     .collect 10938,4,0,1,24 >>Lesser Magic Essence (Stufe C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
@@ -7464,7 +7464,7 @@ step
     .target Auctioneer Stampi
 step
     #label Kombi85
-    >>Kombiguide: Quereinsteiger (LW schon über 100, ohne Geschmeidige leichte Bälge): Jede Leichte Lederhose braucht 1 Geschmeidigen leichten Balg. Kaufe sie im AH (Scan 15.10.: 1s 15c) oder kaufe Leichte Bälge (64c) und hol beim Händler Salz (50c), dann stellst du sie selbst her. Bis LW 115 etwa 1,6 Hosen pro fehlendem Punkt; die genaue Zahl für deinen Stand zeigt /tl tipp. Danach Häkchen setzen.
+    >>Kombiguide: Quereinsteiger (LW schon 100 oder mehr, ohne Geschmeidige leichte Bälge): Jede Leichte Lederhose braucht 1 Geschmeidigen leichten Balg. Kaufe sie im AH (Scan 15.10.: 1s 15c) oder kaufe Leichte Bälge (64c) und hol beim Händler Salz (50c), dann stellst du sie selbst her. Bis LW 115 etwa 1,6 Hosen pro fehlendem Punkt; die genaue Zahl für deinen Stand zeigt /tl tipp. Danach Häkchen setzen.
     +Bälge für die Hosen besorgt
     .skill leatherworking,<100,1
     .skill leatherworking,115,1
@@ -7472,15 +7472,23 @@ step
     .target Auctioneer Stampi
 step
     #label Kombi86
-    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Feine Ledergürtel): Der Dunkle Ledergürtel (LW 115 bis 125) braucht 10 Feine Ledergürtel und 10 Geschmeidige mittlere Bälge. Kaufe dafür zusätzlich 60 Leichtes Leder und 10 Medium Hide (Mittlerer Balg), beim Händler 20 Groben Faden und 10 Salz; hergestellt wird nach den Hosen. Danach Häkchen setzen.
-    +Material für Gürtel und Bälge besorgt
+    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Feine Ledergürtel): Der Dunkle Ledergürtel (LW 115 bis 125) braucht 10 Feine Ledergürtel. Kaufe für jeden fehlenden Gürtel 6 Leichtes Leder und beim Händler 2 Groben Faden; hergestellt wird nach den Hosen. Danach Häkchen setzen.
+    +Material für Gürtel besorgt
     .skill leatherworking,<100,1
     .skill leatherworking,125,1
     .itemcount 4246,<10,1
     .target Auctioneer Stampi
 step
+    #label Kombi91
+    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Geschmeidige mittlere Bälge): Der Dunkle Ledergürtel braucht auch 10 Geschmeidige mittlere Bälge. Kaufe für jeden fehlenden Balg 1 Medium Hide (Mittlerer Balg, Scan 15.10.: 7s) und beim Händler 1 Salz; hergestellt wird nach den Hosen. Danach Häkchen setzen.
+    +Material für Bälge besorgt
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4233,<10,1
+    .target Auctioneer Stampi
+step
     #label Kombi54
-    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Quereinsteiger zusätzlich: 1 Salz je Geschmeidiger Balg, den du selbst herstellst, und 2 Grober Faden je Feiner Ledergürtel (Schritte davor). Danach Häkchen setzen.
+    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Quereinsteiger statt der Mengen für C: 1 Fine Thread je Leichte Lederhose und 2 je Dunkler Ledergürtel, dazu 1 Salz je Geschmeidiger Balg, den du selbst herstellst, und 2 Grober Faden je Feiner Ledergürtel (Schritte davor); die genaue Menge zeigt /tl tipp. Danach Häkchen setzen.
     +Faden, Salz und Farbe gekauft
     .skill leatherworking,<1,1
     .skill leatherworking,150,1
@@ -7534,20 +7542,20 @@ step
     .skill enchanting,<1,1
     .itemcount 4246,11,1
 step
-    #label Kombi61
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Chest - Inferior Stamina (je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
-    .skill enchanting,70 >>VZ 70
-    .skill enchanting,<1,1
-    .itemcount 10940,1,1
-    .target Teg Dawnstrider
-step
     #label Kombi62
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Bis VZ 70 zuerst mit Essenzen: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Den Strange Dust aufheben, Stufe C braucht ihn für den Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
+    .target Teg Dawnstrider
+step
+    #label Kombi61
+    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
+    >>Kombiguide: Fehlen Essenzen: Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer, je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
+    .skill enchanting,70 >>VZ 70
+    .skill enchanting,<1,1
+    .itemcount 10940,1,1
     .target Teg Dawnstrider
 step
     #label Kombi63
@@ -7583,14 +7591,14 @@ step
     .target Tarn
 step
     #label Kombi88
-    >>Kombiguide: Fehlen Feine Ledergürtel: stelle 10 her (je 6 Leichtes Leder, 2 Grober Faden). Sie geben keine Punkte mehr, sind aber Material für den Dunklen Ledergürtel. Danach Häkchen setzen.
+    >>Kombiguide: Fehlen Feine Ledergürtel: stelle so viele her, bis du 10 hast (je 6 Leichtes Leder, 2 Grober Faden). Ab LW 100 geben sie nur noch selten Punkte (grün, ab 115 grau laut AHledger), sind aber Material für den Dunklen Ledergürtel. Danach Häkchen setzen.
     +10 Feine Ledergürtel da
     .skill leatherworking,<100,1
     .skill leatherworking,125,1
     .itemcount 4246,<10,1
 step
     #label Kombi89
-    >>Kombiguide: Fehlen Geschmeidige mittlere Bälge: stelle 10 her (je 1 Medium Hide, 1 Salt). Danach Häkchen setzen.
+    >>Kombiguide: Fehlen Geschmeidige mittlere Bälge: stelle so viele her, bis du 10 hast (je 1 Medium Hide, 1 Salt). Danach Häkchen setzen.
     +10 Geschmeidige mittlere Bälge da
     .skill leatherworking,<100,1
     .skill leatherworking,125,1
@@ -11084,7 +11092,7 @@ step
 step
     #label Kombi6
     .goto 1456/1,95.10,-1210.23,15
-    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (gemessen 1s für 1 Groben Faden), darum ganze Stapel einstellen. Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (einmal gemessen: 1s für 1 Groben Faden; ob er mit der Menge steigt, ist ungeprüft). Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
 step
     #label Kombi7
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
@@ -14666,20 +14674,20 @@ step
     .skill enchanting,<1,1
     .itemcount 4246,11,1
 step
-    #label Kombi44
-    .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Enchant Chest - Inferior Stamina (je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
-    .skill enchanting,70 >>VZ 70
-    .skill enchanting,<1,1
-    .itemcount 10940,1,1
-    .target Godan
-step
     #label Kombi45
     .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Bis VZ 70 zuerst mit Essenzen: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Den Strange Dust aufheben, Stufe C braucht ihn für den Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
+    .target Godan
+step
+    #label Kombi44
+    .goto 1454/1,-4435.20,1914.68--c:Orgrimmar,53.8,38.4 (Spielkoordinaten)
+    >>Kombiguide: Fehlen Essenzen: Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer, je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
+    .skill enchanting,70 >>VZ 70
+    .skill enchanting,<1,1
+    .itemcount 10940,1,1
     .target Godan
 step
     #label Kombi46
@@ -16909,12 +16917,12 @@ step
 step
     #label Kombi51
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 49 (45 für B und 4 für C; oder Greater Magic Essence kaufen und teilen), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130) zusammen mit Stufe B, für C etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 354 (114 für B und 240 für C), Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 68 (der Staub aus den Feinen Ledergürteln der Stufe B kommt danach dazu, dann sind es etwa 85), Lesser Magic Essence bis 49 (45 für B und 4 für C; oder Greater Magic Essence kaufen und teilen), 1 Silver Rod, 1 Shadowgem. Ohne Stufe B oder zu wenig Gold: Häkchen bei allen Zählern setzen.
     .collect 2318,354,0,1,24 >>Leichtes Leder (Stufen B und C)
     .skill leatherworking,<1,1
     .skill leatherworking,100,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10940,68,0,1,24 >>Strange Dust (Stufe C)
     .collect 10938,49,0,1,24 >>Lesser Magic Essence (Stufen B und C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
@@ -16922,13 +16930,13 @@ step
 step
     #label Kombi52
     .goto 1456/1,95.10,-1210.23
-    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 65, Lesser Magic Essence bis 4 (für die Silberrute), 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen. Steht deine LW schon über 100 (Quereinsteiger), brauchst du weniger: bis LW 115 pro fehlendem Punkt etwa 16 Leichtes Leder; die genaue Menge für deinen Stand zeigt /tl tipp. Häkchen setzen, sobald du genug hast.
+    >>Kombiguide: Stufe C (LW 100 bis 130, VZ 100 bis 130), etwa 2g 51s im AH, 79s beim Händler und 30s beim Lehrer (Beta); zurück kommen etwa 2g 14s, wenn du die Leichten Lederhosen und Dunklen Ledergürtel beim Händler verkaufst: Leichtes Leder bis 240, Mittleres Leder bis 35 (deine 8 zählen mit), Strange Dust bis 85 (dein Staub aus dem Entzaubern zählt mit, gekauft werden etwa 65), Lesser Magic Essence bis 4 (für die Silberrute), 1 Silver Rod, 1 Shadowgem. Zu wenig Gold: Häkchen bei allen Zählern setzen. Steht deine LW schon über 100 (Quereinsteiger), brauchst du weniger: bis LW 115 pro fehlendem Punkt etwa 16 Leichtes Leder; die genaue Menge für deinen Stand zeigt /tl tipp; den Leder-Zähler dann nicht ganz füllen. Häkchen setzen, sobald du genug hast.
     .collect 2318,240,0,1,24 >>Leichtes Leder (Stufe C)
     .skill leatherworking,<1,1
     .skill leatherworking,<100,1
     .skill leatherworking,130,1
     .collect 2319,35,0,1,24 >>Mittleres Leder (Stufe C)
-    .collect 10940,65,0,1,24 >>Strange Dust (Stufe C)
+    .collect 10940,85,0,1,24 >>Strange Dust (Stufe C)
     .collect 10938,4,0,1,24 >>Lesser Magic Essence (Stufe C)
     .collect 6338,1 >>Silver Rod
     .collect 1210,1 >>Shadowgem
@@ -16943,7 +16951,7 @@ step
     .target Auctioneer Stampi
 step
     #label Kombi85
-    >>Kombiguide: Quereinsteiger (LW schon über 100, ohne Geschmeidige leichte Bälge): Jede Leichte Lederhose braucht 1 Geschmeidigen leichten Balg. Kaufe sie im AH (Scan 15.10.: 1s 15c) oder kaufe Leichte Bälge (64c) und hol beim Händler Salz (50c), dann stellst du sie selbst her. Bis LW 115 etwa 1,6 Hosen pro fehlendem Punkt; die genaue Zahl für deinen Stand zeigt /tl tipp. Danach Häkchen setzen.
+    >>Kombiguide: Quereinsteiger (LW schon 100 oder mehr, ohne Geschmeidige leichte Bälge): Jede Leichte Lederhose braucht 1 Geschmeidigen leichten Balg. Kaufe sie im AH (Scan 15.10.: 1s 15c) oder kaufe Leichte Bälge (64c) und hol beim Händler Salz (50c), dann stellst du sie selbst her. Bis LW 115 etwa 1,6 Hosen pro fehlendem Punkt; die genaue Zahl für deinen Stand zeigt /tl tipp. Danach Häkchen setzen.
     +Bälge für die Hosen besorgt
     .skill leatherworking,<100,1
     .skill leatherworking,115,1
@@ -16951,15 +16959,23 @@ step
     .target Auctioneer Stampi
 step
     #label Kombi86
-    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Feine Ledergürtel): Der Dunkle Ledergürtel (LW 115 bis 125) braucht 10 Feine Ledergürtel und 10 Geschmeidige mittlere Bälge. Kaufe dafür zusätzlich 60 Leichtes Leder und 10 Medium Hide (Mittlerer Balg), beim Händler 20 Groben Faden und 10 Salz; hergestellt wird nach den Hosen. Danach Häkchen setzen.
-    +Material für Gürtel und Bälge besorgt
+    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Feine Ledergürtel): Der Dunkle Ledergürtel (LW 115 bis 125) braucht 10 Feine Ledergürtel. Kaufe für jeden fehlenden Gürtel 6 Leichtes Leder und beim Händler 2 Groben Faden; hergestellt wird nach den Hosen. Danach Häkchen setzen.
+    +Material für Gürtel besorgt
     .skill leatherworking,<100,1
     .skill leatherworking,125,1
     .itemcount 4246,<10,1
     .target Auctioneer Stampi
 step
+    #label Kombi91
+    >>Kombiguide: Quereinsteiger (LW 100 bis 124, ohne Geschmeidige mittlere Bälge): Der Dunkle Ledergürtel braucht auch 10 Geschmeidige mittlere Bälge. Kaufe für jeden fehlenden Balg 1 Medium Hide (Mittlerer Balg, Scan 15.10.: 7s) und beim Händler 1 Salz; hergestellt wird nach den Hosen. Danach Häkchen setzen.
+    +Material für Bälge besorgt
+    .skill leatherworking,<100,1
+    .skill leatherworking,125,1
+    .itemcount 4233,<10,1
+    .target Auctioneer Stampi
+step
     #label Kombi54
-    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Quereinsteiger zusätzlich: 1 Salz je Geschmeidiger Balg, den du selbst herstellst, und 2 Grober Faden je Feiner Ledergürtel (Schritte davor). Danach Häkchen setzen.
+    >>Kombiguide: Beim Lederverarbeitungs-Händler bei Tarn (Mahu, Ort ungeprüft), je nach gekaufter Stufe: B 10 Salt und 38 Coarse Thread, C 44 Fine Thread und 10 Gray Dye, D 96 Fine Thread (Salt 50c, Coarse Thread 10c, Fine Thread 1s, Gray Dye 3s 50c). Quereinsteiger statt der Mengen für C: 1 Fine Thread je Leichte Lederhose und 2 je Dunkler Ledergürtel, dazu 1 Salz je Geschmeidiger Balg, den du selbst herstellst, und 2 Grober Faden je Feiner Ledergürtel (Schritte davor); die genaue Menge zeigt /tl tipp. Danach Häkchen setzen.
     +Faden, Salz und Farbe gekauft
     .skill leatherworking,<1,1
     .skill leatherworking,150,1
@@ -17013,20 +17029,20 @@ step
     .skill enchanting,<1,1
     .itemcount 4246,11,1
 step
-    #label Kombi61
-    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Enchant Chest - Inferior Stamina (je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
-    .skill enchanting,70 >>VZ 70
-    .skill enchanting,<1,1
-    .itemcount 10940,1,1
-    .target Teg Dawnstrider
-step
     #label Kombi62
     .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
-    >>Kombiguide: Rest bis VZ 70: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
+    >>Kombiguide: Bis VZ 70 zuerst mit Essenzen: Enchant Chest - Minor Absorption (Brust - Schwache Absorption, ab VZ 40, 1s in Orgrimmar; je 1 Lesser Magic Essence). Enchant Bracer - Minor Deflect (Armschiene - Schwache Abwehr, je 1 Lesser Magic Essence) führt kein Lehrer in Orgrimmar; laut SeeMeta kommt es mit dem Rang (ungeprüft). Steht es in deinem Berufsfenster, geht es ab VZ 40 genauso. Den Strange Dust aufheben, Stufe C braucht ihn für den Umhang. Material alle, Stufe aber nicht erreicht: Häkchen setzen.
     .skill enchanting,70 >>VZ 70
     .skill enchanting,<1,1
     .itemcount 10938,1,1
+    .target Teg Dawnstrider
+step
+    #label Kombi61
+    .goto 1456/1,46.98,-1114.42--c:Thunder Bluff,45.0,38.0 (Spielkoordinaten)
+    >>Kombiguide: Fehlen Essenzen: Enchant Chest - Inferior Stamina (Brust - Minderwertige Ausdauer, je 1 Strange Dust) bis VZ 70 oder bis der Staub alle ist, dann Häkchen setzen.
+    .skill enchanting,70 >>VZ 70
+    .skill enchanting,<1,1
+    .itemcount 10940,1,1
     .target Teg Dawnstrider
 step
     #label Kombi63
@@ -17062,14 +17078,14 @@ step
     .target Tarn
 step
     #label Kombi88
-    >>Kombiguide: Fehlen Feine Ledergürtel: stelle 10 her (je 6 Leichtes Leder, 2 Grober Faden). Sie geben keine Punkte mehr, sind aber Material für den Dunklen Ledergürtel. Danach Häkchen setzen.
+    >>Kombiguide: Fehlen Feine Ledergürtel: stelle so viele her, bis du 10 hast (je 6 Leichtes Leder, 2 Grober Faden). Ab LW 100 geben sie nur noch selten Punkte (grün, ab 115 grau laut AHledger), sind aber Material für den Dunklen Ledergürtel. Danach Häkchen setzen.
     +10 Feine Ledergürtel da
     .skill leatherworking,<100,1
     .skill leatherworking,125,1
     .itemcount 4246,<10,1
 step
     #label Kombi89
-    >>Kombiguide: Fehlen Geschmeidige mittlere Bälge: stelle 10 her (je 1 Medium Hide, 1 Salt). Danach Häkchen setzen.
+    >>Kombiguide: Fehlen Geschmeidige mittlere Bälge: stelle so viele her, bis du 10 hast (je 1 Medium Hide, 1 Salt). Danach Häkchen setzen.
     +10 Geschmeidige mittlere Bälge da
     .skill leatherworking,<100,1
     .skill leatherworking,125,1
