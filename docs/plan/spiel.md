@@ -25,7 +25,10 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 | 2026-10-15 | 60 Min | 16.68 → 18.56 | 1.89 | 17 (31825) | 0 | Orgrimmar 20, Brachland 14, Die Ruinen von Lordaeron 11 | 12-17 The Barrens #103 → 12-17 The Barrens #152 | 0.4-v4.11.23 |
 | 2026-10-15 | 15 Min | 15.70 → 15.97 | 1.07 | 1 (750) | 0 | Brachland 15 | 12-17 The Barrens #77 → 12-17 The Barrens #84 | 0.4-v4.11.23 |
 | 2026-10-17 | 7 Min | 1.25 → 1.25 | 0.00 | 0 (0) | 0 | Orgrimmar 7 | 06-12 Mulgore #2 → 06-12 Mulgore #2 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 26 Min | 9.94 → 10.75 | 1.86 | 8 (5320) | 2 | Mulgore 16, Thunder Bluff 10 | 06-12 Mulgore #94 → 06-12 Mulgore #116 | 0.6.1-v4.11.23 |
 | 2026-10-17 | 33 Min | 7.74 → 9.10 | 2.48 | 6 (2685) | 0 | Mulgore 33 | 06-12 Mulgore #45 → 06-12 Mulgore #52 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 5 Min | 9.94 → 9.94 | 0.00 | 0 (0) | 0 | Thunder Bluff 5 | 06-12 Mulgore #94 → 06-12 Mulgore #94 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 61 Min | 9.10 → 9.94 | 0.83 | 5 (1870) | 0 | Mulgore 56, Thunder Bluff 4 | 06-12 Mulgore #52 → 06-12 Mulgore #94 | 0.6.1-v4.11.23 |
 
 ## Gebiete und Stufen (aus dem Protokoll, alle Sitzungen)
 
@@ -36,7 +39,10 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 | Mulgore | 6 | 23 | 1.04 | 2.69 | 4 (1640) | 1 | 2 |
 | Mulgore | 7 | 34 | 0.98 | 1.73 | 5 (1975) | 1 | 3 |
 | Mulgore | 8 | 23 | 1.08 | 2.83 | 5 (2605) | 0 | 1 |
-| Mulgore | 9 | 2 | 0.00 | 0.00 | 0 (0) | 0 | 1 |
+| Mulgore | 9 | 58 | 0.78 | 0.81 | 4 (1600) | 0 | 2 |
+| Thunder Bluff | 9 | 13 | 0.16 | 0.76 | 2 (970) | 0 | 3 |
+| Mulgore | 10 | 16 | 0.65 | 2.48 | 6 (4200) | 1 | 1 |
+| Thunder Bluff | 10 | 7 | 0.06 | 0.50 | 1 (420) | 1 | 1 |
 | Brachland | 15 | 22 | 0.30 | 0.82 | 1 (750) | 0 | 4 |
 | Mulgore | 15 | 2 | 0.00 | 0.00 | 0 (0) | 0 | 2 |
 | Thunder Bluff | 15 | 64 | 0.00 | 0.00 | 0 (0) | 0 | 5 |
@@ -60,6 +66,10 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 
 | Quelle | Kreatur | Gegnerstufe | eigene Stufe | Anzahl | XP | je Fall | je Fall ohne erholt |
 |---|---|---|---|---|---|---|---|
+| Gegner | 3232 | 10 | 10 | 4 | 380 | 95.0 | 95.0 |
+| Gegner | 3232 | 9 | 10 | 4 | 315 | 78.8 | 77.0 |
+| Quest | ? | ? | 10 | 7 | 4620 | 660.0 | 737.5 |
+| sonst | ? | ? | 10 | 1 | 80 | 80.0 | – |
 | Gegner | 2958 | 5 | 7 | 4 | 336 | 84.0 | – |
 | Gegner | 2956 | 7 | 7 | 2 | 320 | 160.0 | – |
 | Gegner | 2958 | 6 | 7 | 2 | 240 | 120.0 | – |
@@ -76,6 +86,27 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 | Gegner | 2976 | 7 | 8 | 1 | 92 | 92.0 | – |
 | Quest | ? | ? | 8 | 5 | 2605 | 521.0 | 521.0 |
 | sonst | ? | ? | 8 | 2 | 110 | 55.0 | 45.0 |
+| Gegner | 2962 | 7 | 9 | 7 | 371 | 53.0 | 53.0 |
+| Gegner | 2963 | 8 | 9 | 6 | 426 | 71.0 | 71.0 |
+| Gegner | 2949 | 5 | 9 | 5 | 115 | 23.0 | 23.0 |
+| Gegner | 2949 | 6 | 9 | 5 | 185 | 37.0 | 37.0 |
+| Gegner | 2950 | 6 | 9 | 5 | 185 | 37.0 | 37.0 |
+| Gegner | 2950 | 7 | 9 | 4 | 212 | 53.0 | 53.0 |
+| Gegner | 2962 | 8 | 9 | 4 | 284 | 71.0 | 71.0 |
+| Gegner | 2963 | 9 | 9 | 4 | 360 | 90.0 | 90.0 |
+| Gegner | 2951 | 7 | 9 | 3 | 177 | 59.0 | 59.0 |
+| Gegner | 2990 | 8 | 9 | 3 | 213 | 71.0 | 71.0 |
+| Gegner | 2951 | 8 | 9 | 2 | 142 | 71.0 | 71.0 |
+| Gegner | 2959 | 7 | 9 | 2 | 138 | 69.0 | 69.0 |
+| Gegner | 2989 | 7 | 9 | 2 | 106 | 53.0 | 53.0 |
+| Gegner | 2989 | 8 | 9 | 2 | 142 | 71.0 | 71.0 |
+| Gegner | 2990 | 9 | 9 | 2 | 180 | 90.0 | 90.0 |
+| Gegner | 268558 | 5 | 9 | 1 | 26 | 26.0 | – |
+| Gegner | 2956 | 7 | 9 | 1 | 53 | 53.0 | 53.0 |
+| Gegner | 2976 | 7 | 9 | 1 | 53 | 53.0 | 53.0 |
+| Gegner | 2977 | 7 | 9 | 1 | 53 | 53.0 | 53.0 |
+| Quest | ? | ? | 9 | 6 | 2570 | 428.3 | 400.0 |
+| sonst | ? | ? | 9 | 3 | 180 | 60.0 | 60.0 |
 
 ## Laufweg pro Karte und Stufe (Testlog 3.7)
 
@@ -83,11 +114,14 @@ Bewegung = Proben mit mehr als 3 Yards Weg seit der letzten; Kampf, Flug, tot, e
 
 | Karte | Stufe | Minuten | Bewegung | Kampf | Flug | tot | erholt | Yards pro Min | XP pro Stunde | Kills |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Orgrimmar | 1 | 8 | 5 | 0 | 0 | 0 | 8 | 120 | 0 | 0 |
+| Orgrimmar | 1 | 8 | 5 | 0 | 0 | 0 | 8 | 117 | 0 | 0 |
 | Mulgore | 7 | 9 | 7 | 2 | 0 | 0 | 1 | 118 | 8323 | 10 |
 | Mulgore | 8 | 22 | 20 | 10 | 0 | 0 | 0 | 114 | 15838 | 35 |
-| Mulgore | 9 | 2 | 2 | 0 | 0 | 0 | 0 | 133 | 0 | 0 |
-| Orgrimmar | 18 | 3 | 1 | 0 | 0 | 0 | 3 | 19 | 0 | 0 |
+| Mulgore | 9 | 58 | 49 | 15 | 0 | 0 | 2 | 125 | 5343 | 60 |
+| Thunder Bluff | 9 | 12 | 10 | 0 | 0 | 0 | 12 | 171 | 4770 | 0 |
+| Mulgore | 10 | 15 | 14 | 3 | 0 | 0 | 0 | 233 | 19638 | 8 |
+| Thunder Bluff | 10 | 8 | 7 | 0 | 0 | 1 | 8 | 230 | 3111 | 0 |
+| Orgrimmar | 18 | 4 | 1 | 0 | 0 | 0 | 4 | 14 | 0 | 0 |
 
 ## Dungeon-Läufe (Testlog 3.7)
 

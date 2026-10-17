@@ -18,11 +18,11 @@ Nicht von Hand ändern: Eingaben anpassen (Preise, Route, Modell) und neu erzeug
 - **Sweetspot** für das eigene Leder (Lesart von Claude, Abschnitt 1): Lederverarbeitung 1–80 (Stufe A). Dafür braucht es 99 Fetzen, 62 Leichtes Leder (dazu 33 aus den Fetzen) und 27 Light Hide.
 - Laut Modell bringt die Route bis Orgrimmar 66 Leichtes Leder und 76 Fetzen, mit dem Grinden auf Stufe 16 an Raptoren (Farm-Stopp S1, RXP schlägt das Grinden dort ohnehin vor) 79–86 und 83–87. Laut Modell reicht das Leder; die fehlenden Fetzen und Bälge kosten im AH wenig (Stufe A unten).
 - Ab LW 80 bringt jedes Leichte Leder 2- bis 5-mal weniger Punkte als davor (Tabelle in Abschnitt 1). Mehr Leder zu farmen bringt 21–34 Silber pro Stunde Materialwert (Beta); Angeln ergäbe etwa 2g 0s 64c pro Stunde nach 5 % Gebühr (nur Deviate Fish, Rate ungeprüft, Abschnitt 1).
-- Lesser Magic Essence rechnet der Plan zum kleineren Preis: direkt oder ein Drittel einer Greater Magic Essence (1 → 3, gemessen 13.10.). «Jetzt»: direkt 69c, über Greater 65c; eigener Scan (2026-10-17 13:36, ? Horde R2d38 Beta): über Greater 40c, direkt 77c (Regel in Abschnitt 6).
+- Lesser Magic Essence rechnet der Plan zum kleineren Preis: direkt oder ein Drittel einer Greater Magic Essence (1 → 3, gemessen 13.10.). «Jetzt»: direkt 69c, über Greater 65c; eigener Scan (2026-10-17 15:02, ? Horde R2d38 Beta): über Greater 38c, direkt 77c (Regel in Abschnitt 6).
 - Einkauf (Beta-Preise «jetzt»): Stufe A 42s 63c, B 1g 76s, C 3g 29s 92c, D 7g 37s 76c. Derselbe Einkauf mit den 30-Tage-Medianen: A 71s 25c, B 5g 1s 12c, C 5g 29s 65c, D 9g 56s 16c.
 - **Netto** heisst in diesem Bericht: Einkauf + Lehrer − was der Händler für verkaufte Teile zahlt (Lernkosten gemessen in Orgrimmar, `data/kombi/lehrer.csv`). Den Rest, der am Ende übrig bleibt, rechnet erst die nächste Zeile ab. Stufe A 42s 63c + Lehrer 17s 70c − Händler 0c = netto 60s 33c, Stufe B 1g 76s + Lehrer 6s − Händler 0c = netto 1g 82s, Stufe C 3g 29s 92c + Lehrer 30s − Händler 2g 14s 6c = netto 1g 45s 86c, Stufe D 7g 37s 76c + Lehrer 20s − Händler 0c = netto 7g 57s 76c. Zusammen netto 11g 45s 96c.
 - Nach dem Verkauf des Rests im AH (Abschnitt 5, nach 5 % Gebühr 3g 16s 45c) kostet der ganze Plan etwa 8g 29s 51c (ohne Pfand; ob der Rest so abgeht, ist ungeprüft).
-- Derselbe Plan mit den Medianen des letzten eigenen AH-Scans (2026-10-17 13:36, ? Horde R2d38 Beta; nur Vergleich, offene Entscheidung 17): A netto 64s 20c, B netto 1g 63s 40c, C netto 2g 12s 46c, D netto 10g 76s 96c, zusammen 15g 17s 2c.
+- Derselbe Plan mit den Medianen des letzten eigenen AH-Scans (2026-10-17 15:02, ? Horde R2d38 Beta; nur Vergleich, offene Entscheidung 17): A netto 60s 77c, B netto 1g 66s 57c, C netto 2g 20s 10c, D netto 10g 53s 44c, zusammen 15g 0s 89c.
 - Verkaufen statt entzaubern (Preisregel, Abschnitt 6): Dark Leather Belt, Light Leather Pants gehen an den Händler, weil er mehr zahlt, als ihr Entzauberungs-Ertrag im AH kostet (Händlerpreise aus dem Forever-Client, Testlog 15.10.).
 - Vorschlag (nicht im Guide, Abschnitt 9): VZ 10–109 mit Zauberstäben, die der Händler zurückkauft. Netto A–D zusammen 10g 56s 66c statt 11g 45s 96c.
 - LW 130–150 rechnet der Plan mit dem Tab «ohne Heavy Hide» von wow-professions (billiger bei diesen Preisen, Vergleich in Abschnitt 4).
@@ -40,20 +40,20 @@ Lesart von Claude (Rückfrage an den Nutzer offen): «Break-even an Investment v
 
 Die 66 Leder ohne S1 setzen voraus, dass die 5 Plainstrider Kidneys (Quest 821) vor Orgrimmar fallen (Annahme in `modell_leder.csv`; RXP erinnert bis 12-17 #180 daran); ohne sie wären es etwa 60. Ist der Zähler beim Farm-Stopp S1 schon voll, ist S1 nur Zugabe.
 
-Punkte pro Leichtem Leder und Kosten pro Punkt (Plan-Route). «zurück» = was aus den Herstellungen zurückkommt: beim Händler (Forever-Client), beim Entzaubern (Ertrag zum Kaufpreis, weil die Verzauberkunst ihn sonst kauft), als Material für später (Preis, ohne Preis zu den eigenen Kosten) oder im AH nach 5 % Gebühr. Netto negativ = Gewinn. Zwei Preisbasen: AHledger «jetzt» und der letzte eigene Scan (2026-10-17 13:36, ? Horde R2d38 Beta):
+Punkte pro Leichtem Leder und Kosten pro Punkt (Plan-Route). «zurück» = was aus den Herstellungen zurückkommt: beim Händler (Forever-Client), beim Entzaubern (Ertrag zum Kaufpreis, weil die Verzauberkunst ihn sonst kauft), als Material für später (Preis, ohne Preis zu den eigenen Kosten) oder im AH nach 5 % Gebühr. Netto negativ = Gewinn. Zwei Preisbasen: AHledger «jetzt» und der letzte eigene Scan (2026-10-17 15:02, ? Horde R2d38 Beta):
 
 | Stufe | LW | Rezept | Herstellungen | Leichtes Leder | Punkte je Leder | Material (AH/Händler) | zurück | wie | netto je Punkt | netto je Punkt (eigener Scan) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| A | 1–30 | Light Leather | 33 | 0 | – | 24s 75c | 16s 50c | Material für später | 28c | 74c |
-| A | 30–55 | Cured Light Hide | 27 | 0 | – | 32s 13c | 32s 13c | Material für später (ohne Preis: zu Kosten) | 0c | −32c |
-| A | 55–75 | Embossed Leather Gloves | 21 | 63 | 0.32 | 35s 70c | 23s 96c | entzaubert | 59c | 2s 31c |
-| A | 75–80 | Medium Leather | 8 | 32 | 0.16 | 16s | 15s 28c | Material für später | 14c | 86c |
+| A | 1–30 | Light Leather | 33 | 0 | – | 24s 75c | 16s 50c | Material für später | 28c | −2c |
+| A | 30–55 | Cured Light Hide | 27 | 0 | – | 32s 13c | 32s 13c | Material für später (ohne Preis: zu Kosten) | 0c | −40c |
+| A | 55–75 | Embossed Leather Gloves | 21 | 63 | 0.32 | 35s 70c | 23s 96c | entzaubert | 59c | 2s 44c |
+| A | 75–80 | Medium Leather | 8 | 32 | 0.16 | 16s | 15s 28c | Material für später | 14c | 1s 23c |
 | B | 80–90 | Cured Medium Hide | 10 | 0 | – | 93s 80c | 93s 80c | Material für später (ohne Preis: zu Kosten) | 0c | −26c |
-| B | 90–100 | Fine Leather Belt | 19 | 114 | 0.09 | 60s 80c | 52s 78c | entzaubert, 10 behalten | 80c | 3s 78c |
-| C | 100–115 | Light Leather Pants | 24 | 240 | 0.06 | 1g 44s | 1g 43s 76c | Händler | 2c | 8s 6c |
+| B | 90–100 | Fine Leather Belt | 19 | 114 | 0.09 | 60s 80c | 52s 78c | entzaubert, 10 behalten | 80c | 3s 92c |
+| C | 100–115 | Light Leather Pants | 24 | 240 | 0.06 | 1g 44s | 1g 43s 76c | Händler | 2c | 8s 82c |
 | C | 115–125 | Dark Leather Belt | 10 | 0 | – | 55s | 70s 30c | Händler | −1s 53c | 6s 96c |
-| C | 125–130 | Heavy Leather | 7 | 0 | – | 66s 85c | 79s 67c | AH nach Gebühr | −2s 56c | 8s 5c |
-| D | 130–150 | Hillman's Leather Gloves | 24 | 0 | – | 7g 37s 76c | 4g 75s 99c | entzaubert | 13s 9c | 24s 2c |
+| C | 125–130 | Heavy Leather | 7 | 0 | – | 66s 85c | 79s 67c | AH nach Gebühr | −2s 56c | 4s 90c |
+| D | 130–150 | Hillman's Leather Gloves | 24 | 0 | – | 7g 37s 76c | 4g 75s 99c | entzaubert | 13s 9c | 24s 10c |
 
 Zeit gegen Gold (Beta-Preise; Raten sind Annahmen, siehe Abschnitt 8):
 
@@ -278,7 +278,7 @@ Verzaubern in der Variante:
 
 Was dafür spricht und was offen ist:
 
-- Mit den Medianen des eigenen Scans (2026-10-17 13:36, ? Horde R2d38 Beta; Lesser Magic Essence 40c über die Greater, direkt 77c; Strange Dust 38c; Simple Wood 38c beim Händler) kostet ein Punkt mit dem Geringen Stab netto −32c statt 38c auf dem Plan-Weg, mit dem Grossen −82c statt 44c (negativ = Gewinn; Regeln in Abschnitt 6).
-- Offen: ob die Farben in Forever so laufen (SeeMeta, nur bei VZ 100 geprüft; das Testlog schreibt jeden Farbwechsel), ob der Händlerpreis zum Start bleibt (Widerspruch 21) und ob der Markt die nötigen Essenzen hat (im letzten Scan etwa 3198 Lesser Magic Essence, jede Greater als 3 gezählt).
+- Mit den Medianen des eigenen Scans (2026-10-17 15:02, ? Horde R2d38 Beta; Lesser Magic Essence 38c über die Greater, direkt 77c; Strange Dust 38c; Simple Wood 38c beim Händler) kostet ein Punkt mit dem Geringen Stab netto −34c statt 38c auf dem Plan-Weg, mit dem Grossen −85c statt 42c (negativ = Gewinn; Regeln in Abschnitt 6).
+- Offen: ob die Farben in Forever so laufen (SeeMeta, nur bei VZ 100 geprüft; das Testlog schreibt jeden Farbwechsel), ob der Händlerpreis zum Start bleibt (Widerspruch 21) und ob der Markt die nötigen Essenzen hat (im letzten Scan etwa 4221 Lesser Magic Essence, jede Greater als 3 gezählt).
 - Entscheid beim Nutzer (offener Punkt 28; dazu Punkt 7: woher das Material für Verzauberkunst kommt).
 

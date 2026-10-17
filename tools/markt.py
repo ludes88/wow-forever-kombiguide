@@ -46,7 +46,11 @@
 #                  Nächster Schritt für Charaktere mit Kürschnerei oder Kräuterkunde und ohne Lederverarbeitung und
 #                  Verzauberkunst (Berufe und Geld aus chars ab Testlog 3.7.1, sonst aus den Zeilen BERUF und GELD nach der
 #                  letzten SITZUNG des Charakters): Material für Stufe A behalten, Gold für den Wechsel in Orgrimmar, Beute,
-#                  die im AH ein Vielfaches des Händlerpreises bringt (ohne Absatz-Beleg).
+#                  die im AH ein Vielfaches des Händlerpreises bringt (mit der gemessenen Abnahme, falls es sie gibt).
+#                  Seit 17.10.: Material bei Lager-Charakteren des Kontos (ohne Kürschnerei, Kräuterkunde,
+#                  Lederverarbeitung, Verzauberkunst, z. B. der Bankchar) zählt für Stufe A mit, Stand ihres letzten
+#                  Ausloggens; Post im Briefkasten nicht. Pfand je Angebot: 60 % des Händlerpreises mal Menge, mindestens
+#                  1s (gemessen an 18 Angeboten, 24 Stunden).
 #   Für das Testlog (seit 16.10.)
 #                  KombiDaten.nichtVerkaufen (Warnung beim Händler, Testlog 3.7.1) und KombiDaten.beobachten (zusätzliche
 #                  Gegenstände mit Preisstufen und Abnahme im AH-Scan).
@@ -93,6 +97,8 @@ PLAN_LEDER = (2934, 2318, 783, 2319, 4232)   # Leder und Bälge des Plans: nie z
 VIELFACH = 3        # Beute mit AH-Wert (nach Gebühr) mindestens so viel mal über dem Händlerpreis: AH statt Händler (Wahl
                     # von Claude, ohne Absatz-Beleg; Vorschlag der Markt-Analyse vom 16.10.)
 MIN_ANGEBOT = 20    # … und mindestens so viele Stück im Angebot (sonst ist der Preis Zufall)
+PFAND_ANTEIL = 0.6  # Pfand eines Angebots (24 Stunden) = 60 % des Händlerpreises mal Menge, mindestens PFAND_MIN Kupfer:
+PFAND_MIN = 100     # gemessen an 18 Angeboten 15.–17.10. (docs/tests/messdaten-2026-10-17.md), andere Dauern ungeprüft
 WARN_MAX = 300      # Einträge in KombiDaten.nichtVerkaufen höchstens
 ANKAUF_CSV = os.path.join(at.D, "preise", "haendler_ankauf.csv")
 LEHRER_CSV = os.path.join(at.D, "kombi", "lehrer.csv")
@@ -1073,13 +1079,20 @@ def lage(m):
             out[str(key)] = zeilen
     # Sammler (ohne Lederverarbeitung und Verzauberkunst): auch Charaktere ohne Berufsfenster, aus Protokoll und chars
     stand = (datetime.strptime(m.letzter["datum"], "%Y-%m-%d %H:%M").strftime("%d.%m. %H:%M") if m.letzter else "?")
-    for key, z in sammler_zustand(m).items():
+    zeit = bestand_zeit(m)
+    zustand = sammler_zustand(m)
+    # Seit 17.10.: Material des Plans bei Lager-Charakteren des Kontos (ohne Kürschnerei, Kräuterkunde, Lederverarbeitung
+    # und Verzauberkunst, z. B. der Bankchar), Stand ihres letzten Ausloggens; was andere Sammler tragen, bleibt deren
+    LAGER_OHNE = {"Kürschnerei", "Kräuterkunde", "Lederverarbeitung", "Verzauberkunst"}
+    lager = {k.split("-")[0] for k, z in zustand.items() if not (set(z["berufe"]) & LAGER_OHNE)}
+    for key, z in zustand.items():
         char = key.split("-")[0]
         mein = defaultdict(int, inv.get(char, {})) if char in inv else None
         if mein is not None:
             for i, n in konto.items():
                 mein[i] += n
-        zs = sammler(m, key, z, mein, stand)
+        andere = {c: (b, zeit.get(c)) for c, b in inv.items() if c != char and c in lager}
+        zs = sammler(m, key, z, mein, stand, andere)
         if zs:
             out.setdefault(key, [])
             out[key] = zs + out[key]
@@ -1188,19 +1201,55 @@ def ah_statt_haendler(m, ids):
     return out
 
 
-def sammler(m, key, z, mein, stand):
+def bestand_zeit(m):
+    """Charakter (ohne Realm) -> «TT.MM. HH:MM» des jüngsten Bestands (Taschen beim Ausloggen, Bank beim Schliessen)."""
+    out = {}
+    for key, c in als_dict(m.db.get("chars")).items():
+        if not isinstance(c, dict):
+            continue
+        t = max((int((c.get(teil) or {}).get("zeit") or 0) for teil in ("taschen", "bank")), default=0)
+        if t:
+            out[str(key).split("-")[0]] = ortszeit(m, t)
+    return out
+
+
+def pfand(m, i, n=1):
+    """Geschätzter Pfand in Kupfer für ein Angebot von n Stück (24 Stunden): 60 % des Händlerpreises mal Menge,
+    mindestens 1s. Gemessen: 14 Angebote am 17.10. (Testlog 3.7, Pfand aus dem Geldabzug) und 4 frühere passen dazu
+    (docs/tests/messdaten-2026-10-17.md); andere Dauern ungeprüft."""
+    h = m.ankauf.get(i) or (m.info.get(i) or {}).get("s") or 0
+    return max(PFAND_MIN, round(PFAND_ANTEIL * h * n))
+
+
+def sammler(m, key, z, mein, stand, andere=None):
     """Zeilen für /tl tipp für Sammler: Charakter mit Kürschnerei oder Kräuterkunde, ohne Lederverarbeitung und
-    Verzauberkunst (Plan: Wechsel in Orgrimmar, Stufe A)."""
+    Verzauberkunst (Plan: Wechsel in Orgrimmar, Stufe A). «andere» = {Charakter: ({Item-ID: Stück}, Stand)}: Material
+    der anderen Charaktere des Kontos zählt mit (seit 17.10.), muss aber vor Orgrimmar in die Taschen."""
     b = z["berufe"]
     if not ("Kürschnerei" in b or "Kräuterkunde" in b) or "Lederverarbeitung" in b or "Verzauberkunst" in b:
         return []
     wer = ", ".join(f"{n} {b[n][0]}" for n in ("Kürschnerei", "Kräuterkunde") if n in b)
     zeilen = []
     if mein:
-        hat = ", ".join(f"{m.name(i)} {mein.get(i, 0)}/{n}" for i, n in STUFE_A.items())
-        fehlt = [(i, n - mein.get(i, 0)) for i, n in STUFE_A.items() if n > mein.get(i, 0)]
+        fremd = defaultdict(int)   # Item-ID -> Stück bei anderen Charakteren
+        bei = []                   # «Name: 27 Leichtes Leder, 36 Fetzen (Stand …)»
+        for c, (bst, zt) in sorted((andere or {}).items()):
+            hier = [(i, bst.get(i, 0)) for i in STUFE_A if bst.get(i, 0) > 0]
+            if hier:
+                for i, n in hier:
+                    fremd[i] += n
+                bei.append(f"{c} {', '.join(f'{n} {m.name(i)}' for i, n in hier)}" + (f" (Stand {zt})" if zt else ""))
+        def teil(i, n):
+            s = f"{m.name(i)} {mein.get(i, 0) + fremd.get(i, 0)}/{n}"
+            return s + (f" (davon {fremd[i]} woanders)" if fremd.get(i) else "")
+        hat = ", ".join(teil(i, n) for i, n in STUFE_A.items())
+        fehlt = [(i, n - mein.get(i, 0) - fremd.get(i, 0)) for i, n in STUFE_A.items()
+                 if n > mein.get(i, 0) + fremd.get(i, 0)]
         kosten = sum((m.einkauf(i, n)[0] or 0) for i, n in fehlt)
         t = f"Sammler ({wer}): bis Orgrimmar Leder behalten, Stufe A braucht {hat}."
+        if bei:
+            t += (" Woanders: " + "; ".join(bei) + ". Vor Orgrimmar in deine Taschen holen (Post); Briefe, die noch im "
+                  "Briefkasten liegen, zählen hier nicht.")
         if fehlt and kosten:
             t += f" Was fehlt, kostet im AH etwa {geld(round(kosten))} (Scan {stand})."
     else:
@@ -1219,9 +1268,16 @@ def sammler(m, key, z, mein, stand):
     ids = set(z.get("beute") or {}) | set(mein or {})
     gut = ah_statt_haendler(m, ids)[:5]
     if gut:
-        zeilen.append("AH statt Händler (Scan " + stand + ", ohne Absatz-Beleg): " + ", ".join(
-            f"{m.name(i)} {geld(round(n))} nach Gebühr (Händler {geld(h)})" for i, n, h, _ in gut)
-            + ". Pfand pro Angebot (einmal gemessen: 1s für 1 Groben Faden; ob er mit der Menge steigt, ist ungeprüft).")
+        teile = []
+        for i, n, h, _ in gut:
+            beleg, _ = m.beleg(i)
+            beleg = beleg.replace(" (", ", ").replace(")", "")
+            q = (mein or {}).get(i, 0)
+            dabei = f"; du hast {q}, Pfand etwa {geld(pfand(m, i, q))}" if q else ""
+            teile.append(f"{m.name(i)} {geld(round(n))} nach Gebühr (Händler {geld(h)}; {beleg}{dabei})")
+        zeilen.append("AH statt Händler (Scan " + stand + "): " + "; ".join(teile)
+                      + ". Pfand je Angebot (24 Stunden): 60 % des Händlerpreises mal Menge, mindestens 1s; zurück beim "
+                        "Verkauf, sonst weg (18 Angebote gemessen, 15.–17.10.).")
     return zeilen
 
 

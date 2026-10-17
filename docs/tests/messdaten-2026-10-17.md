@@ -74,3 +74,105 @@ Der Händler zahlt für die Gekräuselte Flechte 30c (`data/preise/haendler_anka
 2. Folge von 1: `/tl tipp` (T27) und die Warnung beim Händler (T31) konnten am 17.10. nicht wirken; nach `/reload` sind sie da.
 3. SAMMELN mit falscher Beute: Um 13:22:24 steht eine Zeile «Kürschnerei | Kreatur 3035 | Pumaklauen, Verfärbter Fangzahn», das ist die Beute eines zweiten Pumas, die direkt nach dem Kürschnern geplündert wurde (1 von 40 Zeilen).
 4. Volle Taschen auf Stufe 8 (Notiz 13:26): In den Taschen waren unter anderem 27 Leichtes Leder, 36 Fetzen, 22 Friedensblume, 18 Silberblatt, 15 Verkohltes Wolfsfleisch (INVENTAR 13:30). Risiko 15 in Best Practice §7.
+
+---
+
+# Nachmittag 17.10. (13:38–15:15)
+
+Quelle: die Testlog-Datei, Stand 17.10. 15:15 (Testlog 3.7.1, Kombiguide 0.6.1), am 17.10. über die Verbindung zum PC gelesen; dazu die Schrittliste des Kombi-Guides (`tools/rxp_schritte.py liste … "6-12 Mulgore" --klasse druid --rasse tauren`) und der Bagnon-Ordner im AddOns-Ordner. Ohne Charakter-, Konto- und Realmnamen. Ausgewertet mit denselben Werkzeugen wie oben (Stand des Branches `daten/2026-10-17-nachmittag`).
+
+## Sitzungen
+
+| Zeit | Charakter | Guide und Stelle | Was |
+|---|---|---|---|
+| 13:38–14:38 | Tauren-Druide, Stufe 9 (10 %) → 9 (94 %) | «6-12 Mulgore» #52 → #94 | Post an den Bankchar, Angeln, Questen, Thunder Bluff (Abgabe 97933, Geselle Kürschnerei, Auktionshaus) |
+| 14:39–14:42 | Bankchar, Stufe 1 | «6-12 Mulgore» #2 | Post vom Druiden und vom Stufe-18-Charakter abgeholt, Kräuter und Edelsteine an den Druiden zurück |
+| 14:39–14:41 | Stufe 18 | «12-17 The Barrens» #152 | Post an den Bankchar |
+| 14:42–15:14 | Tauren-Druide, Stufe 9 (94 %) → 10 (75 %) | «6-12 Mulgore» #94 → #116 | Lehrerlisten in Thunder Bluff, Stufe 10, zwei Tode, Auktionshaus, Bloodhoof |
+| 15:15 | Bankchar | «6-12 Mulgore» #2 | Brief des Auktionshauses, 1g verschickt |
+
+Alle Sitzungen melden Client 70450, Kombiguide 0.6.1-v4.11.23, Testlog 3.7.1. KombiDaten: Die Sitzung um 13:38 zeigt noch den alten Stand («15.10. 22:15, 0 Tipps»), ab 14:38 den neuen («17.10. 13:36, 6 Tipps»). Keine Zeile FEHLER.
+
+## Stellen
+
+- Druide: #52 → #116 (`.train 8924`, «Train your class spells» bei Gennia Runetotem in Bloodhoof), Stufe 10 (75 %). Neue Kombi-Schritte in «6-12 Mulgore» gehören ab jetzt hinter #116.
+- Stufe 18: weiter #152. Bankchar: «6-12 Mulgore» #2 der Gruppe «Kombiguide (H)».
+
+## Notizen im Spiel und was dahinter steht
+
+1. 14:08 «ich habe das fleisch für kyle nie erhalten» und «die quest habe ich erst jetzt angenommen»: Die Annahme von 99411 «Kyle wird vermisst!» ist Schritt #3 von «6-12 Mulgore». Sie kam mit dem Neubau auf RXP v4.11.23 am 13.10. dazu, als der Druide schon weiter war (Best Practice §10, T6); er sah den Schritt nie, und ohne Quest fällt das Fleisch nicht. Angenommen 14:08:20 bei Ahab Wheathoof (Mulgore 47.3, 57.7), Zartes Schreiterfleisch (287505) 14:09:33 von einem Adult Plainstrider (2956), abgegeben 15:13:17 (625 XP, 1s 75c).
+2. 15:04 «ich bin in tb und hohle keine klassen quests für level 10 keine spells und auch nicht die vorqquests für RFC?? ist das richtig?»: so in der Route. Die Klassenquest 5928 «Dem Ruf folgen» gibt Gennia Runetotem in Bloodhoof (#115, angenommen 15:12:11). Die Zauber lernt die Route dort (#116); laut Lehrerliste 15:12 sind 4 Zauber lernbar, je 3s (Griff der Natur, Mal der Wildnis Rang 2, Mondfeuer Rang 2, Verjüngung Rang 2), der Schritt hakt sich mit Mondfeuer Rang 2 ab. Der Druide hatte dort 2s 88c. Die RFC-Vorquests bei Rahauro kommen beim dritten Besuch in Thunder Bluff (#177, nach der Abgabe von 776 bei Cairne), wo RXP selbst sie führt; davor «Gathering Leather» (#160–#162, 12 Leichtes Leder in den Taschen).
+
+## Messwerte des Druiden
+
+- Stufe 9,10 → 10,75 (Sitzungen 61, 5 und 26 Minuten, `docs/plan/spiel.md`), 13 Quests abgegeben, 2 Tode: 14:51:45 in Thunder Bluff (66.8, 51.7), 29 s nach der Abgabe von 98430 bei Cairne, und 15:00:32 am Teufelsfelsen (Mulgore 57.1, 35.7). Die Ursache steht nicht im Testlog.
+- Angeln am Stonebull Lake (43.9, 63.4), 13:40:37–13:43:04: 10 Fänge mit 11 Würfen, 6 Roher Langzahniger Matschschnapper, 3 Roher glänzender Kleinfisch, 1 10-pfündiger Matschschnapper; jeder Fang +1 Punkt (Angeln 15 → 25).
+- Kürschnerei 56 → 61. Geselle bei Mooranta (Thunder Bluff) um 14:37:15 für 5s: Lehrerliste «Kürschnergeselle (Rang) lernbar, ab Kürschnerei 50, 5s», danach Maximum 150. Der Kombi-Schritt #88 (`.istrained 8617`) war 2 s später erledigt: T29 für Kürschnerei bestanden. Eine Zeile GELERNT gab es dabei nicht.
+- Kräuterkunde 20 → 24. Abgabe von 97933 bei Komin Winterhoof um 14:36:52 (270 XP), Rezept Räucherkerze (1229705).
+- Gekräuselte Flechte: zwei weitere aus Erdwurzel (14:25:31 bei 34.3, 47.0 und 14:34:12 bei 35.4, 42.5). Am 17.10. damit 3 Flechten aus 3 Erdwurzel-Knoten in Mulgore (kleine Stichprobe; AHledger nennt für Erdwurzel in Durotar 15 % von 39). «Grüner Daumen» um 14:25:37 (3 Erdwurzel, Objekt 657383), 68 Minuten nach der Ernte von 13:17.
+- Lehrerlisten neu: Mooranta (Kürschnerei, 5 Einträge), Kray (Alchemie, 9), Thrag Stonehoof (Schmiedekunst, 23), Brek Stonehoof (Bergbau, 16), Gennia Runetotem noch einmal (182); `data/kombi/lehrer.csv` hat jetzt 11 Lehrer mit 369 Einträgen.
+
+## Post zwischen den Charakteren
+
+- 13:39 Druide an den Bankchar: 18 Silberblatt, 2 Malachit, 2 Tigerauge, 27 Leichtes Leder, 19 Friedensblume, 11 Leinenstoff, 36 Verdorbene Lederfetzen; Porto 2s 70c.
+- 14:39 Bankchar holt ab. Die Zeile POST nennt nur 20 Leichtes Leder und 20 Fetzen; INVENTAR beim Ausloggen 20 s später zählt 27 und 36 (Befund 1).
+- 14:40 Stufe 18 an den Bankchar: Geringer Mondstein, Rolle der Beweglichkeit, 2 Geringer Manatrank, 3 Glänzendes Schmuckstück und 8g; abgezogen 8g 1s 50c in zwei Buchungen.
+- 14:42 Bankchar an den Druiden: 18 Silberblatt, 2 Malachit, 2 Tigerauge, 19 Friedensblume (Porto 1s 20c); der Druide holt sie um 14:42:47 in Thunder Bluff ab.
+- 15:15 Bankchar: 1g verschickt (abgezogen 1g 30c); der Empfänger steht nicht im Testlog.
+- Porto: Alle vier Abzüge passen zu 30c je angehängtem Stapel und 30c für einen Brief nur mit Gold (mit Stapeln zu 20: 9 Stapel = 2s 70c, 4 Stapel = 1s 20c, dazu 30c für das Gold). Wie viele Briefe es waren, zeigt das Testlog nicht (ungeprüft).
+- Beim Bankchar liegen nach dem Ausloggen um 15:15 vom Druiden 27 Leichtes Leder, 36 Fetzen und 11 Leinenstoff. Der Druide trägt 6 Leichtes Leder und 5 Fetzen.
+
+## Auktionshaus
+
+Angebote des Druiden in Thunder Bluff, alle 24 Stunden (AH-ANGEBOT):
+
+| Zeit | Gegenstand | Stück | Preis je Stück | Pfand | Händler je Stück |
+|---|---|---|---|---|---|
+| 14:37 | Gekräuselte Flechte | 3 | 2g 75s | 1s | 30c |
+| 14:38 | Erdwurzel | 10 | 99c | 1s 20c | 20c |
+| 14:38 | Friedensblume | 3 | 23c | 1s | 10c |
+| 14:38 | Silberblatt | 7 | 10c | 1s | 10c |
+| 14:38 | Malachit | 1 | 25c | 1s | 15c |
+| 14:38 | Schriftrolle: CHAP BALK WELLES | 1 | 1s (je Angebot) | 1s | 15c |
+| 15:02 | Tigerauge | 2 | 1s 8c | 1s 20c | 1s |
+| 15:03 | Friedensblume | 19 | 23c | 1s 14c (Spiel: 1s 8c) | 10c |
+| 15:03 | Silberblatt | 18 | 10c | 1s 8c | 10c |
+| 15:03 | Rauer Stein | 2 | 5c | 1s | 2c |
+| 15:03 | Kleines Ei | 4 | 1s 99c | 1s | 4c |
+| 15:03 | Sehniges Wolfsfleisch | 7 | 1s 9c | 1s | 4c |
+
+- Zusammen 12s 62c Pfand. Verkauft sich alles, bringt es 8g 61s 56c vor und 8g 18s 48c nach Gebühr, davon die Flechten 8g 25s vor Gebühr; ohne die Flechten 36s 56c vor und 34s 73c nach Gebühr, gegen 9s 48c beim Händler.
+- Pfand: Alle 14 Angebote mit Pfand aus dem Geldabzug (Testlog 3.7) passen zu «60 % des Händlerpreises mal Menge, mindestens 1s» bei 24 Stunden, ebenso die Pfand-Rückgaben vom 16.10. (Moosachat 2s 40c bei 4s Händlerpreis, Schattenedelstein 1s 50c bei 2s 50c, Tigerauge 1s bei 1s) und der Grobe Faden vom 15.10. (1s). Andere Dauern sind ungeprüft. Das Spiel meldete zweimal weniger, als abgezogen wurde (1s 44c statt 1s 50c, 1s 8c statt 1s 14c).
+- Verkauft: der Schattenedelstein des Bankchars (2s 90c, Gebühr 14c, mit Pfand 4s 26c; AH-POST 15:15:04). Beim Druiden kam um 15:02:27 ein Brief mit 1s 95c ohne Zeile AH-POST (Befund 2); der Betrag passt zur Schriftrolle (1s, minus 5c Gebühr, plus 1s Pfand), vermutlich.
+- Scans in Thunder Bluff: 14:37 (51 632 Angebote, 2940 Gegenstände, 12 s) und 15:02 (52 363, 2959, 12 s). Unter dem Händlerpreis um 15:02: 6 Gegenstände, zusammen 7s 11c Gewinn.
+- Erste Abnahme aus Scan-Paaren (13:36 → 14:37, 61 Minuten, Orgrimmar und Thunder Bluff teilen ein Haus; 14:37 → 15:02, 25 Minuten), geschätzt gekauft (`data/preise/ah_abnahme.csv`):
+
+| Gegenstand | 61 Min | 25 Min |
+|---|---|---|
+| Leichtes Leder | 430 | 599 |
+| Verdorbene Lederfetzen | 0 | 60 |
+| Seltsamer Staub | 0 | 612 |
+| Friedensblume | 85 | 0 |
+| Erdwurzel | 23 | 0 |
+| Roher glänzender Kleinfisch | 0 | 41 |
+| Gekräuselte Flechte, Kleines Ei, Sehniges Wolfsfleisch, Silberblatt | 0 | 0 |
+
+- Die Abnahme ist eine Schätzung (Risiko 24): Der verkaufte Schattenedelstein des Bankchars steht in keiner der beiden.
+- Gekräuselte Flechte: Tiefstpreis 2g 75s (14:37) → 2g 50s (15:02), Angebot 193 → 236 Stück.
+
+## Bagnon
+
+- Bagnon 12.1.7 mit BagBrother liegt seit 17.10. 15:16:44 im AddOns-Ordner (`## Interface: … 16001` in beiden `.toc`), also nach dem letzten Ausloggen um 15:15:20. Geladen war es noch nicht: Die Datei `BagBrother.lua` (SavedVariables `BrotherBags`) fehlt; einen neuen Addon-Ordner lädt der Client erst nach einem Neustart des Spiels (Best Practice §5).
+- Was BagBrother speichert (Code der installierten Version, `core/features/caching.lua`, gelesen 17.10.): pro Charakter Taschen, Ausrüstung, Geld, den Briefkasten beim Öffnen, die Bank beim Schliessen (Charakter- und Kontobank über `C_Bank.FetchPurchasedBankTabData`) und Briefe an eigene Charaktere gleich beim Senden (Haken an `SendMail`, eingetragen bei `MAIL_SEND_SUCCESS`), wenn Bagnon den Empfänger schon kennt. Den Tooltip mit der Anzahl pro Charakter (Taschen, Bank, Post) zeigt `core/features/itemTooltips.lua`, Einstellung `countItems`. Jeder Charakter muss sich dafür einmal mit Bagnon einloggen, die Bank einmal öffnen.
+- RXP zählt bei `.collect` weiter nur den eingeloggten Charakter (Taschen, mit Flag 8 seine Bank; `functions.lua` Z. 88 und 3089, v4.11.23). Syndicator nutzt RXP nur im Quest-Planer (`DB/questDB.lua` Z. 25–39), Bagnon gar nicht für die Zähler.
+
+## Befunde zum Testlog
+
+1. POST «erhalten» zu kurz, wenn Gegenstände erst nach dem Ende der Sitzung in den Taschen ankommen: 14:39:22 nennt 20 statt 27 Leichtes Leder und 20 statt 36 Fetzen; die Sitzung endete nach 5 s mit «Interaktion zu». Eine Zeile TASCHE für den Rest fehlt ebenfalls (Ruhezeit 1,5 s nach dem Ende). INVENTAR beim Ausloggen stimmt, `tools/markt.py` rechnet mit INVENTAR.
+2. AH-POST fehlt, wenn ein Brief schneller abgeholt wird, als das Testlog liest: Es liest 1 s nach `MAIL_SHOW` bzw. `MAIL_INBOX_UPDATE`, der Briefkasten war um 15:02:27 nur 2 s offen.
+3. Hinweise im Chat (Warnung beim Händler, T31; «Abnahme messen», T32) schreibt das Testlog nicht in die Datei; ob sie kamen, zeigt es nicht.
+
+## Was daraus geändert wurde (17.10.)
+
+- `tools/markt.py`: Für Stufe A zählt Material bei Lager-Charakteren des Kontos mit (ohne Kürschnerei, Kräuterkunde, Lederverarbeitung und Verzauberkunst, also der Bankchar), mit dem Stand ihres letzten Ausloggens; Post im Briefkasten nicht. «AH statt Händler» nennt die gemessene Abnahme und den Pfand nach der Regel oben. `tools/testlog_harness.py` prüft beides.
+- Kombiguide 0.6.2: nur Texte (gleiche Zeilenzahl): Pfand-Regel und Abnahme beim Auktionshaus in Thunder Bluff, Geselle Kürschnerei mit den gemessenen Werten. Stellen #116 (Druide) und #152 (Stufe 18) geprüft.
