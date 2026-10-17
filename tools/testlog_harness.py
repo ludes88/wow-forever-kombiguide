@@ -1607,9 +1607,17 @@ ml = mk.Markt(db_l, scan_e, {})
 lg = mk.lage(ml)
 zl = (lg.get("Druide-Testrealm") or [""])[0]
 zk = (lg.get("Kraeuter-Testrealm") or [""])[0]
-check("Leichtes Leder 33/62 (davon 27 woanders)" in zl and "Woanders: Lager 36 " in zl and "Kraeuter" not in zl
-      and "Leichtes Leder 30/62 (davon 27 woanders)" in zk and "Druide" not in zk,
+check("Leichtes Leder 33/74 (davon 27 woanders; darin 12 für «Leder sammeln», Quest 768 in Thunder Bluff)" in zl
+      and "Woanders: Lager 36 " in zl and "Kraeuter" not in zl
+      and "Leichtes Leder 30/74 (davon 27 woanders; darin 12" in zk and "Druide" not in zk,
       "markt: Stufe A zählt den Lager-Charakter mit, andere Sammler nicht (%s / %s)" % (zl, zk))
+# Seit 17.10. abends: «Leder sammeln» (768) kostet 12 Leichtes Leder; nach QUEST AB 768 zählt nur noch Stufe A
+db_q = dict(db_l)
+db_q["log"] = db_s["log"][:1] + [
+    "14.10. 20:01:10 | QUEST AB | L8 50% | Thunder Bluff | 1456 44.1,44.4 | RXP 6-12 Mulgore #162 | 768 Leder sammeln | XP 875"] + db_s["log"][1:]
+zq = (mk.lage(mk.Markt(db_q, scan_e, {})).get("Druide-Testrealm") or [""])[0]
+check("Leichtes Leder 33/62 (davon 27 woanders)" in zq and "Leder sammeln" not in zq,
+      "markt: nach der Abgabe von 768 keine 12 Leder mehr (%s)" % zq)
 # Seit 17.10.: Gold für die Klassenzauber aus der Lehrerliste des Charakters (nur mit «gesperrt» im Filter), ohne die danach
 # gelernten; ein Waffenmeister (auch «Klasse», ohne Lernstufen) verdrängt die Liste nicht
 db_k = dict(db_s)

@@ -112,7 +112,9 @@ def world(row, maps):
 #                                                 fehlt das Material da schon, ist der Schritt erledigt; geht es mittendrin aus, Häkchen setzen)
 #   gebiet        .zone id >>kurz                (id = Karten-ID; erledigt beim Betreten der Karte, functions.lua addon.functions.zone,
 #                                                 wie RXPs Zeppelin-Schritt «.zone Tirisfal Glades», Horde-01-12_Durotar.lua; Häkchen = nicht hin)
-# «bedingung» und «extra» nehmen mehrere rohe RXP-Zeilen, getrennt mit « // ».
+# «bedingung» und «extra» nehmen mehrere rohe RXP-Zeilen, getrennt mit « // ». Ein Eintrag in «extra», der mit «<<»
+# beginnt (z. B. «<< Tauren Druid»), kommt als Filter in die Kopfzeile «step << …» (seit 0.6.4); «@nur <Gruppe>» baut die
+# Zeile nur in diese Gruppe ein.
 # «radius» kommt roh hinter den Ort: «30» macht das Hingehen zur Bedingung, «0,0» macht das Ziel nachrangig (RXP lowPrio: der
 # Pfeil zeigt erst dorthin, wenn kein anderes Ziel ansteht; so in RXPs Forever-Guides bei Schritten mit #completewith).
 AKTIONEN = ("lernen", "kaufen", "ziel", "fertigkeit", "maxfertigkeit", "abgeben", "annehmen", "hingehen", "hinweis", "manuell",
@@ -137,7 +139,12 @@ def make_step(row, maps):
     if akt not in AKTIONEN:
         raise SystemExit(f"Plan-Zeile {row['nr']}: Aktion {akt!r} kennt der Generator nicht ({', '.join(AKTIONEN)})")
     text = row["text"].replace("{npc}", f"|cRXP_FRIENDLY_{row['npc']}|r" if row["npc"] else "")
-    lines = ["step", f"    #label Kombi{row['nr']}"]
+    # Seit 0.6.4: ein Eintrag in «extra», der mit «<<» beginnt, ist der Klassen- bzw. Rassenfilter des ganzen Schritts
+    # («step << Tauren Druid», wie RXPs eigene Druiden-Schritte; GuideLoader.lua L36–104)
+    filt = [e.strip() for e in (row.get("extra") or "").split(" // ") if e.strip().startswith("<<")]
+    if len(filt) > 1:
+        raise SystemExit(f"Plan-Zeile {row['nr']}: mehr als ein Filter «<< …» in extra")
+    lines = ["step" + (f" {filt[0]}" if filt else ""), f"    #label Kombi{row['nr']}"]
     if row.get("bis"):
         lines.append(f"    #completewith {row['bis']}")
     pos = world(row, maps)
@@ -187,7 +194,7 @@ def make_step(row, maps):
         if cond.strip():
             lines.append("    " + cond.strip())
     for extra in (row.get("extra") or "").split(" // "):
-        if extra.strip():
+        if extra.strip() and not extra.strip().startswith(("<<", "@nur ")):
             lines.append("    " + extra.strip())
     if row["npc"]:
         lines.append(f"    .target {row['npc']}")
@@ -331,9 +338,16 @@ def make_blocks(rows):
 report, problems, out_blocks = [], [], []
 dg_text = ", ".join(sorted(DUNGEONS_ON)) or "keine"
 dg_off = ", ".join(sorted(DUNGEONS_KNOWN - DUNGEONS_ON)) or "keine"
+def nur_gruppe(row):
+    """Seit 0.6.4: «@nur <Gruppe>» in «extra» baut die Zeile nur in diese Gruppe ein (z. B. wenn ein Ziel-Label nur in
+    RXPs Speedrun-Route steht: «DruidTraining1» fehlt in der Dungeon-Route «12-17»)."""
+    g = [e.strip()[5:].strip() for e in (row.get("extra") or "").split(" // ") if e.strip().startswith("@nur ")]
+    return g[0] if g else None
+
+
 for G in GRUPPEN:
     group = G["gruppe"]
-    rows_g = plan + (vorquests if G["vorquests"] else [])
+    rows_g = [r for r in plan + (vorquests if G["vorquests"] else []) if nur_gruppe(r) in (None, group)]
     blocks = make_blocks(rows_g)
     # Keine ungewollten Ketten (16.10.): Zeigt «#completewith» auf einen Schritt, der selbst «#completewith» hat, erledigt RXP
     # den ersten, sobald der zweite erledigt oder übersprungen ist (GuideWindow.lua UpdateStepCompletion: stepSkip des Ziels).

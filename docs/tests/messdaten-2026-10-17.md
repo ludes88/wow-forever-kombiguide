@@ -257,3 +257,60 @@ Lehrerliste von Gennia Runetotem (Bloodhoof 47.4, 62.9), 17.10. 15:24, mit allen
 - Kombiguide 0.6.3: «Grundlagen des Zeltens: Angeln» in «6-12 Mulgore» (Wunsch des Nutzers, Notiz 15:26): vor Kaga Wildhoof bei Harn Longcast eine Angel kaufen und bei Uthan Stillwater Angeln lernen, nach «Camping 101: Cooking» die Quest bei Kaga annehmen, am Stonebull Lake bis Angeln 20 angeln (etwa 9 Minuten nach der Rate vom 13.10.), bei Uthan abgeben (Plan-Zeilen 92–96). Alle fünf Schritte mit `#maxlevel 11`: Der Druide (Stufe 12) sieht sie nicht und behält #153; neue Charaktere sehen sie. Zeile 4 sagt jetzt, woher der Kleinfisch für Thunder Bluff kommt. Die Annahmen für Kräuterkunde und Kürschnerei bei Kaga (Zeilen 83 und 84) bleiben aus (offene Entscheidung 11).
 - `tools/markt.py`: Beim Gold für den Wechsel in Orgrimmar zählen die noch offenen Klassenzauber bis Stufe 16 mit, aus der letzten Lehrerliste des Charakters (beim Druiden 1g 5s, zusammen mit Stufe A etwa 1g 65s gegen 1g 19s 59c); für andere Charaktere mit Lehrerliste eine Zeile bis zur nächsten Zielstufe (16, 20, 22). Waffenmeister zählen nicht. `tools/testlog_harness.py` prüft es.
 - Wie der Guide selbst an das Gold für die Klassenzauber erinnern soll, ist offen (offene Entscheidung 41).
+
+---
+
+# Spätabend 17.10. (17:20–18:24)
+
+Quelle: die Testlog-Datei, Stand 17.10. 18:24 (Testlog 3.7.1; Kombiguide 0.6.2 bis 17:56, danach 0.6.3), über die Verbindung zum PC gelesen; dazu RXP v4.11.23 (Code und Guide-Dateien im RXP-Klon) und der Forever-UI-Code 1.60.1 (70450, https://github.com/Gethe/wow-ui-source/tree/forever, Commit 172a387). Ohne Charakter-, Konto- und Realmnamen. Ausgewertet mit den Werkzeugen auf dem Branch `daten/2026-10-17-spaet`.
+
+## Sitzungen
+
+| Zeit | Charakter | Guide und Stelle | Was |
+|---|---|---|---|
+| 17:20–17:34 | Tauren-Druide, Stufe 12 (16 %) → 12 (21 %) | «6-12 Mulgore» #153 → #161 | Abgabe «Grosser Bärengeist» (5930) in Moonglade, Flug nach Thunder Bluff, «Leder sammeln» angenommen, AH-Briefe |
+| 17:34 | Bankchar, Stufe 1 | «6-12 Mulgore» #2 | 1 Leichtes Leder an den Druiden (Porto 30c) |
+| 17:34–17:51 | Tauren-Druide, Stufe 12 (21 %) → 12 (42 %) | «6-12 Mulgore» #161 → #170 | «Leder sammeln» abgegeben, Mulgore |
+| 17:51–17:56 | Bankchar | – | Ausrüstung für den Druiden im AH gekauft (3g 8s und 2g 15s), 7 Teile an ihn geschickt |
+| 17:56 | Tauren-Druide | #170 | `/reload` mit Kombiguide 0.6.3 und KombiDaten «17.10. 16:51, 12 Tipps» |
+| 17:56–18:24 | Tauren-Druide, Stufe 12 (42 %) → 12 (63 %) | «6-12 Mulgore» #170 → #172 | Ausrüstung aus der Post, Händler, 2 AH-Angebote, Harpyien für Quest 744 im Westen von Mulgore |
+
+Alle Sitzungen: Client 70450, Testlog 3.7.1, keine Zeile FEHLER.
+
+## Stellen
+
+- Druide: #153 → #172 (`.complete 760,1`, Stufe 12, 63 %). Nach der Abgabe von 768 (17:35:28) sprang RXP selbst von #164 auf #170. Kombiguide 0.6.3 hielt die Stelle #170 beim `/reload` um 17:56 (T6).
+- Stufe 18: weiter #152.
+
+## Notizen im Spiel und was dahinter steht
+
+1. 17:22:53 «ich hätte den ruhestein ausparren sollen.. bitte erwähne das im guide. Wichtig! nach TB laufen DANN moonglade DANN RS»: Der Druide war um 16:49 mit dem Ruhestein von Bloodhoof nach Thunder Bluff gekommen (34 s) und musste aus Moonglade fliegen. RXP v4.11.23 sagt Druiden an dieser Stelle schon «Travel to Thunder Bluff» (statt «Hearth to Thunder Bluff» für alle anderen; `Horde-1-12_Mulgore.lua`, Schritte nach «Thunderhorn2») und in Moonglade «Hearth to Thunder Bluff» nur ohne Abklingzeit (`.cooldown item,6948,>0`), sonst «Fly to Thunder Bluff». Flug: RXP rechnet 543 Sekunden von Nighthaven nach Thunder Bluff (`DB/forever/flightData.lua`, Knoten 69 nach 22); im Testlog von der Annahme von 5932 (17:20:53) bis zur Ankunft in Thunder Bluff (17:30:42) knapp 10 Minuten, bis zur Abgabe (17:31:59) 11 Minuten.
+2. 17:26:38 «mir fällt auf dass beim fliegen die flugzeit von moonglade nach tb nicht angezeigt wird»: RXP hat die Flugzeit (Punkt 1) und einen Flug-Timer (`Timers.lua`: beim Öffnen der Flugkarte `C_TaxiMap.GetAllTaxiNodes`, Start bei `PLAYER_CONTROL_LOST`). Warum er nicht erschien, ist ungeprüft; das Testlog schreibt die Flugkarte und den Flug nicht mit.
+3. 17:34:00 «natürlich mache ich die leder quest. plane diese +12 ein bitte»: Das Mengenmodell zieht die 12 schon ab (`data/kombi/modell_leder.csv`, Art «Verbrauch»); `/tl tipp` zählte sie bisher nicht. Seit 17.10. (spät) zählt `tools/markt.py` für Sammler 12 Leichtes Leder mehr, solange keine Zeile QUEST AB 768 im Testlog steht. Der Druide gab 768 um 17:35:28 ab (875 XP, Leichtes Leder −12, danach 0 in den Taschen).
+4. 17:37:59 «normalerweise werden mobs im rxp automatisch markiert der haken ist in den rxp optionen drinn aber es passiet nie»: RXP setzt in Forever keine Zielmarkierungen von selbst: `Targeting.lua` Z. 56 «Retail/Forever cannot SetRaidTarget automatically, leverage button» (der Ziel-Knopf von RXP setzt sie mit `/tm` im Makro) und Z. 979 (`UpdateMarker` endet für `FOREVER` sofort; RXP v4.11.23).
+5. 17:51:28 «um schneller voran zu kommen kaufe ich mir gear. dies wird im release nicht gehen daher bite ignorieren»: Der Bankchar kaufte um 17:54 und 17:55 im AH für 3g 8s (6 Käufe) und 2g 15s (1 Kauf) und schickte 7 Teile an den Druiden (17:56). Diese Käufe zählen in keiner Rechnung.
+
+## Messwerte
+
+- Stufe 12 (16 % → 63 %): 47 % einer Stufe in 57 Minuten (Sitzungen 13, 17 und 27 Minuten); Quests: «Leder sammeln» 875 XP, «Grosser Bärengeist» 420, «Zurück nach Thunder Bluff» 85.
+- Kürschnerei 72 → 74, Kräuterkunde 31 → 34; «Grüner Daumen» um 18:15:05 (2 Erdwurzel, eigene Objekt-ID), wie am Nachmittag.
+- Beute: «Muster: Unverwüstliche Lederhose» (7288) von Kreatur 2964 (18:05, Westen von Mulgore); der Händler zahlt 1s 25c (`data/preise/haendler_ankauf.csv`).
+- Karten Dunkelküste (1439), Ashenvale (1440) und Steinkrallengebirge (1442) exakt aus KARTE (Flug 17:22–17:30), übernommen mit `tools/karte_aus_testlog.py`.
+- Lehrerliste Mooranta (Kürschnerei, Thunder Bluff, 17.10.): Experte gesperrt, ab Kürschnerei 125, 50s; Fachmann ab 200, 5g (`data/kombi/lehrer.csv`).
+
+## Post und Auktionshaus
+
+- AH-POST 17:33:40 (Thunder Bluff): 4 Kleines Ei zu 1s 99c (Gebühr 39c), Pläne: Runenverzierte Kupferbrustplatte 3s (15c), Skalpiertomahawk der Intelligenz 5s (25c); mit dem Pfand +19s 2c.
+- Neue Angebote 17:58 (24 Stunden): Geprägte Lederhose 7s (Pfand laut Geldabzug 2s 8c, das Spiel meldete 2s 4c; Händler 3s 47c), Schnitzmesser der Magie 21s (Geldabzug 1s 93c, das Spiel meldete 1s 92c; Händler 3s 23c). Beide passen zur Regel 60 % des Händlerpreises; beim Schnitzmesser (193,8c) nur abgerundet. Damit 26 Angebote; von den 5, die mit Geldabzug noch im Testlog stehen, ist das Schnitzmesser das einzige, bei dem Runden und Abrunden verschieden ausgehen.
+- Scan 17:52 in Orgrimmar (Bankchar): 53 688 Angebote, 2899 Gegenstände, 61 Minuten nach dem Scan von 16:51; `tools/ah_aus_testlog.py`: 186 neue Preiszeilen, 164 neue Abnahme-Zeilen, 95 Händlerpreise neu oder geändert.
+
+## Was daraus geändert wurde (17.10. spät)
+
+- Kombiguide 0.6.4:
+  - Ruhestein-Hinweis für Druiden vor Moonglade (Plan-Zeile 97, Notiz 1).
+  - Gold-Hinweise vor den Druiden-Lehrern der Stufen 10, 12, 14 und 18 mit den gemessenen Kosten (Zeilen 98–101, offene Entscheidung 41). Jeder verschwindet, sobald genug Gold da ist (`.money >X`).
+  - Die Annahme von «Grundlagen des Zeltens: Kürschnerei» und «…: Kräuterkunde» bei Kaga Wildhoof ist eingeschaltet (Zeilen 83 und 84, offene Entscheidung 11; das Log zeigt Annahme und Abgabe beider Quests, je 270 XP und ein Rezept).
+  - Zeile 10 sagt, dass die 12 Leder für «Leder sammeln» eingeplant sind.
+  - Schritte in «6-12 Mulgore» vor der Stelle des Druiden tragen `#maxlevel 11`, der in «12-17» `#maxlevel 17`. Geprüft mit `tools/rxp_schritte.py vergleich` für alle 9 Klassen: Stellen #172 (Stufe 12) und #152 (Stufe 18) bleiben. `tools/rxp_schritte.py ziele` findet alle Ziele (beide Gruppen).
+- `tools/build_kombi.py`: In `extra` wird ein Eintrag mit `<<` zum Filter des ganzen Schritts (`step << Tauren Druid`), und `@nur <Gruppe>` baut eine Zeile nur in diese Gruppe ein (RXPs Dungeon-Route «12-17» hat keinen Lehrer in Moonglade).
+- `tools/markt.py`: +12 Leichtes Leder für Sammler, solange 768 nicht abgegeben ist (Notiz 3). Den Pfand rundet es jetzt ab (Schnitzmesser). `tools/testlog_harness.py` prüft beides.

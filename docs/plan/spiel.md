@@ -25,10 +25,14 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 | 2026-10-15 | 60 Min | 16.68 → 18.56 | 1.89 | 17 (31825) | 0 | Orgrimmar 20, Brachland 14, Die Ruinen von Lordaeron 11 | 12-17 The Barrens #103 → 12-17 The Barrens #152 | 0.4-v4.11.23 |
 | 2026-10-15 | 15 Min | 15.70 → 15.97 | 1.07 | 1 (750) | 0 | Brachland 15 | 12-17 The Barrens #77 → 12-17 The Barrens #84 | 0.4-v4.11.23 |
 | 2026-10-17 | 7 Min | 1.25 → 1.25 | 0.00 | 0 (0) | 0 | Orgrimmar 7 | 06-12 Mulgore #2 → 06-12 Mulgore #2 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 27 Min | 12.42 → 12.63 | 0.46 | 0 (0) | 0 | Mulgore 21, Thunder Bluff 7 | 06-12 Mulgore #170 → 06-12 Mulgore #172 | 0.6.3-v4.11.23 |
 | 2026-10-17 | 26 Min | 9.94 → 10.75 | 1.86 | 8 (5320) | 2 | Mulgore 16, Thunder Bluff 10 | 06-12 Mulgore #94 → 06-12 Mulgore #116 | 0.6.1-v4.11.23 |
 | 2026-10-17 | 33 Min | 7.74 → 9.10 | 2.48 | 6 (2685) | 0 | Mulgore 33 | 06-12 Mulgore #45 → 06-12 Mulgore #52 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 5 Min | 1.25 → 1.25 | 0.00 | 0 (0) | 0 | Orgrimmar 5 | 06-12 Mulgore #2 → 06-12 Mulgore #2 | 0.6.2-v4.11.23 |
 | 2026-10-17 | 14 Min | 10.75 → 10.87 | 0.51 | 2 (795) | 0 | Mulgore 14 | 06-12 Mulgore #116 → 06-12 Mulgore #123 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 13 Min | 12.16 → 12.21 | 0.22 | 2 (505) | 0 | Thunder Bluff 3, Dunkelküste 3, Steinkrallengebirge 3 | 06-12 Mulgore #153 → 06-12 Mulgore #161 | 0.6.2-v4.11.23 |
 | 2026-10-17 | 5 Min | 9.94 → 9.94 | 0.00 | 0 (0) | 0 | Thunder Bluff 5 | 06-12 Mulgore #94 → 06-12 Mulgore #94 | 0.6.1-v4.11.23 |
+| 2026-10-17 | 17 Min | 12.21 → 12.42 | 0.76 | 1 (875) | 0 | Mulgore 13, Thunder Bluff 4 | 06-12 Mulgore #161 → 06-12 Mulgore #170 | 0.6.2-v4.11.23 |
 | 2026-10-17 | 90 Min | 10.87 → 12.16 | 0.86 | 9 (5110) | 3 | Mulgore 72, Moonglade 11, Thunder Bluff 7 | 06-12 Mulgore #123 → 06-12 Mulgore #153 | 0.6.1-v4.11.23 |
 | 2026-10-17 | 61 Min | 9.10 → 9.94 | 0.83 | 5 (1870) | 0 | Mulgore 56, Thunder Bluff 4 | 06-12 Mulgore #52 → 06-12 Mulgore #94 | 0.6.1-v4.11.23 |
 
@@ -36,7 +40,7 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 
 | Gebiet | Stufe | Minuten | Stufen | pro Stunde | Quests (XP) | Tode | Sitzungen |
 |---|---|---|---|---|---|---|---|
-| Orgrimmar | 1 | 6 | 0.00 | 0.00 | 0 (0) | 0 | 1 |
+| Orgrimmar | 1 | 11 | 0.00 | 0.00 | 0 (0) | 0 | 2 |
 | Mulgore | 5 | 11 | 0.13 | 0.73 | 0 (0) | 0 | 1 |
 | Mulgore | 6 | 23 | 1.04 | 2.69 | 4 (1640) | 1 | 2 |
 | Mulgore | 7 | 34 | 0.98 | 1.73 | 5 (1975) | 1 | 3 |
@@ -46,8 +50,12 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 | Mulgore | 10 | 37 | 0.91 | 1.48 | 8 (4995) | 1 | 3 |
 | Thunder Bluff | 10 | 7 | 0.06 | 0.50 | 1 (420) | 1 | 1 |
 | Mulgore | 11 | 64 | 1.04 | 0.97 | 5 (4100) | 3 | 1 |
-| Moonglade | 12 | 11 | 0.02 | 0.11 | 1 (210) | 0 | 1 |
-| Thunder Bluff | 12 | 7 | 0.09 | 0.74 | 3 (800) | 0 | 1 |
+| Ashenvale | 12 | 1 | 0.00 | 0.00 | 0 (0) | 0 | 1 |
+| Dunkelküste | 12 | 3 | 0.00 | 0.00 | 0 (0) | 0 | 1 |
+| Moonglade | 12 | 13 | 0.06 | 0.28 | 2 (630) | 0 | 2 |
+| Mulgore | 12 | 35 | 0.33 | 0.57 | 0 (0) | 0 | 4 |
+| Steinkrallengebirge | 12 | 3 | 0.00 | 0.00 | 0 (0) | 0 | 1 |
+| Thunder Bluff | 12 | 21 | 0.19 | 0.54 | 5 (1760) | 0 | 4 |
 | Brachland | 15 | 22 | 0.30 | 0.82 | 1 (750) | 0 | 4 |
 | Mulgore | 15 | 2 | 0.00 | 0.00 | 0 (0) | 0 | 2 |
 | Thunder Bluff | 15 | 64 | 0.00 | 0.00 | 0 (0) | 0 | 5 |
@@ -96,7 +104,16 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 | Gegner | 3566 | 9 | 11 | 1 | 64 | 64.0 | 64.0 |
 | Quest | ? | ? | 11 | 5 | 4100 | 820.0 | 820.0 |
 | sonst | ? | ? | 11 | 1 | 65 | 65.0 | 65.0 |
-| Quest | ? | ? | 12 | 4 | 1115 | 278.8 | 625.0 |
+| Gegner | 2965 | 10 | 12 | 13 | 923 | 71.0 | 71.0 |
+| Gegner | 2964 | 9 | 12 | 11 | 616 | 56.0 | 56.0 |
+| Gegner | 2965 | 11 | 12 | 10 | 890 | 89.0 | 88.0 |
+| Gegner | 2964 | 10 | 12 | 9 | 639 | 71.0 | 71.0 |
+| Gegner | 2959 | 7 | 12 | 5 | 156 | 31.2 | 30.0 |
+| Gegner | 2957 | 8 | 12 | 1 | 42 | 42.0 | 42.0 |
+| Gegner | 2959 | 8 | 12 | 1 | 42 | 42.0 | 42.0 |
+| Gegner | 3035 | 7 | 12 | 1 | 30 | 30.0 | 30.0 |
+| Gegner | 3035 | 8 | 12 | 1 | 42 | 42.0 | 42.0 |
+| Quest | ? | ? | 12 | 7 | 2495 | 356.4 | 625.0 |
 | Gegner | 2958 | 5 | 7 | 4 | 336 | 84.0 | – |
 | Gegner | 2956 | 7 | 7 | 2 | 320 | 160.0 | – |
 | Gegner | 2958 | 6 | 7 | 2 | 240 | 120.0 | – |
@@ -141,7 +158,7 @@ Bewegung = Proben mit mehr als 3 Yards Weg seit der letzten; Kampf, Flug, tot, e
 
 | Karte | Stufe | Minuten | Bewegung | Kampf | Flug | tot | erholt | Yards pro Min | XP pro Stunde | Kills |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Orgrimmar | 1 | 8 | 5 | 0 | 0 | 0 | 8 | 117 | 0 | 0 |
+| Orgrimmar | 1 | 13 | 7 | 0 | 0 | 0 | 13 | 103 | 0 | 0 |
 | Mulgore | 7 | 9 | 7 | 2 | 0 | 0 | 1 | 118 | 8323 | 10 |
 | Mulgore | 8 | 22 | 20 | 10 | 0 | 0 | 0 | 114 | 15838 | 35 |
 | Mulgore | 9 | 58 | 49 | 15 | 0 | 0 | 2 | 125 | 5343 | 60 |
@@ -149,8 +166,11 @@ Bewegung = Proben mit mehr als 3 Yards Weg seit der letzten; Kampf, Flug, tot, e
 | Mulgore | 10 | 36 | 30 | 6 | 0 | 0 | 0 | 167 | 11568 | 21 |
 | Thunder Bluff | 10 | 8 | 7 | 0 | 0 | 1 | 8 | 230 | 3111 | 0 |
 | Mulgore | 11 | 64 | 61 | 25 | 0 | 6 | 0 | 182 | 8641 | 87 |
-| Moonglade | 12 | 11 | 4 | 0 | 0 | 0 | 0 | 116 | 1178 | 0 |
-| Thunder Bluff | 12 | 7 | 6 | 0 | 0 | 0 | 7 | 173 | 6667 | 0 |
+| Dunkelküste | 12 | 3 | 3 | 0 | 3 | 0 | 0 | 1671 | 0 | 0 |
+| Moonglade | 12 | 12 | 6 | 0 | 0 | 0 | 0 | 185 | 3024 | 0 |
+| Mulgore | 12 | 34 | 30 | 16 | 0 | 0 | 0 | 96 | 5873 | 51 |
+| Steinkrallengebirge | 12 | 3 | 3 | 0 | 3 | 0 | 0 | 1620 | 0 | 0 |
+| Thunder Bluff | 12 | 21 | 18 | 0 | 0 | 0 | 21 | 180 | 5198 | 1 |
 | Orgrimmar | 18 | 4 | 1 | 0 | 0 | 0 | 4 | 14 | 0 | 0 |
 
 ## Dungeon-Läufe (Testlog 3.7)
