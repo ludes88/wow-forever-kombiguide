@@ -1902,8 +1902,8 @@ s12("geheim"); s12("kampflog an"); on12 = g12.combatLogging; s12("kampflog aus")
 gl = [l for l in log12() if " | GEHEIM | " in l]
 m12 = msg12()
 check(len(gl) == 3 and "Secret-Werte true | Werte geheim false | Kampflog gesperrt true | Einschränkungen keine | Schadensmesser true | "
-      "CVar damageMeterEnabled 1 | Kampflog-Datei false | CombatLogGetCurrentEventInfo nil" in gl[0]
-      and "Einschränkung 4: Zustand 2" in gl[1] and gl[2].endswith(gl[0].split(" | GEHEIM | ")[1]),
+      "CVar damageMeterEnabled 1 | Kampflog-Datei vorhanden | CombatLogGetCurrentEventInfo nil" in gl[0]
+      and "Einschränkung 4: Zustand 2" in gl[1] and "| Kampflog-Datei false | CombatLogGetCurrentEventInfo nil" in gl[2],
       "4.0: GEHEIM beim Einloggen, bei einer Einschränkung und von Hand (%s)" % gl)
 check(on12 is True and g12.combatLogging is False and g12.KombiTestlogDB.kampflog is None
       and any("Kampflog-Datei (Logs\\WoWCombatLog*.txt): true" in m for m in m12),

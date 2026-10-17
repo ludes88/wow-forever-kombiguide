@@ -1,6 +1,6 @@
 # Messplan Beta: Daten mit den Druiden sammeln (14.–22.10.2026)
 
-Stand 17.10.2026 (Nacht). Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
+Stand 17.10.2026 (abends). Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
 
 Jede Messung beantwortet eine offene Frage im Plan. Bei jeder steht, welche Zahl sie ersetzt. Ob, welche und wann gemessen wird, entscheidest du. Die Reihenfolge unten ist ein Vorschlag.
 
@@ -374,7 +374,7 @@ Nebenbei, wenn ein Druide vorbeikommt: neben die Person stellen und `/tl M8 <Nam
 - Welche Ausrüstung und welche Quest-Belohnung bringt am meisten (mit RXPs Gewichten, später mit deinen eigenen Daten)?
 
 **Ablauf**
-- Einmal `/tl geheim`: Die Zeile sagt, was der Client Addons erlaubt und ob Blizzards Schadensmesser da ist (`damageMeterEnabled`). Steht dort «CVar damageMeterEnabled 0», kannst du den Schadensmesser in den Optionen einschalten (offener Punkt 43; der Name der Option im deutschen Client ist ungeprüft).
+- Einmal `/tl geheim`: Die Zeile sagt, was der Client Addons erlaubt und ob Blizzards Schadensmesser da ist (`damageMeterEnabled`). Steht dort «CVar damageMeterEnabled 0», kannst du den Schadensmesser in den Optionen einschalten (offener Punkt 43; der Name der Option im deutschen Client ist ungeprüft). Meldet das Spiel dabei, KombiTestlog sei blockiert worden, darf das Addon die Kampflog-Datei nicht abfragen; dann sag es mir.
 - Danach normal kämpfen. Das Testlog schreibt nach jedem Kampf eine Zeile KAMPF. Ausserhalb des Kampfes in jede Gestalt wechseln, die du nutzt: Das Testlog liest die Werte von selbst (WERTE), von Hand mit `/tl werte`.
 - Wenn du magst: einmal `/tl kampflog an`, ein Kampf, `/tl kampflog aus`; dann im Ordner `_classic_beta_\Logs` nachsehen, ob eine Datei `WoWCombatLog…txt` entstanden ist (T44; offener Punkt 44). Ich sehe den Ordner auch selbst.
 - `/tl kampf` zeigt den Schnitt pro Gestalt.

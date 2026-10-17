@@ -3050,8 +3050,9 @@ function K.belohnungZeile(w, wahl)
         wahl and ("gewählt " .. wahl) or "nicht gewählt (Fenster zu)", table.concat(teile, " · ")))
 end
 
--- Was der Client Addons erlaubt (beim Einloggen, wenn sich etwas ändert, und mit /tl geheim)
-function K.geheim()
+-- Was der Client Addons erlaubt (beim Einloggen, wenn sich etwas ändert, und mit /tl geheim). Den Zustand der
+-- Kampflog-Datei fragt nur /tl geheim ab (LoggingCombat; ob Forever den Aufruf für Addons sperrt, ist ungeprüft)
+function K.geheim(vonHand)
     local function wert(fn, ...)
         if not fn then return "-" end
         local r = K.multi(fn, ...)
@@ -3079,7 +3080,8 @@ function K.geheim()
     teile[#teile + 1] = "Schadensmesser " .. wert(K.ns("C_DamageMeter", "IsDamageMeterAvailable"))
     local cv = K.multi("GetCVar", "damageMeterEnabled")
     teile[#teile + 1] = "CVar damageMeterEnabled " .. ((cv and cv[1] ~= nil) and tostring(cv[1]) or "?")
-    teile[#teile + 1] = "Kampflog-Datei " .. wert(rawget(_G, "LoggingCombat"))
+    local lc = rawget(_G, "LoggingCombat")
+    teile[#teile + 1] = "Kampflog-Datei " .. (vonHand and wert(lc) or ((type(lc) == "function") and "vorhanden" or "-"))
     teile[#teile + 1] = "CombatLogGetCurrentEventInfo " .. type(rawget(_G, "CombatLogGetCurrentEventInfo"))
     return table.concat(teile, " | ")
 end
@@ -3396,7 +3398,7 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         K.ausruestung("von Hand")
         K.talente("von Hand")
     elseif lower == "geheim" then
-        local g = K.geheim()
+        local g = K.geheim(true)
         say(g)
         add("GEHEIM", g, false)
         db.geheimLast = g
