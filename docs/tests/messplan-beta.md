@@ -1,13 +1,13 @@
 # Messplan Beta: Daten mit den Druiden sammeln (14.–22.10.2026)
 
-Stand 16.10.2026. Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
+Stand 17.10.2026 (abends). Die Beta läuft bis 22.10. mit Stufengrenze 30 (https://www.warcrafttavern.com/forever/guides/beta/).
 
 Jede Messung beantwortet eine offene Frage im Plan. Bei jeder steht, welche Zahl sie ersetzt. Ob, welche und wann gemessen wird, entscheidest du. Die Reihenfolge unten ist ein Vorschlag.
 
 Grundlagen:
 - Goldquellen und Rechnungen: `docs/recherche/2026-10-14_goldquellen.md`
 - Pläne: `docs/plan/berufe-plan.md`, `docs/plan/mengen-leder.md`
-- Tests T0–T33: Best Practice §10
+- Tests T0–T46: Best Practice §10
 
 ## Ab 16.10.: der Stufe-8-Druide bis Orgrimmar oder weiter (Vorschlag von Claude, Stand 16.10.)
 
@@ -134,6 +134,7 @@ Für die Messungen braucht es den Kombi-Guide nicht. Wer ihn auf einem Messchara
 | M10 | Sitzung in Thunder Bluff (T12) | Stufe 20, LW etwa 80 und VZ etwa 50 | 60 Min | weggelassen |
 | M11 | AH-Scan (T15), Abnahme zwischen zwei Scans (T20) | jeder, am Auktionshaus | Scan 17–18 s (gemessen 15.10.), dazu das Warten | Sitzung 1 und 2 |
 | M12 | Rezepte, Bestand, Briefe des Auktionshauses, eigenes Angebot (Testlog 3.6, T16–T19) | jeder | je wenige Sekunden | Sitzung 1, Briefkasten auch in 2 |
+| M13 | Kampfdaten: Schaden, Zauber, erlittene Treffer, Werte, Ausrüstung, Talente, Belohnungen, Zuwachs pro Stufe (Testlog 4.0, T38–T46) | der Druide beim normalen Leveln | nebenbei; einmal 2 Min für `/tl geheim` und die Einstellung | ab 17.10. (neu) |
 
 ## M1 Lehrerlisten (Testlog 3.4)
 
@@ -364,6 +365,24 @@ Nebenbei, wenn ein Druide vorbeikommt: neben die Person stellen und `/tl M8 <Nam
 **Ersetzt**
 - Die Rezepte, Reagenzien und Farben aus AHledger und wow-professions durch die des Spiels (Widersprüche 17 und 20).
 - Grundlage für `tools/markt.py`: Was du herstellen kannst und was es bringt, was du im Bestand hast, was sich bei dir verkauft.
+
+## M13 Kampfdaten (Testlog 4.0, T38–T46)
+
+**Frage**
+- Wie viel Schaden machst du pro Sekunde in jeder Gestalt, mit welchen Zaubern, und wie viel steckst du ein (Treffer, Krits, Ausweichen)?
+- Welche Werte hast du pro Gestalt, und was bringt ein Punkt Beweglichkeit oder Stärke laut Client (Krit, AP)?
+- Welche Ausrüstung und welche Quest-Belohnung bringt am meisten (mit RXPs Gewichten, später mit deinen eigenen Daten)?
+
+**Ablauf**
+- Einmal `/tl geheim`: Die Zeile sagt, was der Client Addons erlaubt und ob Blizzards Schadensmesser da ist (`damageMeterEnabled`). Steht dort «CVar damageMeterEnabled 0», kannst du den Schadensmesser in den Optionen einschalten (offener Punkt 43; der Name der Option im deutschen Client ist ungeprüft). Meldet das Spiel dabei, KombiTestlog sei blockiert worden, darf das Addon die Kampflog-Datei nicht abfragen; dann sag es mir.
+- Danach normal kämpfen. Das Testlog schreibt nach jedem Kampf eine Zeile KAMPF. Ausserhalb des Kampfes in jede Gestalt wechseln, die du nutzt: Das Testlog liest die Werte von selbst (WERTE), von Hand mit `/tl werte`.
+- Wenn du magst: einmal `/tl kampflog an`, ein Kampf, `/tl kampflog aus`; dann im Ordner `_classic_beta_\Logs` nachsehen, ob eine Datei `WoWCombatLog…txt` entstanden ist (T44; offener Punkt 44). Ich sehe den Ordner auch selbst.
+- `/tl kampf` zeigt den Schnitt pro Gestalt.
+- Beim nächsten Stufenaufstieg schreibt das Testlog den Zuwachs laut Spiel (Zeile STUFE, T45). Machst du einmal `/reload` mitten im Kampf, zeigt T46, ob der Kampf danach weiterläuft.
+
+**Ersetzt**
+- Die Grundwerte aus dem Classic-Emulator und die Umrechnung aus Classic (Best Practice §8, §9) durch die des Forever-Clients (Werte und Zuwachs pro Stufe, `data/spiel/stufen.csv`); die Rechnung Fischglas gegen Lagerstuhl mit deinen echten Werten (`docs/plan/kampf.md`).
+- Grundlage für Rotation, Item-Wahl und später eigene Gewichte (offener Punkt 45).
 
 ## Was danach passiert
 
