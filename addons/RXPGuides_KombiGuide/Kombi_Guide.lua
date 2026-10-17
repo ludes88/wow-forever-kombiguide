@@ -1,4 +1,4 @@
--- Kombi-Guide 0.6.3 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.6.4 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).
 -- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
@@ -733,6 +733,22 @@ step
     .accept 96661 >>Accept Camping 101: Cooking
     .target Kaga Wildhoof
 step
+    #label Kombi83
+    .goto 1412/1,-363.00,-2490.70
+    >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Kürschnerei» an (Ziel: Kürschnerei 20, ab Stufe 4). Belohnung: 270 XP und ein Rezept fürs Lager.
+    .accept 97936
+    .skill skinning,<1,1
+    #maxlevel 11
+    .target Kaga Wildhoof
+step
+    #label Kombi84
+    .goto 1412/1,-363.00,-2490.70
+    >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Kräuterkunde» an (Ziel: Kräuterkunde 20, ab Stufe 4). Belohnung: 270 XP und ein Rezept fürs Lager.
+    .accept 97933
+    .skill herbalism,<1,1
+    #maxlevel 11
+    .target Kaga Wildhoof
+step
     #label Kombi94
     .goto 1412/1,-363.00,-2490.70
     >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Angeln» an (Ziel: Angeln 20, Stufe 6, ab Stufe 4). Belohnung: 270 XP und das Rezept Fischglas.
@@ -1025,6 +1041,13 @@ step << Shaman
 step
     #optional
     #label KyleFed
+step << Tauren Druid
+    #label Kombi98
+    #completewith AlphaTeeth
+    >>Kombiguide: Klassenzauber auf Stufe 10 kosten zusammen 15s (gemessen 17.10. bei Gennia Runetotem: Griff der Natur, Mal der Wildnis, Mondfeuer und Verjüngung je 3s, nach der Bärengestalt noch Demoralisierendes Gebrüll 3s). Der Hinweis verschwindet, sobald du 15s hast. Hast du weniger, vor dem Lehrer Beute verkaufen.
+    +15s für die Klassenzauber (Stufe 10)
+    #maxlevel 11
+    .money >0.15
 step
     #loop
     .goto 1412/1,-784.90,-2350.18,0--c:Mulgore,55.14,60.65
@@ -2006,6 +2029,12 @@ step << Tauren
     .turnin 759 >>Turn in Wildmane Totem
     .accept 760 >>Accept Wildmane Cleansing
     .target Mull Thunderhorn
+step << Tauren Druid
+    #label Kombi97
+    #completewith DruidBearForm
+    >>Kombiguide: Ruhestein aufsparen: nach Thunder Bluff laufen, nicht mit dem Ruhestein. Du brauchst ihn für den Rückweg aus Moonglade (Teleport hin, Ruhestein zurück nach Thunder Bluff). Ohne Ruhestein bleibt nur der Flug von Nighthaven: laut RXP 543 Sekunden, am 17.10. von der Annahme in Moonglade bis zur Abgabe in Thunder Bluff 11 Minuten.
+    +Ruhestein bis Moonglade aufsparen
+    #maxlevel 11
 step << !Druid
     #completewith ExitTB2
     .hs >> Hearth to Thunder Bluff
@@ -2170,7 +2199,7 @@ step
 step
     #label Kombi10
     #completewith next
-    >>Kombiguide: «Gathering Leather» kostet 12 Leichtes Leder aus deinem Vorrat. Belohnung laut AHledger: 875 XP und Animal Skin Belt oder Double-layered Gloves. Wer das Leder behalten will, überspringt die drei Schritte zu dieser Quest.
+    >>Kombiguide: «Gathering Leather» kostet 12 Leichtes Leder aus deinem Vorrat (eingeplant: Für Stufe A in Orgrimmar brauchst du danach noch 62). Belohnung: 875 XP (gemessen 17.10.) und laut AHledger Animal Skin Belt oder Double-layered Gloves.
     +Hinweis gelesen
     .skill skinning,<1,1
 step
@@ -2297,6 +2326,12 @@ step
     >>Kill |cRXP_ENEMY_Flatland Prowlers|r. Loot them for their |cRXP_LOOT_Claws|r
     .complete 861,1 --Flatland Prowler Claw (4)
     .mob Flatland Prowler
+step << Tauren Druid
+    #label Kombi99
+    #completewith WildManeTurnIn
+    >>Kombiguide: Klassenzauber auf Stufe 12 kosten zusammen 24s (gemessen 17.10. bei Gennia Runetotem: Nachwachsen, Wiederbelebung und Wutanfall je 8s, Wutanfall erst mit der Bärengestalt). Gennia steht am Ende von Mulgore auf der Route. Der Hinweis verschwindet, sobald du 24s hast.
+    +24s für die Klassenzauber (Stufe 12)
+    .money >0.24
 step
     #label ThunderBluff2
     #completewith next
@@ -2889,6 +2924,15 @@ step
     >>|cRXP_WARN_You can get it later if it's not there|r
     .collect 4926,1,819 --Collect Chen's Empty Keg
     .accept 819 >> Accept Chen's Empty Keg
+step << Tauren Druid
+    #label Kombi100
+    #completewith DruidTraining1
+    >>Kombiguide: Klassenzauber in Moonglade auf Stufe 14: zusammen 36s (Dornen, Heilende Berührung, Hieb und Zorn je 9s). Der Hinweis verschwindet, sobald du 36s hast.
+    +36s für die Klassenzauber (Stufe 14)
+    #maxlevel 17
+    .money >0.36
+    >>Auf Stufe 16 kommen weitere 42s dazu (Mondfeuer, Prankenhieb und Verjüngung je 14s).
+    >>Kosten gemessen 17.10. bei Gennia Runetotem in Bloodhoof, bei Loganaar in Moonglade ungeprüft.
 step
     #requires FireTar2 << Shaman
     #label DisruptTheAttacks
@@ -6159,6 +6203,12 @@ step
     .accept 6629 >> Accept Kill Grundig Darkcloud
     .target Makaba Flathoof
     .isQuestComplete 6548
+step << Druid
+    #label Kombi101
+    #completewith DruidTraining2
+    >>Kombiguide: Klassenzauber in Moonglade: Stufe 18 kosten zusammen 90s (6 Zauber je 15s), Stufe 20 weitere 1g 68s (7 Zauber je 24s), dazu die Katzengestalt bei Loganaar (Preis ungeprüft). Gemessen 17.10. bei Gennia Runetotem. Der Hinweis verschwindet, sobald du 90s hast.
+    +90s für die Klassenzauber (Stufe 18)
+    .money >0.9
 step
     #optional
     #label AvengeVillageTurnin
@@ -10735,6 +10785,22 @@ step
     .accept 96661 >>Accept Camping 101: Cooking
     .target Kaga Wildhoof
 step
+    #label Kombi83
+    .goto 1412/1,-363.00,-2490.70
+    >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Kürschnerei» an (Ziel: Kürschnerei 20, ab Stufe 4). Belohnung: 270 XP und ein Rezept fürs Lager.
+    .accept 97936
+    .skill skinning,<1,1
+    #maxlevel 11
+    .target Kaga Wildhoof
+step
+    #label Kombi84
+    .goto 1412/1,-363.00,-2490.70
+    >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Kräuterkunde» an (Ziel: Kräuterkunde 20, ab Stufe 4). Belohnung: 270 XP und ein Rezept fürs Lager.
+    .accept 97933
+    .skill herbalism,<1,1
+    #maxlevel 11
+    .target Kaga Wildhoof
+step
     #label Kombi94
     .goto 1412/1,-363.00,-2490.70
     >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Angeln» an (Ziel: Angeln 20, Stufe 6, ab Stufe 4). Belohnung: 270 XP und das Rezept Fischglas.
@@ -11027,6 +11093,13 @@ step << Shaman
 step
     #optional
     #label KyleFed
+step << Tauren Druid
+    #label Kombi98
+    #completewith AlphaTeeth
+    >>Kombiguide: Klassenzauber auf Stufe 10 kosten zusammen 15s (gemessen 17.10. bei Gennia Runetotem: Griff der Natur, Mal der Wildnis, Mondfeuer und Verjüngung je 3s, nach der Bärengestalt noch Demoralisierendes Gebrüll 3s). Der Hinweis verschwindet, sobald du 15s hast. Hast du weniger, vor dem Lehrer Beute verkaufen.
+    +15s für die Klassenzauber (Stufe 10)
+    #maxlevel 11
+    .money >0.15
 step
     #loop
     .goto 1412/1,-784.90,-2350.18,0--c:Mulgore,55.14,60.65
@@ -12008,6 +12081,12 @@ step << Tauren
     .turnin 759 >>Turn in Wildmane Totem
     .accept 760 >>Accept Wildmane Cleansing
     .target Mull Thunderhorn
+step << Tauren Druid
+    #label Kombi97
+    #completewith DruidBearForm
+    >>Kombiguide: Ruhestein aufsparen: nach Thunder Bluff laufen, nicht mit dem Ruhestein. Du brauchst ihn für den Rückweg aus Moonglade (Teleport hin, Ruhestein zurück nach Thunder Bluff). Ohne Ruhestein bleibt nur der Flug von Nighthaven: laut RXP 543 Sekunden, am 17.10. von der Annahme in Moonglade bis zur Abgabe in Thunder Bluff 11 Minuten.
+    +Ruhestein bis Moonglade aufsparen
+    #maxlevel 11
 step << !Druid
     #completewith ExitTB2
     .hs >> Hearth to Thunder Bluff
@@ -12172,7 +12251,7 @@ step
 step
     #label Kombi10
     #completewith next
-    >>Kombiguide: «Gathering Leather» kostet 12 Leichtes Leder aus deinem Vorrat. Belohnung laut AHledger: 875 XP und Animal Skin Belt oder Double-layered Gloves. Wer das Leder behalten will, überspringt die drei Schritte zu dieser Quest.
+    >>Kombiguide: «Gathering Leather» kostet 12 Leichtes Leder aus deinem Vorrat (eingeplant: Für Stufe A in Orgrimmar brauchst du danach noch 62). Belohnung: 875 XP (gemessen 17.10.) und laut AHledger Animal Skin Belt oder Double-layered Gloves.
     +Hinweis gelesen
     .skill skinning,<1,1
 step
@@ -12299,6 +12378,12 @@ step
     >>Kill |cRXP_ENEMY_Flatland Prowlers|r. Loot them for their |cRXP_LOOT_Claws|r
     .complete 861,1 --Flatland Prowler Claw (4)
     .mob Flatland Prowler
+step << Tauren Druid
+    #label Kombi99
+    #completewith WildManeTurnIn
+    >>Kombiguide: Klassenzauber auf Stufe 12 kosten zusammen 24s (gemessen 17.10. bei Gennia Runetotem: Nachwachsen, Wiederbelebung und Wutanfall je 8s, Wutanfall erst mit der Bärengestalt). Gennia steht am Ende von Mulgore auf der Route. Der Hinweis verschwindet, sobald du 24s hast.
+    +24s für die Klassenzauber (Stufe 12)
+    .money >0.24
 step
     #label ThunderBluff2
     #completewith next
@@ -16008,6 +16093,12 @@ step
     .accept 6629 >> Accept Kill Grundig Darkcloud
     .target Makaba Flathoof
     .isQuestComplete 6548
+step << Druid
+    #label Kombi101
+    #completewith DruidTraining2
+    >>Kombiguide: Klassenzauber in Moonglade: Stufe 18 kosten zusammen 90s (6 Zauber je 15s), Stufe 20 weitere 1g 68s (7 Zauber je 24s), dazu die Katzengestalt bei Loganaar (Preis ungeprüft). Gemessen 17.10. bei Gennia Runetotem. Der Hinweis verschwindet, sobald du 90s hast.
+    +90s für die Klassenzauber (Stufe 18)
+    .money >0.9
 step
     #optional
     #label AvengeVillageTurnin

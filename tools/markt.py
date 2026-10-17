@@ -50,7 +50,7 @@
 #                  Seit 17.10.: Material bei Lager-Charakteren des Kontos (ohne Kürschnerei, Kräuterkunde,
 #                  Lederverarbeitung, Verzauberkunst, z. B. der Bankchar) zählt für Stufe A mit, Stand ihres letzten
 #                  Ausloggens; Post im Briefkasten nicht. Pfand je Angebot: 60 % des Händlerpreises mal Menge, mindestens
-#                  1s (gemessen an 24 Angeboten, 24 Stunden).
+#                  1s, abgerundet (gemessen an 26 Angeboten, 24 Stunden).
 #   Klassenzauber (seit 17.10.)
 #                  Gold für die noch offenen Klassenzauber bis zur nächsten Zielstufe (16 Orgrimmar, 20, 22) aus der letzten
 #                  Lehrerliste vom Typ «Klasse», die der Charakter geöffnet hat (LEHRER, Testlog 3.4), ohne die danach
@@ -98,11 +98,18 @@ ESSENZEN = {10938: 10939, 10998: 11082, 11134: 11135, 11174: 11175, 16202: 16203
 STUFE_A = {2934: 99, 2318: 62, 783: 27}   # Material für Stufe A in Orgrimmar (docs/plan/berufe-plan.md, Sweetspot): Fetzen,
                                           # Leichtes Leder, Leichter Balg
 PLAN_LEDER = (2934, 2318, 783, 2319, 4232)   # Leder und Bälge des Plans: nie zum Händler (Liste für das Testlog)
+# «Leder sammeln» (Gathering Leather, 768, Veren Tallstrider in Thunder Bluff) kostet 12 Leichtes Leder (AHledger, 13.10.;
+# abgegeben 17.10. 17:35, 875 XP, Testlog). Wunsch des Nutzers 17.10. 17:34: «natürlich mache ich die leder quest. plane
+# diese +12 ein». Solange ein Sammler die Quest nicht abgegeben hat (keine Zeile QUEST AB 768 im Testlog), braucht er
+# bis Orgrimmar 12 mehr. Das Mengenmodell zieht die 12 schon ab (data/kombi/modell_leder.csv, Art «Verbrauch»).
+LEDER_QUEST = (768, 2318, 12)
 VIELFACH = 3        # Beute mit AH-Wert (nach Gebühr) mindestens so viel mal über dem Händlerpreis: AH statt Händler (Wahl
                     # von Claude, ohne Absatz-Beleg; Vorschlag der Markt-Analyse vom 16.10.)
 MIN_ANGEBOT = 20    # … und mindestens so viele Stück im Angebot (sonst ist der Preis Zufall)
 PFAND_ANTEIL = 0.6  # Pfand eines Angebots (24 Stunden) = 60 % des Händlerpreises mal Menge, mindestens PFAND_MIN Kupfer:
-PFAND_MIN = 100     # gemessen an 24 Angeboten 15.–17.10. (docs/tests/messdaten-2026-10-17.md), andere Dauern ungeprüft
+PFAND_MIN = 100     # gemessen an 26 Angeboten 15.–17.10. (docs/tests/messdaten-2026-10-17.md), andere Dauern ungeprüft;
+                    # abgerundet auf ganze Kupfer (Schnitzmesser, Händler 3s 23c: Geldabzug 1s 93c, nicht 1s 94c; 17.10. 17:58,
+                    # die einzige Messung, bei der Runden und Abrunden verschieden ausgehen)
 WARN_MAX = 300      # Einträge in KombiDaten.nichtVerkaufen höchstens
 ANKAUF_CSV = os.path.join(at.D, "preise", "haendler_ankauf.csv")
 LEHRER_CSV = os.path.join(at.D, "kombi", "lehrer.csv")
@@ -1124,7 +1131,8 @@ EXTRA_BEOBACHTEN = (7428, 252436, 252437, 2592)   # Markt-Analyse 16.10.: Shadow
 def sammler_zustand(m):
     """Charakter («Name-Realm» wie im Testlog) -> Berufe {Name: (Stufe, Maximum)}, Geld (Kupfer), Datum und gesehene Beute
     {Item-ID: Stück}: aus chars (ab Testlog 3.7.1: berufe, geld), sonst aus den Zeilen nach der letzten SITZUNG des
-    Charakters (BERUF, GELD «Bestand», Geld in der SITZUNG-Zeile, BEUTE und SAMMELN)."""
+    Charakters (BERUF, GELD «Bestand», Geld in der SITZUNG-Zeile, BEUTE und SAMMELN); dazu die abgegebenen Quests
+    (QUEST AB, seit 17.10.; nur, was noch im Testlog steht)."""
     out, wer = {}, None
     for zeile in m.db.get("log") or []:
         zeile = str(zeile)
@@ -1134,7 +1142,7 @@ def sammler_zustand(m):
         art = teile[1]
         if art == "SITZUNG" and len(teile) >= 7:
             wer = teile[6].strip()
-            e = out.setdefault(wer, {"berufe": {}, "geld": None, "datum": None, "beute": defaultdict(int)})
+            e = out.setdefault(wer, {"berufe": {}, "geld": None, "datum": None, "beute": defaultdict(int), "quests": set()})
             g = GELD_SITZUNG.search(zeile)
             if g:
                 try:
@@ -1163,10 +1171,14 @@ def sammler_zustand(m):
         elif art in ("BEUTE", "SAMMELN"):
             for n, _, i in POSTEN.findall(" | ".join(teile[6:])):
                 e["beute"][int(i)] += int(n)
+        elif art == "QUEST AB":
+            q = re.match(r"^(\d+)\b", teile[6].strip())
+            if q:
+                e["quests"].add(int(q.group(1)))
     for key, c in als_dict(m.db.get("chars")).items():
         if not isinstance(c, dict):
             continue
-        e = out.setdefault(str(key), {"berufe": {}, "geld": None, "datum": None, "beute": defaultdict(int)})
+        e = out.setdefault(str(key), {"berufe": {}, "geld": None, "datum": None, "beute": defaultdict(int), "quests": set()})
         for name, v in als_dict(c.get("berufe")).items():
             b = re.match(r"^(\d+)/(\d+)$", str(v))
             if b:
@@ -1231,10 +1243,10 @@ def bestand_zeit(m):
 
 def pfand(m, i, n=1):
     """Geschätzter Pfand in Kupfer für ein Angebot von n Stück (24 Stunden): 60 % des Händlerpreises mal Menge,
-    mindestens 1s. Gemessen: 20 Angebote am 17.10. (Testlog 3.7, Pfand aus dem Geldabzug) und 4 frühere passen dazu
-    (docs/tests/messdaten-2026-10-17.md); andere Dauern ungeprüft."""
+    mindestens 1s, auf ganze Kupfer abgerundet. Gemessen: 22 Angebote am 17.10. (Testlog 3.7, Pfand aus dem Geldabzug) und
+    4 frühere passen dazu (docs/tests/messdaten-2026-10-17.md); andere Dauern ungeprüft."""
     h = m.ankauf.get(i) or (m.info.get(i) or {}).get("s") or 0
-    return max(PFAND_MIN, round(PFAND_ANTEIL * h * n))
+    return max(PFAND_MIN, int(h * n * round(PFAND_ANTEIL * 1000)) // 1000)   # ganzzahlig: abgerundet ohne Fliesskomma-Rest
 
 
 # Klassenzauber (seit 17.10.; Notiz des Nutzers 17.10. 15:23: «zuwenig gold für die klassenspells … dies muss in der
@@ -1319,20 +1331,29 @@ def sammler(m, key, z, mein, stand, andere=None, kz=None):
         return []
     wer = ", ".join(f"{n} {b[n][0]}" for n in ("Kürschnerei", "Kräuterkunde") if n in b)
     zeilen = []
+    bedarf_a = dict(STUFE_A)
+    q, q_item, q_n = LEDER_QUEST
+    quest_offen = q not in (z.get("quests") or set())
+    if quest_offen:
+        bedarf_a[q_item] += q_n
+    quest_text = f"darin {q_n} für «Leder sammeln», Quest {q} in Thunder Bluff" if quest_offen else ""
     if mein:
         fremd = defaultdict(int)   # Item-ID -> Stück bei anderen Charakteren
         bei = []                   # «Name: 27 Leichtes Leder, 36 Fetzen (Stand …)»
         for c, (bst, zt) in sorted((andere or {}).items()):
-            hier = [(i, bst.get(i, 0)) for i in STUFE_A if bst.get(i, 0) > 0]
+            hier = [(i, bst.get(i, 0)) for i in bedarf_a if bst.get(i, 0) > 0]
             if hier:
                 for i, n in hier:
                     fremd[i] += n
                 bei.append(f"{c} {', '.join(f'{n} {m.name(i)}' for i, n in hier)}" + (f" (Stand {zt})" if zt else ""))
         def teil(i, n):
             s = f"{m.name(i)} {mein.get(i, 0) + fremd.get(i, 0)}/{n}"
-            return s + (f" (davon {fremd[i]} woanders)" if fremd.get(i) else "")
-        hat = ", ".join(teil(i, n) for i, n in STUFE_A.items())
-        fehlt = [(i, n - mein.get(i, 0) - fremd.get(i, 0)) for i, n in STUFE_A.items()
+            klammer = [f"davon {fremd[i]} woanders"] if fremd.get(i) else []
+            if i == q_item and quest_text:
+                klammer.append(quest_text)
+            return s + (f" ({'; '.join(klammer)})" if klammer else "")
+        hat = ", ".join(teil(i, n) for i, n in bedarf_a.items())
+        fehlt = [(i, n - mein.get(i, 0) - fremd.get(i, 0)) for i, n in bedarf_a.items()
                  if n > mein.get(i, 0) + fremd.get(i, 0)]
         kosten = sum((m.einkauf(i, n)[0] or 0) for i, n in fehlt)
         t = f"Sammler ({wer}): bis Orgrimmar Leder behalten, Stufe A braucht {hat}."
@@ -1342,8 +1363,9 @@ def sammler(m, key, z, mein, stand, andere=None, kz=None):
         if fehlt and kosten:
             t += f" Was fehlt, kostet im AH etwa {geld(round(kosten))} (Scan {stand})."
     else:
-        t = (f"Sammler ({wer}): bis Orgrimmar Leder behalten. Stufe A braucht 99 Fetzen, 62 Leichtes Leder und 27 Leichte Bälge "
-             "(dein Bestand ist noch nicht bekannt: erst ab Testlog 3.6 beim Einloggen).")
+        t = (f"Sammler ({wer}): bis Orgrimmar Leder behalten. Stufe A braucht {bedarf_a[2934]} Fetzen, {bedarf_a[2318]} "
+             f"Leichtes Leder{f' ({quest_text})' if quest_text else ''} und {bedarf_a[783]} Leichte Bälge (dein Bestand ist "
+             "noch nicht bekannt: erst ab Testlog 3.6 beim Einloggen).")
     zeilen.append(t)
     try:
         pb = _route()
@@ -1374,7 +1396,7 @@ def sammler(m, key, z, mein, stand, andere=None, kz=None):
             teile.append(f"{m.name(i)} {geld(round(n))} nach Gebühr (Händler {geld(h)}; {beleg}{dabei})")
         zeilen.append("AH statt Händler (Scan " + stand + "): " + "; ".join(teile)
                       + ". Pfand je Angebot (24 Stunden): 60 % des Händlerpreises mal Menge, mindestens 1s; zurück beim "
-                        "Verkauf, sonst weg (24 Angebote gemessen, 15.–17.10.).")
+                        "Verkauf, sonst weg (26 Angebote gemessen, 15.–17.10.).")
     return zeilen
 
 
