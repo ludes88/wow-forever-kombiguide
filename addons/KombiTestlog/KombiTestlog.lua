@@ -1,5 +1,5 @@
 -- KombiTestlog: Notizen und Testprotokoll für WoW Forever
--- Stand 16.10.2026, Version 3.7.1
+-- Stand 17.10.2026, Version 4.0
 --
 --   /tl <Text>        Notiz mit Ort, Stufe, RXP-Schritt, Ziel und Berufen
 --   /tl bug <Text>    Fehler festhalten
@@ -12,6 +12,10 @@
 --   /tl ah            AH-Preise jetzt lesen (läuft beim Öffnen des Auktionshauses von selbst, höchstens alle 15 Minuten)
 --   /tl ah aus | an   AH-Scan beim Öffnen des Auktionshauses aus- oder einschalten
 --   /tl tipp [alle]   Empfehlungen von Claude (Addon KombiDaten, erzeugt von tools/markt.py)
+--   /tl kampf         Kämpfe im Überblick (Version 4.0)
+--   /tl werte         Werte, Ausrüstung und Talente jetzt lesen (ausserhalb des Kampfes)
+--   /tl geheim        was der Client Addons erlaubt (Secret-Werte, Kampflog, Schadensmesser)
+--   /tl kampflog an | aus   Kampflog-Datei des Spiels (Logs\WoWCombatLog*.txt, wie /combatlog; in Forever ungeprüft)
 --   /tl status        Überblick
 --   /tl leeren ja     Protokoll löschen (die AH-Scans bleiben)
 --   /tl hilfe         diese Hilfe
@@ -49,6 +53,20 @@
 --   DUNGEON     Betreten einer Instanz und Ende des Laufs: Dauer, XP, Kills, Geld, Beute, Tode (Version 3.7)
 --   Laufweg und XP pro Quelle (Version 3.7) schreiben keine Zeilen, nur Daten: chars[Charakter].weg und .xp
 --
+--   Version 4.0 (Kampf; Daten in chars[Charakter].kampf, .werte, .werteLog, .ausruestung, .talente, .belohnungen, .klasse
+--   und itemWerte):
+--   KAMPF       pro Kampf (ab 2 s oder mit Treffer, Zauber oder Schlag): Dauer, Gestalt, Gegner (Kreatur-ID, Stufe),
+--               Schaden und Heilung aus Blizzards Schadensmesser (nach dem Kampf, mit Zaubern), erlittene Treffer mit
+--               Krits, Ausweichen und Parieren (UNIT_COMBAT), Heilung am Spieler, Zauber in der Reihenfolge mit Zeit,
+--               Nahkampfschläge, XP, Tod; allein ohne Schadensmesser die Treffer am Ziel (Schätzung)
+--   WERTE       Werte ausserhalb des Kampfes, pro Gestalt, nur bei Änderung: Grundwerte, AP, Waffenschaden, Tempo, Krit,
+--               Zauberkrit, Ausweichen, Rüstung, Leben, Mana, Zaubermacht, Heilung, Trefferbonus, Regeneration,
+--               Verteidigung und die Umrechnung des Charakterfensters (Krit und AP aus Beweglichkeit usw.)
+--   AUSRÜSTUNG  angelegte Teile mit Werten; beim ersten Mal eine Übersicht, danach jeder Wechsel
+--   TALENTE     verteilte Punkte pro Baum und Talent mit Rang, bei jeder Änderung
+--   BELOHNUNG   Quest-Belohnungen zur Wahl mit Werten und die gewählte
+--   GEHEIM      was der Client Addons erlaubt (beim ersten Einloggen und bei jeder Änderung; /tl geheim)
+--
 -- Version 3.7.1: beim Händler eine Chat-Zeile, wenn Material des Plans oder Beute mit hohem AH-Wert in den Taschen liegt
 -- (Liste KombiDaten.nichtVerkaufen von tools/markt.py; verkauft wird nichts automatisch); 20 Minuten nach einem AH-Scan
 -- in der Stadt ein Hinweis für das Scan-Paar (Abnahme); zusätzlich beobachtete Gegenstände aus KombiDaten.beobachten;
@@ -69,7 +87,7 @@
 -- WTF\Account\<KONTO>\SavedVariables\KombiTestlog.lua
 
 local ADDON_NAME = ...
-local VERSION = "3.7.1"
+local VERSION = "4.0"
 local MAX_ENTRIES = 20000
 local PREFIX = "|cff33ff99Testlog|r "
 
@@ -193,6 +211,8 @@ local postWarnings = false -- AUCTION_HOUSE_POST_WARNING liess sich registrieren
 -- Version 3.7: Laufweg, XP-Quellen, Dungeon-Läufe, Pfand aus dem Geldabzug. Alles in einer Tabelle, weil Lua 5.1
 -- höchstens 200 lokale Variablen auf der Datei-Ebene erlaubt (hier sind es schon gut 190).
 local W = { kills = 0, xpSum = 0, combatEnd = 0, inCombat = false, wegT = 0, deaths = 0, drops = {}, posts = {} }
+-- Version 4.0: Kampf, Werte, Ausrüstung, Talente, Quest-Belohnungen (Funktionen vor «Version 3.6: Empfehlungen anzeigen»)
+local K = {}
 
 local function say(msg)
     DEFAULT_CHAT_FRAME:AddMessage(PREFIX .. msg)
@@ -2341,6 +2361,806 @@ function W.geldMerken(m)
     c.geld, c.geldZeit = m, epoch()
 end
 
+-- Version 4.0 (Upgrade 1.0, Wunsch des Nutzers 17.10.: «bitte loge auch all meinen dmg und meine spells und rota»):
+-- Kampf, Werte, Ausrüstung, Talente, Quest-Belohnungen. Belege: docs/Weg-A_Best-Practice.md §4 «Kampfdaten».
+-- Den Kampflog dürfen Addons in Forever nicht lesen (CombatLogDocumentation.lua: COMBAT_LOG_EVENT_UNFILTERED mit
+-- HasRestrictions; Forever-UI 1.60.1, Build 70450). Darum:
+--   Schaden, Heilung und erlittener Schaden pro Zauber: nach dem Kampf aus Blizzards Schadensmesser C_DamageMeter
+--     (im Kampf «secret», DamageMeterDocumentation.lua: SecretWhenInCombat; gelesen 1,5 s nach dem Kampf)
+--   Treffer, Krits und Ausweichen am Spieler, Heilung am Spieler: UNIT_COMBAT (ohne Secret-Kennzeichen)
+--   dasselbe am Ziel, nur allein (ohne Gruppe): Schätzung der eigenen Treffer, falls der Schadensmesser fehlt
+--   Rotation: UNIT_SPELLCAST_SUCCEEDED des Spielers mit Zeit (für den Spieler nicht «secret»), Nahkampfschläge: PLAYER_SWING
+--   Werte (UnitStat usw., SecretWhenUnitStatsRestricted): nur ausserhalb des Kampfes, jeder Wert mit issecretvalue geprüft;
+--   dazu die Umrechnungen des Charakterfensters (Camelot/PaperDollFrameStats.lua: GetCritChanceFromStat usw.)
+-- Alles in der Tabelle K (Lua 5.1: höchstens 200 lokale Variablen auf der Datei-Ebene, siehe W).
+K.SLOTS = { "Kopf", "Hals", "Schulter", "Hemd", "Brust", "Taille", "Beine", "Füsse", "Handgelenke", "Hände", "Finger 1",
+            "Finger 2", "Schmuck 1", "Schmuck 2", "Rücken", "Waffenhand", "Schildhand", "Distanz", "Wappenrock" }
+K.WERTE = { "str", "agi", "sta", "int", "spi" }
+K.WERTE_DE = { str = "Stä", agi = "Bew", sta = "Aus", int = "Int", spi = "Wil" }
+K.AUSW = { DODGE = "ausgewichen", PARRY = "pariert", MISS = "verfehlt", BLOCK = "geblockt", RESIST = "widerstanden",
+           ABSORB = "absorbiert", IMMUNE = "immun", EVADE = "entkommen", DEFLECT = "abgelenkt", REFLECT = "reflektiert" }
+K.KURZ = { ITEM_MOD_STRENGTH_SHORT = "Stä", ITEM_MOD_AGILITY_SHORT = "Bew", ITEM_MOD_STAMINA_SHORT = "Aus",
+           ITEM_MOD_INTELLECT_SHORT = "Int", ITEM_MOD_SPIRIT_SHORT = "Wil", RESISTANCE0_NAME = "Rüstung",
+           ITEM_MOD_DAMAGE_PER_SECOND_SHORT = "DPS", ITEM_MOD_ATTACK_POWER_SHORT = "AP" }
+K.MAX_KAEMPFE, K.MAX_FOLGE, K.MAX_WERTE, K.MAX_ITEMS, K.MAX_BELOHNUNG = 400, 60, 300, 3000, 200
+-- Einheiten-Ereignisse: nur für diese Einheiten registriert (Werte anderer Einheiten können «secret» sein)
+K.UNIT_EVENTS = { UNIT_SPELLCAST_SUCCEEDED = { "player" }, UNIT_COMBAT = { "player", "target" }, UNIT_STATS = { "player" } }
+K.DM_ARTEN = { { "schaden", "DamageDone" }, { "heilung", "HealingDone" }, { "erlitten", "DamageTaken" },
+               { "absorb", "Absorbs" }, { "unterbr", "Interrupts" } }
+
+function K.pack(...) return { n = select("#", ...), ... } end
+
+-- Funktion mit allen Rückgaben; nil bei Fehler, fehlender Funktion oder einem geheimen Wert
+function K.multi(f, ...)
+    if type(f) == "string" then f = rawget(_G, f) end
+    if type(f) ~= "function" then return nil end
+    local r = K.pack(pcall(f, ...))
+    if not r[1] then return nil end
+    local out = { n = r.n - 1 }
+    for i = 2, r.n do
+        if isSecret(r[i]) then return nil end
+        out[i - 1] = r[i]
+    end
+    return out
+end
+
+function K.ns(name, fn)
+    local t = rawget(_G, name)
+    local f = type(t) == "table" and t[fn] or nil
+    return type(f) == "function" and f or nil
+end
+
+-- wie W.yes, aber ein geheimer Wert gilt als nein (UnitIsUnit: SecretWhenUnitComparisonRestricted)
+function K.ja(name, ...)
+    local ok, v = callApi(name, ...)
+    return ok and not isSecret(v) and v == true
+end
+
+function K.rund(v, n)
+    if type(v) ~= "number" or isSecret(v) then return nil end
+    local m = 10 ^ (n or 0)
+    return math.floor(v * m + 0.5) / m
+end
+
+function K.zahl(v, n)
+    if type(v) ~= "number" then return "?" end
+    return (string.format("%." .. (n or 0) .. "f", v):gsub("%.", ","))
+end
+
+-- «Schlüssel:Wert;…» sortiert, nil ohne Einträge
+function K.liste(t)
+    local out = {}
+    for k, v in pairs(t or {}) do out[#out + 1] = tostring(k) .. ":" .. tostring(v) end
+    if #out == 0 then return nil end
+    table.sort(out)
+    return table.concat(out, ";")
+end
+
+-- Gestalt: Name und Zauber-ID (GetShapeshiftForm, GetShapeshiftFormInfo: Symbol, aktiv, nutzbar, Zauber-ID)
+function K.form()
+    local r = K.multi("GetShapeshiftForm")
+    local idx = r and r[1]
+    if type(idx) ~= "number" or idx == 0 then return "ohne Gestalt", 0 end
+    local info = K.multi("GetShapeshiftFormInfo", idx)
+    local sid = info and info[4]
+    if type(sid) ~= "number" then return "Gestalt " .. idx, 0 end
+    return spellName(sid) or ("Gestalt " .. idx), sid
+end
+
+-- Leben, Kraft der Gestalt (Mana, Wut, Energie) und Mana: «Leben:höchstens:Kraft:höchstens:Mana:höchstens»
+function K.vorrat()
+    local function v(name, ...)
+        local x = W.val(name, ...)
+        return x and tostring(x) or "?"
+    end
+    return table.concat({ v("UnitHealth", "player"), v("UnitHealthMax", "player"), v("UnitPower", "player"),
+        v("UnitPowerMax", "player"), v("UnitPower", "player", 0), v("UnitPowerMax", "player", 0) }, ":")
+end
+
+-- Kampf
+function K.start()
+    if K.fight then return end
+    local t = now()
+    local form, formID = K.form()
+    local f = { t0 = t, tLast = t, e0 = epoch(), lvl = W.val("UnitLevel", "player"), form = form, formID = formID,
+                formen = { form }, casts = {}, folge = {}, swing = 0, inn = { n = 0, sum = 0, f = {} }, schule = {},
+                ausw = {}, heilIn = { n = 0, sum = 0 }, ziel = {}, amZiel = { n = 0, sum = 0, f = {}, a = {} },
+                xp0 = W.xpSum, geheim = {}, einschr = {}, gruppe = W.yes("IsInGroup"), lp0 = K.vorrat() }
+    K.fight = f
+    -- Zauber kurz vor dem Kampf (der erste Zauber startet ihn meist): mit negativer Zeit
+    for _, c in ipairs(K.recent or {}) do
+        if t - c.t <= 3 then K.addCast(c.id, c.t) end
+    end
+    K.recent = {}
+    if K.swingT and t - K.swingT <= 3 then f.swing = 1 end
+    K.swingT = nil
+    K.seeTarget()
+end
+
+-- Zaubernamen für die Auswertung (deutsch, wie der Client sie meldet), einmal pro Zauber
+function K.zname(id)
+    if type(id) ~= "number" or isSecret(id) then return end
+    db.zauberNamen = db.zauberNamen or {}
+    if db.zauberNamen[id] == nil then db.zauberNamen[id] = spellName(id) end
+end
+
+function K.addCast(id, t)
+    local f = K.fight
+    if not f or type(id) ~= "number" then return end
+    K.zname(id)
+    f.casts[id] = (f.casts[id] or 0) + 1
+    if #f.folge < K.MAX_FOLGE then f.folge[#f.folge + 1] = string.format("%d@%.1f", id, t - f.t0) end
+    if t > f.tLast then f.tLast = t end
+end
+
+function K.cast(id)
+    local t = now()
+    if K.fight then
+        K.addCast(id, t)
+        return
+    end
+    K.recent = K.recent or {}
+    table.insert(K.recent, { id = id, t = t })
+    if #K.recent > 3 then table.remove(K.recent, 1) end
+end
+
+-- PLAYER_SWING (SwingTimerDocumentation.lua): Dauer des Schlags in Sekunden (zeigt das Tempo der Gestalt) und Art
+function K.swing(dauer)
+    local f = K.fight
+    if not f then
+        K.swingT = now()
+        return
+    end
+    f.swing, f.tLast = f.swing + 1, now()
+    if num(dauer) then f.swingDauer = K.rund(dauer, 2) end
+end
+
+function K.seeTarget()
+    local f = K.fight
+    if not f then return end
+    local id = W.creature("target")
+    if not id or not K.ja("UnitCanAttack", "player", "target") then return end
+    local lvl = W.val("UnitLevel", "target")
+    if f.ziel[id] == nil or (lvl and lvl > f.ziel[id]) then f.ziel[id] = lvl or -1 end
+end
+
+function K.combat(unit, event, flag, amount, school)
+    if isSecret(unit) or isSecret(event) or isSecret(flag) or isSecret(amount) or isSecret(school) then
+        if K.fight then K.fight.geheim.unitcombat = 1 end
+        return
+    end
+    if unit ~= "player" and unit ~= "target" then return end
+    if unit == "target" and (K.ja("UnitIsUnit", "target", "player") or not K.ja("UnitCanAttack", "player", "target")) then
+        return
+    end
+    if not K.fight then
+        if unit ~= "player" or event ~= "WOUND" then return end
+        K.start()   -- Treffer kam vor PLAYER_REGEN_DISABLED (ohne Kampf, z. B. Fallschaden, endet er in K.tick)
+    end
+    local f = K.fight
+    f.tLast = now()
+    amount = type(amount) == "number" and amount or 0
+    local hatFlag = type(flag) == "string" and flag ~= ""
+    if unit == "player" then
+        if event == "WOUND" then
+            f.inn.n, f.inn.sum = f.inn.n + 1, f.inn.sum + amount
+            if hatFlag then f.inn.f[flag] = (f.inn.f[flag] or 0) + 1 end
+            if type(school) == "number" then f.schule[school] = (f.schule[school] or 0) + amount end
+        elseif event == "HEAL" then
+            f.heilIn.n, f.heilIn.sum = f.heilIn.n + 1, f.heilIn.sum + amount
+        elseif event ~= "ENERGIZE" then
+            f.ausw[event] = (f.ausw[event] or 0) + 1
+        end
+    elseif not f.gruppe then
+        local z = f.amZiel
+        if event == "WOUND" then
+            z.n, z.sum = z.n + 1, z.sum + amount
+            if hatFlag then z.f[flag] = (z.f[flag] or 0) + 1 end
+        elseif event ~= "HEAL" and event ~= "ENERGIZE" then
+            z.a[event] = (z.a[event] or 0) + 1
+        end
+    end
+end
+
+function K.formWechsel()
+    local name = K.form()
+    local f = K.fight
+    if f then
+        if f.formen[#f.formen] ~= name then f.formen[#f.formen + 1] = name end
+        return
+    end
+    K.dirty("werte", 1.5, "Gestalt")
+end
+
+function K.restriktion(typ, state)
+    if isSecret(typ) or isSecret(state) then return end
+    if K.fight then
+        K.fight.einschr[tostring(typ)] = state
+    elseif typ ~= 0 and db.auto then
+        add("GEHEIM", string.format("Einschränkung %s: Zustand %s", tostring(typ), tostring(state)))
+    end
+end
+
+function K.stop()
+    local f = K.fight
+    if not f then return end
+    K.fight = nil
+    f.d, f.lp1 = now() - f.t0, K.vorrat()
+    C_Timer.After(1.5, function()
+        local ok, err = pcall(K.finish, f)
+        if not ok then add("FEHLER", "Kampf: " .. tostring(err), false) end
+    end)
+end
+
+-- beim Ausloggen: ohne Warten und ohne Schadensmesser
+function K.abbruch(grund)
+    local f = K.fight
+    if not f then return end
+    K.fight = nil
+    f.d, f.lp1, f.ende = now() - f.t0, K.vorrat(), grund
+    K.finish(f, true)
+end
+
+-- Blizzards Schadensmesser: neueste Sitzung, nur der eigene Charakter (isLocalPlayer), Summe und Zauber
+function K.dmZauber(src, id, typ, s, pg)
+    if not src then return nil end
+    local guid = (type(s.sourceGUID) == "string" and not isSecret(s.sourceGUID)) and s.sourceGUID or pg
+    local okP, ps = pcall(src, id, typ, guid, nil)
+    if not okP or type(ps) ~= "table" or type(ps.combatSpells) ~= "table" then return nil end
+    local z = {}
+    for _, sp in ipairs(ps.combatSpells) do
+        local sid = type(sp) == "table" and num(sp.spellID)
+        local amt = type(sp) == "table" and num(sp.totalAmount)
+        if sid and amt then
+            z[#z + 1] = string.format("%d:%d", sid, math.floor(amt + 0.5))
+            K.zname(sid)
+        end
+    end
+    if #z == 0 then return nil end
+    table.sort(z)
+    return table.concat(z, ";")
+end
+
+function K.dm()
+    local list = K.ns("C_DamageMeter", "GetAvailableCombatSessions")
+    local get = K.ns("C_DamageMeter", "GetCombatSessionFromID")
+    local src = K.ns("C_DamageMeter", "GetCombatSessionSourceFromID")
+    local E = rawget(_G, "Enum")
+    if not (list and get and type(E) == "table" and type(E.DamageMeterType) == "table") then return nil, "kein Schadensmesser" end
+    if K.ja("InCombatLockdown") then return nil, "wieder im Kampf" end
+    local ok, sessions = pcall(list)
+    if not ok or type(sessions) ~= "table" then return nil, "keine Sitzungen" end
+    local best
+    for _, s in ipairs(sessions) do
+        local id = type(s) == "table" and num(s.sessionID)
+        if id and (not best or id > best) then best = id end
+    end
+    if not best then return nil, "keine Sitzung" end
+    K.dmSeen = K.dmSeen or {}
+    if K.dmSeen[best] then return nil, "keine neue Sitzung" end
+    local okG, pg = callApi("UnitGUID", "player")
+    if not okG or type(pg) ~= "string" or isSecret(pg) then pg = nil end
+    local out, fehler = { id = best }, {}
+    for _, a in ipairs(K.DM_ARTEN) do
+        local typ = E.DamageMeterType[a[2]]
+        if typ ~= nil then
+            local okS, sess = pcall(get, best, typ)
+            if okS and type(sess) == "table" and type(sess.combatSources) == "table" then
+                for _, s in ipairs(sess.combatSources) do
+                    if type(s) == "table" and s.isLocalPlayer == true then
+                        local total = num(s.totalAmount)
+                        if total and total > 0 then
+                            out[a[1]] = { sum = math.floor(total + 0.5), ps = K.rund(num(s.amountPerSecond), 1),
+                                          z = K.dmZauber(src, best, typ, s, pg) }
+                        end
+                    end
+                end
+            elseif not okS then
+                fehler[#fehler + 1] = a[1]
+            end
+        end
+    end
+    if #fehler > 0 then out.fehler = table.concat(fehler, ",") end
+    if not (out.schaden or out.heilung or out.erlitten or out.absorb or out.unterbr) then
+        return nil, (#fehler > 0) and ("Fehler bei " .. out.fehler) or "ohne Werte"   -- noch geheim oder leer
+    end
+    K.dmSeen[best] = true
+    return out
+end
+
+function K.finish(f, ohneDm)
+    f.xp = W.xpSum - f.xp0
+    local dm, grund
+    if ohneDm then
+        grund = f.ende or "ohne Schadensmesser"
+    else
+        dm, grund = K.dm()
+        -- Werte noch geheim oder leer (gleich nach dem Kampf): einmal nach 5 s nochmals versuchen
+        if not dm and grund == "ohne Werte" and not f.nochmals then
+            f.nochmals = true
+            C_Timer.After(5, function()
+                local ok, err = pcall(K.finish, f)
+                if not ok then add("FEHLER", "Kampf: " .. tostring(err), false) end
+            end)
+            return
+        end
+    end
+    local leer = f.inn.n == 0 and next(f.casts) == nil and f.swing == 0 and f.amZiel.n == 0
+                 and not (dm and (dm.schaden or dm.heilung or dm.erlitten))
+    if leer and f.d < 2 then return end
+    local c = charDB()
+    c.kampf = c.kampf or {}
+    local rec = { t = f.e0, d = K.rund(f.d, 1), lvl = f.lvl, form = f.form, formID = f.formID,
+                  formen = table.concat(f.formen, ">"), ziel = K.liste(f.ziel), casts = K.liste(f.casts),
+                  folge = (#f.folge > 0) and table.concat(f.folge, ",") or nil, swing = f.swing, swingDauer = f.swingDauer,
+                  inn = f.inn.n .. ":" .. f.inn.sum, innF = K.liste(f.inn.f), schule = K.liste(f.schule),
+                  ausw = K.liste(f.ausw), heilIn = f.heilIn.n .. ":" .. f.heilIn.sum, lp0 = f.lp0, lp1 = f.lp1,
+                  xp = f.xp, tod = f.tod and 1 or nil, gruppe = f.gruppe and 1 or nil, dm = dm,
+                  dmGrund = (not dm) and grund or nil, geheim = K.liste(f.geheim), einschr = K.liste(f.einschr),
+                  ende = f.ende, v = VERSION }
+    if not f.gruppe then
+        rec.amZiel = f.amZiel.n .. ":" .. f.amZiel.sum
+        rec.amZielF, rec.amZielA = K.liste(f.amZiel.f), K.liste(f.amZiel.a)
+    end
+    table.insert(c.kampf, rec)
+    while #c.kampf > K.MAX_KAEMPFE do table.remove(c.kampf, 1) end
+    if db.auto then add("KAMPF", K.kampfText(f, rec, dm, grund)) end
+end
+
+function K.kampfText(f, rec, dm, grund)
+    local teile = { K.zahl(f.d, 1) .. " s", f.form .. ((#f.formen > 1) and (" (" .. rec.formen .. ")") or "") }
+    local ziele = {}
+    for id, l in pairs(f.ziel) do ziele[#ziele + 1] = (l and l > 0) and string.format("%d (L%d)", id, l) or tostring(id) end
+    table.sort(ziele)
+    if #ziele > 0 then teile[#teile + 1] = "Gegner " .. table.concat(ziele, ", ") end
+    if dm and dm.schaden then
+        teile[#teile + 1] = string.format("Schaden %d (%s/s)", dm.schaden.sum, K.zahl(f.d > 0 and dm.schaden.sum / f.d or 0, 1))
+    elseif not f.gruppe and f.amZiel.n > 0 then
+        teile[#teile + 1] = string.format("am Ziel %d in %d Treffern, %d krit (Schadensmesser: %s)", f.amZiel.sum,
+            f.amZiel.n, f.amZiel.f.CRITICAL or 0, tostring(grund))
+    else
+        teile[#teile + 1] = "Schaden ? (" .. tostring(grund) .. ")"
+    end
+    if dm and dm.heilung then teile[#teile + 1] = "Heilung " .. dm.heilung.sum end
+    local aw = {}
+    for k, n in pairs(f.ausw) do aw[#aw + 1] = n .. " " .. (K.AUSW[k] or k) end
+    table.sort(aw)
+    teile[#teile + 1] = string.format("erlitten %d in %d Treffern, %d krit%s%s", f.inn.sum, f.inn.n, f.inn.f.CRITICAL or 0,
+        f.inn.f.CRUSHING and (", " .. f.inn.f.CRUSHING .. " schmetternd") or "", (#aw > 0) and (", " .. table.concat(aw, ", ")) or "")
+    if f.heilIn.n > 0 then teile[#teile + 1] = string.format("geheilt %d", f.heilIn.sum) end
+    local cs = {}
+    for id, n in pairs(f.casts) do cs[#cs + 1] = { id = id, n = n } end
+    table.sort(cs, function(a, b) if a.n ~= b.n then return a.n > b.n end return a.id < b.id end)
+    local zt = {}
+    for i = 1, math.min(6, #cs) do zt[#zt + 1] = string.format("%s %d", spellName(cs[i].id) or tostring(cs[i].id), cs[i].n) end
+    if #zt > 0 then teile[#teile + 1] = "Zauber: " .. table.concat(zt, ", ") end
+    if f.swing > 0 then
+        teile[#teile + 1] = "Schläge " .. f.swing .. (f.swingDauer and (" (alle " .. K.zahl(f.swingDauer, 2) .. " s)") or "")
+    end
+    if f.xp > 0 then teile[#teile + 1] = "XP " .. f.xp end
+    if f.tod then teile[#teile + 1] = "Tod" end
+    if f.ende then teile[#teile + 1] = "Ende " .. f.ende end
+    return table.concat(teile, " | ")
+end
+
+-- Später lesen (ausserhalb des Kampfes): «was» -> { t, warum }
+function K.dirty(was, sek, warum)
+    K.due = K.due or {}
+    local t = now() + (sek or 2)
+    local d = K.due[was]
+    if not d or d.t > t then K.due[was] = { t = t, warum = warum } end
+end
+
+-- Werte (nur ausserhalb des Kampfes): «Grundwert:wirksam:plus:minus» für die fünf Grundwerte, dazu die Umrechnung
+-- des Charakterfensters (Forever: Camelot/PaperDollFrameStats.lua)
+K.WERTE_SIG = { "lvl", "str", "agi", "sta", "int", "spi", "ap", "dmg", "tempo", "krit", "zkrit", "ausw", "parier", "block",
+                "ruestung", "lp", "mana", "zm", "zmA", "heil", "treffer", "ztreffer", "regen", "vert", "um" }
+function K.werte(warum, zeigen)
+    if K.fight or K.ja("InCombatLockdown") then
+        K.dirty("werte", 3, warum)
+        return "im Kampf"
+    end
+    local w = { lvl = W.val("UnitLevel", "player") }
+    w.form = K.form()
+    local eff = {}
+    for i, k in ipairs(K.WERTE) do
+        local r = K.multi("UnitStat", "player", i)
+        if r and type(r[2]) == "number" then
+            w[k] = string.format("%d:%d:%d:%d", r[1] or 0, r[2], r[3] or 0, r[4] or 0)
+            eff[i] = r[2]
+        end
+    end
+    local ap = K.multi("UnitAttackPower", "player")
+    if ap and type(ap[1]) == "number" then w.ap = string.format("%d:%d:%d", ap[1], ap[2] or 0, ap[3] or 0) end
+    local dmg = K.multi("UnitDamage", "player")
+    if dmg and type(dmg[1]) == "number" and type(dmg[2]) == "number" then
+        w.dmg = string.format("%s-%s", K.rund(dmg[1], 1), K.rund(dmg[2], 1))
+    end
+    local sp = K.multi("UnitAttackSpeed", "player")
+    if sp then w.tempo = K.rund(sp[1], 2) end
+    w.krit = K.rund(W.val("GetCritChance"), 2)
+    w.zkrit = K.rund(W.val("GetSpellCritChance"), 2)        -- Forever: ohne Schule (Camelot/PaperDollFrameStats.lua)
+    w.ausw = K.rund(W.val("GetDodgeChance"), 2)
+    w.parier = K.rund(W.val("GetParryChance"), 2)
+    w.block = K.rund(W.val("GetBlockChance"), 2)
+    local ar = K.multi("UnitArmor", "player")
+    if ar then w.ruestung = ar[2] or ar[1] end
+    w.lp = W.val("UnitHealthMax", "player")
+    w.mana = W.val("UnitPowerMax", "player", 0)
+    w.zm = W.val("GetSpellBonusDamage", 4)                   -- Natur
+    w.zmA = W.val("GetSpellBonusDamage", 7)                  -- Arkan
+    w.heil = W.val("GetSpellBonusHealing")
+    w.treffer = K.rund(W.val("GetHitModifier"), 2)
+    w.ztreffer = K.rund(W.val("GetSpellHitModifier"), 2)
+    local mr = K.multi("GetManaRegen")
+    if mr and type(mr[1]) == "number" then w.regen = string.format("%s:%s", K.rund(mr[1], 2), K.rund(mr[2], 2)) end
+    local vs = K.multi("UnitDefenseSkill", "player")
+    if vs and type(vs[1]) == "number" then w.vert = string.format("%d:%d", vs[1], vs[2] or 0) end
+    -- Umrechnung: Wert beim jetzigen Stand und was 10 Punkte mehr bringen («…10»; für Buffs wie das Fischglas)
+    local um = {}
+    local function bei(fn, stat, wert, faktor)
+        local a, b = W.val(fn, stat, wert), W.val(fn, stat, wert + 10)
+        return a and K.rund(a * faktor, 3), (a and b) and K.rund((b - a) * faktor, 3)
+    end
+    if eff[1] then um.apStae, um.apStae10 = bei("GetAttackPowerForStat", 1, eff[1], 1) end
+    if eff[2] then
+        um.apBew, um.apBew10 = bei("GetAttackPowerForStat", 2, eff[2], 1)
+        um.kritBew, um.kritBew10 = bei("GetCritChanceFromStat", 2, eff[2], 100)
+        local ab = W.val("GetDodgeChanceFromAttribute")
+        um.auswBew = ab and K.rund(ab * 100, 3)
+    end
+    if eff[4] then um.zkritInt, um.zkritInt10 = bei("GetSpellCritChanceFromStat", 4, eff[4], 100) end
+    um.lpAus = K.rund(W.val("UnitHPPerStamina", "player"), 2)
+    local mw = K.multi("GetManaRegenFromSpirit")
+    if mw and type(mw[1]) == "number" then um.manaWil = K.rund(mw[1], 3) end
+    local lw = K.multi("GetHealthRegenFromSpirit")
+    if lw and type(lw[1]) == "number" then um.lpWil = K.rund(lw[1], 3) end
+    w.um = K.liste(um)
+    if not (w.agi or w.krit or w.ap) then return "nicht lesbar" end   -- Funktion fehlt oder alles geheim
+    local teile = {}
+    for _, k in ipairs(K.WERTE_SIG) do teile[#teile + 1] = tostring(w[k]) end
+    local sig = table.concat(teile, "|")
+    local c = charDB()
+    c.werte = c.werte or {}
+    local alt = c.werte[w.form]
+    if zeigen then say(K.werteText(w)) end
+    if alt and alt.sig == sig then return "unverändert" end
+    w.sig, w.t, w.warum = sig, epoch(), warum
+    c.werte[w.form] = w
+    c.werteLog = c.werteLog or {}
+    table.insert(c.werteLog, w)
+    while #c.werteLog > K.MAX_WERTE do table.remove(c.werteLog, 1) end
+    if db.auto then add("WERTE", K.werteText(w)) end
+    return "neu"
+end
+
+function K.werteText(w)
+    local s = {}
+    for _, k in ipairs(K.WERTE) do
+        local _, eff, pos, neg = (w[k] or ""):match("^(%-?%d+):(%-?%d+):(%-?%d+):(%-?%d+)$")
+        if eff then
+            local plus = (tonumber(pos) or 0) + (tonumber(neg) or 0)
+            s[#s + 1] = string.format("%s %s%s", K.WERTE_DE[k], eff, (plus ~= 0) and string.format(" (%+d)", plus) or "")
+        end
+    end
+    local ap = 0
+    for v in (w.ap or ""):gmatch("%-?%d+") do ap = ap + tonumber(v) end
+    local t = { w.form, table.concat(s, ", ") }
+    if w.ap then t[#t + 1] = "AP " .. ap end
+    if w.dmg then t[#t + 1] = string.format("Schaden %s (%s s)", (w.dmg:gsub("%.", ",")), K.zahl(w.tempo, 2)) end
+    t[#t + 1] = string.format("Krit %s %%, Zauberkrit %s %%, Ausweichen %s %%", K.zahl(w.krit, 2), K.zahl(w.zkrit, 2),
+        K.zahl(w.ausw, 2))
+    if w.ruestung then t[#t + 1] = "Rüstung " .. w.ruestung end
+    t[#t + 1] = string.format("Leben %s, Mana %s", tostring(w.lp or "?"), tostring(w.mana or "?"))
+    if w.zm or w.heil then t[#t + 1] = string.format("Zaubermacht %s, Heilung %s", tostring(w.zm or "?"), tostring(w.heil or "?")) end
+    if w.um then t[#t + 1] = "Umrechnung " .. w.um end
+    if w.warum then t[#t + 1] = w.warum end
+    return table.concat(t, " | ")
+end
+
+-- Gegenstände: Werte laut Client (C_Item.GetItemStats) als «ITEM_MOD_…=Zahl;…», gemerkt in itemWerte
+function K.stats(link)
+    local f = K.ns("C_Item", "GetItemStats") or rawget(_G, "GetItemStats")
+    if type(link) ~= "string" or isSecret(link) or not f then return "" end
+    local ok, t = pcall(f, link)
+    if not ok or type(t) ~= "table" then return "" end
+    local out = {}
+    for k, v in pairs(t) do
+        if type(k) == "string" and type(v) == "number" and not isSecret(v) then out[#out + 1] = k .. "=" .. K.rund(v, 1) end
+    end
+    table.sort(out)
+    local s = table.concat(out, ";")
+    local key = link:match("item:[%-%d:]+")
+    if key then
+        db.itemWerte = db.itemWerte or {}
+        if db.itemWerte[key] == nil then
+            if not K.itemN then
+                K.itemN = 0
+                for _ in pairs(db.itemWerte) do K.itemN = K.itemN + 1 end
+            end
+            if K.itemN < K.MAX_ITEMS then
+                db.itemWerte[key] = s
+                K.itemN = K.itemN + 1
+                db.itemTexte = db.itemTexte or {}
+                db.itemTexte[key] = K.anlegen(link)
+            end
+        end
+    end
+    return s, key and db.itemTexte and db.itemTexte[key] or nil
+end
+
+-- Effekte, die GetItemStats nicht liefert (z. B. «Anlegen: Erhöht Eure Chance … um 1%»): Zeilen des Tooltips
+-- (C_TooltipInfo.GetHyperlink, im Forever-UI genutzt von TooltipComparisonManager.lua) mit «Anlegen:» oder «%»
+function K.anlegen(link)
+    local f = K.ns("C_TooltipInfo", "GetHyperlink")
+    if not f or type(link) ~= "string" then return nil end
+    local ok, data = pcall(f, link)
+    if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+    local trig = rawget(_G, "ITEM_SPELL_TRIGGER_ONEQUIP")
+    local out = {}
+    for _, l in ipairs(data.lines) do
+        local t = type(l) == "table" and l.leftText or nil
+        if type(t) == "string" and not isSecret(t)
+           and (t:find("%%") or (type(trig) == "string" and trig ~= "" and t:sub(1, #trig) == trig)) then
+            out[#out + 1] = t
+        end
+    end
+    return (#out > 0) and table.concat(out, " / ") or nil
+end
+
+function K.statsKurz(s, a)
+    local out = {}
+    for k, v in (s or ""):gmatch("([%w_]+)=([%-%d%.]+)") do
+        local name = K.KURZ[k] or (k:gsub("^ITEM_MOD_", ""):gsub("_SHORT$", ""))
+        out[#out + 1] = name .. " " .. (v:gsub("%.", ","))
+    end
+    if a then out[#out + 1] = a end
+    return (#out > 0) and table.concat(out, ", ") or "keine Werte"
+end
+
+function K.ausruestung(warum)
+    local f = rawget(_G, "GetInventoryItemLink")
+    if type(f) ~= "function" then return end
+    local c = charDB()
+    local erst = c.ausruestung == nil
+    c.ausruestung = c.ausruestung or {}
+    local n, wechsel = 0, {}
+    local function name(x) return x and string.format("%s (%s)", tostring(x.n or "?"), x.k:match("item:(%d+)") or "?") or "leer" end
+    for slot = 1, #K.SLOTS do
+        local ok, link = pcall(f, "player", slot)
+        if not ok or isSecret(link) or type(link) ~= "string" then link = nil end
+        local key = link and link:match("item:[%-%d:]+") or nil
+        local alt = c.ausruestung[slot]
+        if key then n = n + 1 end
+        if (alt and alt.k) ~= key then
+            local e
+            if key then
+                local s, a = K.stats(link)
+                e = { k = key, n = linkName(link), s = s, a = a }
+                remember(tonumber(key:match("item:(%d+)")))
+            end
+            c.ausruestung[slot] = e
+            wechsel[#wechsel + 1] = string.format("%s: %s%s statt %s", K.SLOTS[slot], name(e),
+                e and (" [" .. K.statsKurz(e.s, e.a) .. "]") or "", name(alt))
+        end
+    end
+    if #wechsel == 0 or not db.auto then return end
+    if erst then
+        add("AUSRÜSTUNG", string.format("%s: %d Teile angelegt (Werte in chars, ausruestung)", warum or "gelesen", n))
+    else
+        add("AUSRÜSTUNG", table.concat(wechsel, "; ") .. (warum and (" | " .. warum) or ""))
+    end
+end
+
+-- Talente (C_ClassTalents, C_Traits; Baum-Namen aus den Gruppen wie im Talentfenster)
+function K.talente(warum)
+    local active = K.ns("C_ClassTalents", "GetActiveConfigID")
+    local T = rawget(_G, "C_Traits")
+    if not active or type(T) ~= "table" then return end
+    local okC, cfg = pcall(active)
+    if not okC or type(cfg) ~= "number" or isSecret(cfg) then return end
+    local okI, ci = pcall(T.GetConfigInfo, cfg)
+    if not okI or type(ci) ~= "table" or type(ci.treeIDs) ~= "table" then return end
+    local gruppen, punkte, liste = {}, {}, {}
+    for _, tree in ipairs(ci.treeIDs) do
+        local okG, gi = pcall(T.GetGroupDisplayInfoByTreeID, tree)
+        if okG and type(gi) == "table" then
+            for _, g in ipairs(gi) do
+                if type(g) == "table" and g.groupID and type(g.displayName) == "string" then gruppen[g.groupID] = g.displayName end
+            end
+        end
+        local okN, nodes = pcall(T.GetTreeNodes, tree)
+        for _, node in ipairs((okN and type(nodes) == "table") and nodes or {}) do
+            local okD, ni = pcall(T.GetNodeInfo, cfg, node)
+            local r = okD and type(ni) == "table" and num(ni.ranksPurchased) or 0
+            if r > 0 and type(ni.activeEntry) == "table" then
+                local okE, ei = pcall(T.GetEntryInfo, cfg, ni.activeEntry.entryID)
+                local okF, di = false, nil
+                if okE and type(ei) == "table" and ei.definitionID then okF, di = pcall(T.GetDefinitionInfo, ei.definitionID) end
+                local sid = okF and type(di) == "table" and num(di.spellID) or nil
+                local name = (okF and type(di) == "table" and type(di.overrideName) == "string" and di.overrideName ~= ""
+                              and di.overrideName) or (sid and spellName(sid)) or ("Knoten " .. node)
+                local gid = type(ni.groupIDs) == "table" and ni.groupIDs[1] or nil
+                local g = gid and (gruppen[gid] or ("Gruppe " .. gid)) or "?"
+                punkte[g] = (punkte[g] or 0) + r
+                liste[#liste + 1] = string.format("%s: %s %d/%d%s", g, name, r, num(ni.maxRanks) or 0,
+                    sid and (" (" .. sid .. ")") or "")
+            end
+        end
+    end
+    table.sort(liste)
+    local p = {}
+    for g, n in pairs(punkte) do p[#p + 1] = g .. " " .. n end
+    table.sort(p)
+    local text = (#liste > 0) and table.concat(liste, "; ") or "keine Punkte verteilt"
+    local c = charDB()
+    if c.talente and c.talente.liste == text then return end
+    c.talente = { liste = text, punkte = table.concat(p, ", "), t = epoch(), lvl = W.val("UnitLevel", "player") }
+    if db.auto then
+        add("TALENTE", ((#p > 0) and (table.concat(p, ", ") .. " | ") or "") .. text .. (warum and (" | " .. warum) or ""))
+    end
+end
+
+-- Quest-Belohnungen zur Wahl: Gegenstände mit Werten und die Wahl (GetQuestReward, Mainline/QuestFrame.lua)
+function K.belohnung()
+    K.wahl = nil
+    local okN, n = callApi("GetNumQuestChoices")
+    if not okN or type(n) ~= "number" or isSecret(n) or n < 2 then return end
+    local okQ, qid = callApi("GetQuestID")
+    local items = {}
+    for i = 1, math.min(n, 10) do
+        local okL, link = callApi("GetQuestItemLink", "choice", i)
+        if okL and type(link) == "string" and not isSecret(link) then
+            local id = tonumber(link:match("item:(%d+)"))
+            local s, a = K.stats(link)
+            items[i] = { id = id, n = linkName(link), s = s, a = a }
+            remember(id)
+        else
+            items[i] = {}
+        end
+    end
+    K.wahl = { q = okQ and num(qid) or nil, items = items, lvl = W.val("UnitLevel", "player") }
+end
+
+function K.gewaehlt(choice)
+    local w = K.wahl
+    if not w then return end
+    K.wahl = nil
+    K.belohnungZeile(w, (type(choice) == "number" and not isSecret(choice)) and choice or nil)
+end
+
+function K.belohnungZeile(w, wahl)
+    local c = charDB()
+    c.belohnungen = c.belohnungen or {}
+    local ids, namen = {}, {}
+    for i, it in ipairs(w.items) do
+        ids[i] = it.id and tostring(it.id) or "?"
+        namen[i] = it.n or ""
+    end
+    table.insert(c.belohnungen, { q = w.q, lvl = w.lvl, items = table.concat(ids, ","), namen = table.concat(namen, " / "),
+                                  wahl = wahl, t = epoch() })
+    while #c.belohnungen > K.MAX_BELOHNUNG do table.remove(c.belohnungen, 1) end
+    if not db.auto then return end
+    local teile = {}
+    for i, it in ipairs(w.items) do
+        teile[#teile + 1] = string.format("%d) %s (%s): %s", i, tostring(it.n or "?"), tostring(it.id or "?"),
+            K.statsKurz(it.s, it.a))
+    end
+    add("BELOHNUNG", string.format("Quest %s | %s | %s", tostring(w.q or "?"),
+        wahl and ("gewählt " .. wahl) or "nicht gewählt (Fenster zu)", table.concat(teile, " · ")))
+end
+
+-- Was der Client Addons erlaubt (beim Einloggen, wenn sich etwas ändert, und mit /tl geheim)
+function K.geheim()
+    local function wert(fn, ...)
+        if not fn then return "-" end
+        local r = K.multi(fn, ...)
+        if not r then return "Fehler/geheim" end
+        if r.n == 0 or r[1] == nil then return "nil" end
+        local s = tostring(r[1])
+        if r.n > 1 and r[2] ~= nil and r[2] ~= "" then s = s .. " (" .. tostring(r[2]) .. ")" end
+        return s
+    end
+    local teile = {
+        "Secret-Werte " .. wert(K.ns("C_Secrets", "HasSecretRestrictions")),
+        "Werte geheim " .. wert(K.ns("C_Secrets", "ShouldUnitStatsBeSecret")),
+        "Kampflog gesperrt " .. wert(K.ns("C_CombatLog", "IsCombatLogRestricted")),
+    }
+    local aktiv = K.ns("C_RestrictedActions", "IsAddOnRestrictionActive")
+    if aktiv then
+        local namen = { [0] = "Kampf", "Encounter", "Herausforderung", "PvP", "Karte", "Chat" }
+        local an = {}
+        for i = 0, 5 do
+            local v = wert(aktiv, i)
+            if v ~= "false" then an[#an + 1] = namen[i] .. " " .. v end
+        end
+        teile[#teile + 1] = "Einschränkungen " .. ((#an > 0) and table.concat(an, ", ") or "keine")
+    end
+    teile[#teile + 1] = "Schadensmesser " .. wert(K.ns("C_DamageMeter", "IsDamageMeterAvailable"))
+    local cv = K.multi("GetCVar", "damageMeterEnabled")
+    teile[#teile + 1] = "CVar damageMeterEnabled " .. ((cv and cv[1] ~= nil) and tostring(cv[1]) or "?")
+    teile[#teile + 1] = "Kampflog-Datei " .. wert(rawget(_G, "LoggingCombat"))
+    teile[#teile + 1] = "CombatLogGetCurrentEventInfo " .. type(rawget(_G, "CombatLogGetCurrentEventInfo"))
+    return table.concat(teile, " | ")
+end
+
+-- /tl kampflog an|aus: Kampflog-Datei des Spiels (Logs\WoWCombatLog*.txt; wie /combatlog, SlashCommands.lua)
+function K.kampflog(an)
+    db.kampflog = an or nil
+    local f = rawget(_G, "LoggingCombat")
+    if type(f) ~= "function" then
+        say("Kampflog-Datei: LoggingCombat gibt es in diesem Client nicht")
+        add("EINSTELLUNG", "Kampflog-Datei " .. (an and "an" or "aus") .. " (LoggingCombat fehlt)", false)
+        return
+    end
+    local ok, r = pcall(f, an)
+    local stand = ok and tostring(r) or ("Fehler " .. tostring(r))
+    say("Kampflog-Datei (Logs\\WoWCombatLog*.txt): " .. stand)
+    add("EINSTELLUNG", "Kampflog-Datei " .. (an and "an" or "aus") .. ": " .. stand, false)
+end
+
+function K.login()
+    local okC, _, cls = callApi("UnitClass", "player")
+    if okC and type(cls) == "string" and not isSecret(cls) then charDB().klasse = cls end
+    if db.kampflog and type(rawget(_G, "LoggingCombat")) == "function" then pcall(rawget(_G, "LoggingCombat"), true) end
+    local g = K.geheim()
+    if g ~= db.geheimLast then
+        add("GEHEIM", g, false)
+        db.geheimLast = g
+    end
+    K.dirty("ausruestung", 2, "beim Einloggen")
+    K.dirty("werte", 3, "beim Einloggen")
+    K.dirty("talente", 4, "beim Einloggen")
+end
+
+function K.tick()
+    local t = now()
+    local f = K.fight
+    -- ohne PLAYER_REGEN_ENABLED (Kampf nur aus UNIT_COMBAT, z. B. Fallschaden) oder länger als 30 Minuten
+    if f and ((not W.inCombat and t - f.tLast > 6) or t - f.t0 > 1800) then K.stop() end
+    if not K.due or K.fight then return end
+    local faellig = {}
+    for was, d in pairs(K.due) do
+        if t >= d.t then faellig[#faellig + 1] = was end
+    end
+    table.sort(faellig)
+    for _, was in ipairs(faellig) do
+        local d = K.due[was]
+        K.due[was] = nil
+        if was == "werte" then K.werte(d.warum)
+        elseif was == "ausruestung" then K.ausruestung(d.warum)
+        elseif was == "talente" then K.talente(d.warum) end
+    end
+end
+
+-- /tl kampf
+function K.zeigen()
+    local c = charDB()
+    local k = c.kampf or {}
+    local proForm = {}
+    for _, r in ipairs(k) do
+        local e = proForm[r.form or "?"] or { n = 0, d = 0, schaden = 0, mitDm = 0 }
+        e.n, e.d = e.n + 1, e.d + (r.d or 0)
+        local s = type(r.dm) == "table" and r.dm.schaden
+        if type(s) == "table" and s.sum then e.schaden, e.mitDm = e.schaden + s.sum, e.mitDm + (r.d or 0) end
+        proForm[r.form or "?"] = e
+    end
+    say(string.format("Kämpfe gespeichert: %d (höchstens %d pro Charakter)", #k, K.MAX_KAEMPFE))
+    local fs = {}
+    for form in pairs(proForm) do fs[#fs + 1] = form end
+    table.sort(fs)
+    for _, form in ipairs(fs) do
+        local e = proForm[form]
+        say(string.format("  %s: %d Kämpfe, Ø %s s%s", form, e.n, K.zahl(e.d / e.n, 1),
+            (e.mitDm > 0) and string.format(", %s Schaden pro Sekunde (Schadensmesser)", K.zahl(e.schaden / e.mitDm, 1)) or ""))
+    end
+    local ws = {}
+    for form in pairs(c.werte or {}) do ws[#ws + 1] = form end
+    table.sort(ws)
+    say("Werte gespeichert für: " .. ((#ws > 0) and table.concat(ws, ", ") or "noch keine") .. " · Talente: "
+        .. ((c.talente and c.talente.punkte ~= "") and c.talente.punkte or "noch nicht gelesen"))
+end
+
 -- Version 3.6: Empfehlungen anzeigen (KombiDaten: stand, zeit, markt, tipps, hinweise)
 local function ageText(sec)
     if type(sec) ~= "number" or sec < 0 then return nil end
@@ -2363,6 +3183,11 @@ local function tick()
     checkRXP()
     local okW, errW = pcall(W.tick)   -- Version 3.7
     if not okW then add("FEHLER", "Laufweg/Dungeon: " .. tostring(errW), false) end
+    local okK, errK = pcall(K.tick)   -- Version 4.0
+    if not okK then
+        K.due = nil   -- ein Fehler beim Lesen der Werte soll nicht alle 2 Sekunden wiederkommen
+        add("FEHLER", "Kampf/Werte: " .. tostring(errK), false)
+    end
     lastContext = context()
     local m = bestMap()
     if m and not (db.maps and db.maps[m]) then logMap(m) end
@@ -2488,6 +3313,8 @@ local function help()
     say("/tl karte  Kartengrenzen der aktuellen Karte festhalten")
     say("/tl ah  AH-Preise lesen (läuft beim Öffnen des Auktionshauses von selbst, höchstens alle 15 Min)  ·  /tl ah aus|an")
     say("/tl tipp [alle]  Empfehlungen von Claude (Addon KombiDaten)")
+    say("/tl kampf  Kämpfe im Überblick  ·  /tl werte  Werte, Ausrüstung und Talente jetzt lesen")
+    say("/tl geheim  was der Client Addons erlaubt  ·  /tl kampflog an|aus  Kampflog-Datei des Spiels (Logs\\WoWCombatLog)")
     say("/tl leeren ja  Protokoll löschen (AH-Scans bleiben)")
 end
 
@@ -2559,6 +3386,28 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         end
     elseif lower == "tipp" or lower == "tipps" then
         showTips(string.lower(rest))
+    elseif lower == "kampf" or lower == "kämpfe" then   -- Version 4.0
+        K.zeigen()
+    elseif lower == "werte" then
+        local stand = K.werte("von Hand", true)
+        if stand == "im Kampf" then say("Im Kampf sind die Werte geheim: Sie werden nach dem Kampf gelesen")
+        elseif stand == "nicht lesbar" then say("Werte nicht lesbar (Funktion fehlt oder Werte geheim): /tl geheim")
+        elseif stand == "unverändert" then say("Werte unverändert seit dem letzten Eintrag") end
+        K.ausruestung("von Hand")
+        K.talente("von Hand")
+    elseif lower == "geheim" then
+        local g = K.geheim()
+        say(g)
+        add("GEHEIM", g, false)
+        db.geheimLast = g
+    elseif lower == "kampflog" then
+        local r = string.lower(rest)
+        if r == "an" or r == "aus" then
+            K.kampflog(r == "an")
+        else
+            say("Kampflog-Datei des Spiels: /tl kampflog an | aus (zurzeit " .. (db.kampflog and "an" or "aus")
+                .. "; schreibt Logs\\WoWCombatLog*.txt, ob in Forever, ist ungeprüft)")
+        end
     elseif lower == "status" then
         local n = 0
         for _ in pairs(db.items) do n = n + 1 end
@@ -2579,6 +3428,13 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         for _ in pairs(c.xp or {}) do nx = nx + 1 end
         say(string.format("Laufweg: %d Proben · XP-Quellen: %d · Dungeon-Läufe: %d%s", #(c.weg or {}), nx,
             #(db.dungeons or {}), W.run and (" · jetzt in " .. tostring(W.run.name)) or ""))
+        local na = 0
+        for _ in pairs(c.ausruestung or {}) do na = na + 1 end
+        local nw = 0
+        for _ in pairs(c.werte or {}) do nw = nw + 1 end
+        say(string.format("Kämpfe: %d · Werte: %d Gestalten · Ausrüstung: %d Teile · Talente: %s · Belohnungen: %d · "
+            .. "Kampflog-Datei: %s", #(c.kampf or {}), nw, na, (c.talente and c.talente.punkte ~= "") and c.talente.punkte or "-",
+            #(c.belohnungen or {}), db.kampflog and "an" or "aus"))
     elseif lower == "leeren" then
         if string.lower(rest) == "ja" then
             wipe(db.log)
@@ -2633,6 +3489,8 @@ local function beginLogging()
     W.wegPush(string.format("S %d %s", epoch(), VERSION))
     W.dungeonTick()
     W.wegTick(true)
+    local okK, errK = pcall(K.login)   -- Version 4.0: Einschränkungen, Werte, Ausrüstung, Talente
+    if not okK then add("FEHLER", "Kampf/Werte beim Einloggen: " .. tostring(errK), false) end
     C_Timer.NewTicker(2, function()
         local ok, err = pcall(tick)
         if not ok then add("FEHLER", "tick: " .. tostring(err), false) end
@@ -2666,11 +3524,14 @@ function handlers.PLAYER_LOGOUT()
     finishSession("Ausloggen")
     if ready then inventoryBags("beim Ausloggen", lastContext) end   -- Version 3.6: letzter bekannter Taschenbestand
     if W.run then W.runEnd("Ausloggen", lastContext) end              -- Version 3.7
+    pcall(K.abbruch, "Ausloggen")                                     -- Version 4.0: offener Kampf
     add("ENDE", nil, true, lastContext)
 end
 
 function handlers.PLAYER_LEVEL_UP(level)
     if db.auto then add("STUFE", "Stufe " .. tostring(level)) end
+    K.dirty("werte", 3, "Stufe " .. tostring(level))   -- Version 4.0
+    K.dirty("talente", 3, "Stufe " .. tostring(level))
 end
 
 function handlers.ZONE_CHANGED_NEW_AREA()
@@ -2703,6 +3564,7 @@ end
 
 function handlers.PLAYER_DEAD()
     W.deaths = W.deaths + 1   -- Version 3.7: Tode pro Dungeon-Lauf
+    if K.fight then K.fight.tod = true end   -- Version 4.0
     if db.auto then add("TOD", nil) end
 end
 
@@ -2711,9 +3573,40 @@ function handlers.PLAYER_XP_UPDATE(unit)
     if unit and (isSecret(unit) or unit ~= "player") then return end
     if ready then W.xpUpdate() end
 end
-function handlers.PLAYER_REGEN_DISABLED() W.inCombat = true end
-function handlers.PLAYER_REGEN_ENABLED() W.inCombat, W.combatEnd = false, now() end
-function handlers.PLAYER_TARGET_CHANGED() if ready then W.seeTarget() end end
+function handlers.PLAYER_REGEN_DISABLED()
+    W.inCombat = true
+    if ready then K.start() end   -- Version 4.0
+end
+function handlers.PLAYER_REGEN_ENABLED()
+    W.inCombat, W.combatEnd = false, now()
+    K.stop()
+end
+function handlers.PLAYER_TARGET_CHANGED()
+    if not ready then return end
+    W.seeTarget()
+    K.seeTarget()
+end
+
+-- Version 4.0: Kampf, Werte, Ausrüstung, Talente, Einschränkungen
+function handlers.UNIT_COMBAT(...) if ready then K.combat(...) end end
+function handlers.PLAYER_SWING(dauer) if ready then K.swing(dauer) end end
+function handlers.UPDATE_SHAPESHIFT_FORM() if ready then K.formWechsel() end end
+function handlers.UNIT_STATS(unit)
+    if ready and not isSecret(unit) and unit == "player" then K.dirty("werte", 2, "Werte geändert") end
+end
+function handlers.PLAYER_EQUIPMENT_CHANGED()
+    if not ready then return end
+    K.dirty("ausruestung", 1, "Wechsel")
+    K.dirty("werte", 2, "Ausrüstung")
+end
+function handlers.CHARACTER_POINTS_CHANGED()
+    if not ready then return end
+    K.dirty("talente", 2, "Talente geändert")
+    K.dirty("werte", 3, "Talente")
+end
+handlers.PLAYER_TALENT_UPDATE = handlers.CHARACTER_POINTS_CHANGED
+handlers.TRAIT_CONFIG_UPDATED = handlers.CHARACTER_POINTS_CHANGED
+function handlers.ADDON_RESTRICTION_STATE_CHANGED(typ, state) if ready then K.restriktion(typ, state) end end
 
 function handlers.BAG_UPDATE_DELAYED()
     local diff = bagDiff()
@@ -2744,6 +3637,8 @@ function handlers.UNIT_SPELLCAST_SUCCEEDED(unit, _, spellID)
     local name = spellName(spellID)
     local t = now()
     lastCast = { id = spellID, name = name, t = t }
+    local okK, errK = pcall(K.cast, spellID)   -- Version 4.0: Rotation
+    if not okK then add("FEHLER", "Kampf: " .. tostring(errK), false) end
     if isFishing(spellID, name) then
         if t - fishLast > FISHING_PAUSE then fishCasts = 0 end
         fishCasts, fishLast = fishCasts + 1, t
@@ -2878,8 +3773,17 @@ function handlers.TRAINER_UPDATE() if windows.trainer then scheduleTrainerDump()
 function handlers.TRAINER_CLOSED() closeWindow("trainer") end
 function handlers.TAXIMAP_OPENED() openWindow("taxi") end
 function handlers.TAXIMAP_CLOSED() closeWindow("taxi") end
-function handlers.QUEST_COMPLETE() windows.quest = true end
-function handlers.QUEST_FINISHED() windows.quest = false end
+function handlers.QUEST_COMPLETE()
+    windows.quest = true
+    local ok, err = pcall(K.belohnung)   -- Version 4.0: Belohnungen zur Wahl
+    if not ok then add("FEHLER", "Belohnung: " .. tostring(err), false) end
+end
+function handlers.QUEST_FINISHED()
+    windows.quest = false
+    local w = K.wahl   -- Version 4.0: Fenster zu, ohne dass eine Belohnung gewählt wurde
+    K.wahl = nil
+    if w then K.belohnungZeile(w, nil) end
+end
 
 -- Version 3.2: Das Forever-UI öffnet und schliesst diese Fenster über den Interaktions-Manager
 -- (PlayerInteractionFrameManager.lua). Das ist ein zweiter Weg neben MAIL_CLOSED und Co.
@@ -2923,6 +3827,15 @@ function handlers.NEW_RECIPE_LEARNED(recipeID)
     add("REZEPT", string.format("%s (%s)", spellName(recipeID) or "?", tostring(recipeID)))
 end
 
+-- Version 4.0: gewählte Quest-Belohnung (das Forever-UI ruft GetQuestReward(Wahl) auf, Mainline/QuestFrame.lua);
+-- der Haken läuft nach dem Blizzard-Aufruf und ändert nichts daran
+if type(hooksecurefunc) == "function" and type(rawget(_G, "GetQuestReward")) == "function" then
+    hooksecurefunc(_G, "GetQuestReward", function(choice)
+        local ok, err = pcall(K.gewaehlt, choice)
+        if not ok and db then add("FEHLER", "Belohnung: " .. tostring(err), false) end
+    end)
+end
+
 -- Version 3.6: Haken für eigene Angebote (nach dem Blizzard-Aufruf, ändern nichts daran)
 if type(hooksecurefunc) == "function" and type(C_AuctionHouse) == "table" then
     for _, fn in ipairs({ "PostCommodity", "ConfirmPostCommodity", "PostItem", "ConfirmPostItem" }) do
@@ -2939,9 +3852,12 @@ local events = CreateFrame("Frame")
 for event in pairs(handlers) do
     -- Zauber nur vom eigenen Charakter: Werte anderer Einheiten können «secret» sein (Forever-API).
     -- Version 3.2: Kennt der Client ein Ereignis nicht, bricht das Laden nicht ab (Meldung als FEHLER beim Start).
+    -- Version 4.0: Einheiten-Ereignisse aus K.UNIT_EVENTS nur für ihre Einheiten (UNIT_COMBAT: Spieler und Ziel)
     local ok
-    if event == "UNIT_SPELLCAST_SUCCEEDED" and events.RegisterUnitEvent then
-        ok = pcall(events.RegisterUnitEvent, events, event, "player")
+    local units = K.UNIT_EVENTS[event]
+    if units and events.RegisterUnitEvent then
+        ok = pcall(events.RegisterUnitEvent, events, event, unpack(units))
+        if not ok then ok = pcall(events.RegisterEvent, events, event) end
     else
         ok = pcall(events.RegisterEvent, events, event)
     end

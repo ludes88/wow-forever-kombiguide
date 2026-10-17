@@ -1670,5 +1670,307 @@ ids_b3 = [x[0] for x in mk.ah_statt_haendler(mb3, [4289, 2672])]
 check(ids_b3 == [2672], "markt: Händlerware nicht bei «AH statt Händler» (%s)" % ids_b3)
 mz = mk.Markt({"chars": {}, "info": {}}, [dict(scan_e[0], datum="2026-10-15 22:00", zeit=1792094400)], {})
 check(mk.ortszeit(mz, 1792094400 + 3600) == "15.10. 23:00", "markt: Ortszeit aus dem Versatz des Scans (%s)" % mk.ortszeit(mz, 1792094400 + 3600))
+
+# --- Version 4.0: Kampf, Werte, Ausrüstung, Talente, Belohnungen, Einschränkungen ---
+# Rückgaben wie in der Forever-API 1.60.1 (UnitDocumentation.lua, PlayerScriptDocumentation.lua, DamageMeterDocumentation.lua,
+# SharedTraitsDocumentation.lua, SecretPredicateAPIDocumentation.lua, RestrictedActionsDocumentation.lua); Zahlen erfunden
+PRE12 = r"""
+shapeForm = 0
+shapeIDs = { 5487, 768 }
+GetShapeshiftForm = function() return shapeForm end
+GetShapeshiftFormInfo = function(i) return 136097, i == shapeForm, true, shapeIDs[i] end
+spells[5487] = "Bärengestalt"; spells[768] = "Katzengestalt"; spells[6807] = "Zermalmen"; spells[99] = "Demoralisierendes Gebrüll"
+statBase, statPlus = { 32, 20, 29, 27, 36 }, 0
+UnitStat = function(u, i) return statBase[i], statBase[i] + statPlus, statPlus, 0 end
+UnitAttackPower = function() return 74, 10, 0 end
+UnitDamage = function() return 20.5, 28.4, 0, 0, 0, 0, 1 end
+UnitAttackSpeed = function() return 2.5 end
+GetCritChance = function() return 6.12 end
+GetSpellCritChance = function() return 4.5 end
+GetDodgeChance = function() return 5.6 end
+GetParryChance = function() return 0 end
+GetBlockChance = function() return 0 end
+UnitArmor = function() return 300, 350, 350, 50 end
+UnitHealth = function() return 380 end
+UnitHealthMax = function() return 400 end
+UnitPower = function(u, t) if t == 0 then return 450 end return 20 end
+UnitPowerMax = function(u, t) if t == 0 then return 500 end return 100 end
+GetSpellBonusDamage = function(s) return 10 end
+GetSpellBonusHealing = function() return 12 end
+GetHitModifier = function() return 0 end
+GetSpellHitModifier = function() return 0 end
+GetManaRegen = function() return 2.5, 0.5 end
+UnitDefenseSkill = function() return 60, 0 end
+GetAttackPowerForStat = function(s, v) return v * 2 end
+GetCritChanceFromStat = function(s, v) return v / 658 end
+GetDodgeChanceFromAttribute = function() return 0.0304 end
+GetSpellCritChanceFromStat = function(s, v) return v / 2190 end
+UnitHPPerStamina = function() return 10 end
+GetManaRegenFromSpirit = function() return 1.5, 0 end
+GetHealthRegenFromSpirit = function() return 0.8, 0 end
+lockdown = false
+InCombatLockdown = function() return lockdown end
+UnitCanAttack = function(a, b) return b == "target" end
+UnitIsUnit = function(a, b) return a == b end
+grouped = false
+IsInGroup = function() return grouped end
+tguid = "Creature-0-3110-0-12345-2958-00004A1B2C"
+UnitGUID = function(u) if u == "target" then return tguid end if u == "player" then return "Player-1-0001" end if u == "npc" then return npcGuid end return nil end
+UnitClass = function() return "Druide", "DRUID", 11 end
+dmSessions = {}
+C_DamageMeter = {
+  IsDamageMeterAvailable = function() return true, "" end,
+  GetAvailableCombatSessions = function()
+    local out = {}
+    for id in pairs(dmSessions) do out[#out + 1] = { sessionID = id, name = "", durationSeconds = 10 } end
+    table.sort(out, function(a, b) return a.sessionID < b.sessionID end)
+    return out
+  end,
+  GetCombatSessionFromID = function(id, typ)
+    local e = dmSessions[id] and dmSessions[id][typ]
+    if not e then return { combatSources = {}, maxAmount = 0, totalAmount = 0 } end
+    return { combatSources = {
+      { sourceGUID = "Player-1-0002", name = "Anderer", isLocalPlayer = false, totalAmount = 999, amountPerSecond = 99 },
+      { sourceGUID = "Player-1-0001", name = "Testheld", isLocalPlayer = true, totalAmount = e.total, amountPerSecond = e.total / 10 } },
+      maxAmount = 999, totalAmount = e.total + 999 }
+  end,
+  GetCombatSessionSourceFromID = function(id, typ, guid, cid)
+    local e = dmSessions[id] and dmSessions[id][typ]
+    if not e or guid ~= "Player-1-0001" then return { combatSpells = {}, maxAmount = 0, totalAmount = 0 } end
+    local sp = {}
+    for sid, amt in pairs(e.spells) do
+      sp[#sp + 1] = { spellID = sid, totalAmount = amt, amountPerSecond = amt / 10, creatureName = "Wolf", overkillAmount = 0,
+                      isAvoidable = false, isDeadly = false, combatSpellDetails = {} }
+    end
+    return { combatSpells = sp, maxAmount = 0, totalAmount = e.total }
+  end,
+}
+Enum.DamageMeterType = { DamageDone = 0, Dps = 1, HealingDone = 2, Hps = 3, Absorbs = 4, Interrupts = 5, Dispels = 6,
+                         DamageTaken = 7, AvoidableDamageTaken = 8, Deaths = 9, EnemyDamageTaken = 10 }
+talentRanks = { [101] = 2, [102] = 0, [201] = 1 }
+C_ClassTalents = { GetActiveConfigID = function() return 77 end }
+C_Traits = {
+  GetConfigInfo = function(cfg) return { ID = cfg, treeIDs = { 9 } } end,
+  GetGroupDisplayInfoByTreeID = function(t) return { { groupID = 1, treeID = t, displayName = "Gleichgewicht" },
+                                                     { groupID = 2, treeID = t, displayName = "Wilder Kampf" } } end,
+  GetTreeNodes = function(t) return { 101, 102, 201 } end,
+  GetNodeInfo = function(cfg, node)
+    return { ID = node, ranksPurchased = talentRanks[node], maxRanks = (node == 201) and 5 or 2,
+             activeEntry = { entryID = node * 10, rank = talentRanks[node] }, groupIDs = { node < 200 and 1 or 2 } }
+  end,
+  GetEntryInfo = function(cfg, e) return { definitionID = e + 1 } end,
+  GetDefinitionInfo = function(d) local m = { [1011] = 1240001, [1021] = 1240002, [2011] = 1240003 } return { spellID = m[d] } end,
+}
+spells[1240001] = "Erhabenheit der Natur"; spells[1240002] = "Genesis"; spells[1240003] = "Wildheit"
+equip = { [1] = "|cff1eff00|Hitem:6070::::::::12:::::|h[Wolfskopfhelm]|h|r", [16] = "|cffffffff|Hitem:2495::::::::12:::::|h[Verzierter Stab]|h|r" }
+GetInventoryItemLink = function(u, slot) return equip[slot] end
+itemStats = { [6070] = { ITEM_MOD_STAMINA_SHORT = 3, ITEM_MOD_AGILITY_SHORT = 2, RESISTANCE0_NAME = 40 },
+              [2495] = { ITEM_MOD_DAMAGE_PER_SECOND_SHORT = 6.5, ITEM_MOD_STRENGTH_SHORT = 1 },
+              [6085] = { ITEM_MOD_STRENGTH_SHORT = 3, RESISTANCE0_NAME = 55 },
+              [6086] = { ITEM_MOD_INTELLECT_SHORT = 2, ITEM_MOD_SPIRIT_SHORT = 2 } }
+C_Item.GetItemStats = function(link) return itemStats[tonumber(link:match("item:(%d+)"))] end
+questChoices = {}
+GetNumQuestChoices = function() return #questChoices end
+GetQuestItemLink = function(kind, i)
+  local c = questChoices[i]
+  if c then return "|cff1eff00|Hitem:" .. c.id .. "::::::::12:::::|h[" .. c.name .. "]|h|r" end
+  return nil
+end
+GetQuestID = function() return 744 end
+ITEM_SPELL_TRIGGER_ONEQUIP = "Anlegen:"
+C_TooltipInfo = { GetHyperlink = function(link)
+  if link:find("item:6086") then
+    return { lines = { { leftText = "Stoffhut" }, { leftText = "Anlegen: Erhöht Eure Chance, einen kritischen Treffer zu erzielen, um 1%." } } }
+  end
+  return { lines = { { leftText = "Lederkappe" }, { leftText = "+3 Stärke" } } }
+end }
+rewardTaken = 0
+GetQuestReward = function(choice) rewardTaken = choice end
+C_Secrets = { HasSecretRestrictions = function() return true end, ShouldUnitStatsBeSecret = function() return false end }
+C_CombatLog = { IsCombatLogRestricted = function() return true end }
+C_RestrictedActions = { IsAddOnRestrictionActive = function(t) return t == 0 and lockdown end }
+GetCVar = function(k) if k == "damageMeterEnabled" then return "1" end return nil end
+combatLogging = false
+LoggingCombat = function(v) if v ~= nil then combatLogging = v end return combatLogging end
+"""
+L12 = runtime(pre=PRE12)
+g12 = L12.globals()
+def run12(code): L12.execute(code)
+def t12(s): run12("now_t = now_t + %r; server_t = server_t + %d" % (s, int(s + 0.5)))
+s12 = lambda m: g12.SlashCmdList["KOMBITESTLOG"](m)
+log12 = lambda: [g12.KombiTestlogDB.log[i] for i in range(1, len(g12.KombiTestlogDB.log) + 1)]
+msg12 = lambda: [g12.messages[i] for i in range(1, len(g12.messages) + 1)]
+c12 = lambda: g12.KombiTestlogDB.chars["Testheld-Testrealm"]
+kampf12 = lambda: [c12().kampf[i] for i in range(1, len(c12().kampf) + 1)] if c12().kampf else []
+g12.fire("ADDON_LOADED", "KombiTestlog")
+g12.fire("PLAYER_ENTERING_WORLD", True, False)
+t12(5); g12.ticker()                          # beim Einloggen: Ausrüstung, Werte, Talente
+run12("shapeForm = 1"); g12.fire("UPDATE_SHAPESHIFT_FORM"); t12(2); g12.ticker()
+# Kampf 1, allein: Zermalmen kurz vor dem Kampf, drei Schläge, Treffer am Ziel und am Spieler
+g12.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c1", 6807)
+t12(0.5)
+g12.fire("PLAYER_REGEN_DISABLED"); g12.fire("PLAYER_TARGET_CHANGED")
+for _ in range(3): g12.fire("PLAYER_SWING", 2.5, 0)
+g12.fire("UNIT_COMBAT", "target", "WOUND", "CRITICAL", 40, 1)
+g12.fire("UNIT_COMBAT", "target", "WOUND", "", 20, 1)
+g12.fire("UNIT_COMBAT", "target", "DODGE", "", 0, 1)
+g12.fire("UNIT_COMBAT", "player", "WOUND", "", 15, 1)
+g12.fire("UNIT_COMBAT", "player", "WOUND", "CRUSHING", 25, 1)
+g12.fire("UNIT_COMBAT", "player", "DODGE", "", 0, 1)
+g12.fire("UNIT_COMBAT", "player", "HEAL", "", 30, 8)
+g12.fire("UNIT_COMBAT", "nameplate1", "WOUND", "", 999, 1)   # andere Einheit: zählt nicht
+g12.fire("ADDON_RESTRICTION_STATE_CHANGED", 0, 2)
+t12(3); g12.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c2", 99)
+run12("dmSessions[5] = { [0] = { total = 120, spells = { [6807] = 80, [6603] = 40 } }, [7] = { total = 40, spells = { [1] = 40 } } }")
+t12(8.5); g12.fire("PLAYER_REGEN_ENABLED")
+k1 = kampf12()[0] if kampf12() else None
+kl = [l for l in log12() if " | KAMPF | " in l]
+check(len(kl) == 1 and "| 11,5 s | Bärengestalt | Gegner 2958 (L9) | Schaden 120 (10,4/s) | erlitten 40 in 2 Treffern, 0 krit, "
+      "1 schmetternd, 1 ausgewichen | geheilt 30 | Zauber: Demoralisierendes Gebrüll 1, Zermalmen 1 | Schläge 3 (alle 2,50 s)" in kl[0],
+      "4.0: KAMPF-Zeile mit Schadensmesser, Treffern, Zaubern und Schlägen (%s)" % kl)
+check(k1 is not None and (k1.casts, k1.folge, k1.swing, k1.inn, k1.innF, k1.ausw, k1.heilIn, k1.amZiel, k1.amZielF, k1.amZielA)
+      == ("6807:1;99:1", "6807@-0.5,99@3.0", 3, "2:40", "CRUSHING:1", "DODGE:1", "1:30", "2:60", "CRITICAL:1", "DODGE:1"),
+      "4.0: Kampf gespeichert mit Reihenfolge und Treffern (%s)" % (dict(k1) if k1 is not None else None))
+check(k1 is not None and k1.dm.id == 5 and k1.dm.schaden.sum == 120 and k1.dm.schaden.z == "6603:40;6807:80"
+      and k1.dm.erlitten.sum == 40 and k1.dm.heilung is None and k1.einschr == "0:2" and k1.lp0 == "380:400:20:100:450:500"
+      and k1.ziel == "2958:9" and k1.form == "Bärengestalt" and k1.formID == 5487 and k1.swingDauer == 2.5,
+      "4.0: Schadensmesser nur für den eigenen Charakter, mit Zaubern (%s)" % (dict(k1.dm) if k1 is not None and k1.dm else None))
+# Kampf 2 in der Gruppe: Treffer am Ziel zählen nicht, keine neue Sitzung des Schadensmessers
+run12("grouped = true")
+g12.fire("PLAYER_REGEN_DISABLED")
+g12.fire("UNIT_COMBAT", "target", "WOUND", "", 50, 1)
+g12.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c3", 6807)
+t12(4); g12.fire("PLAYER_REGEN_ENABLED")
+run12("grouped = false")
+k2 = kampf12()[-1]
+check(len(kampf12()) == 2 and k2.gruppe == 1 and k2.amZiel is None and k2.dmGrund == "keine neue Sitzung"
+      and "Schaden ? (keine neue Sitzung)" in [l for l in log12() if " | KAMPF | " in l][-1],
+      "4.0: Kampf in der Gruppe ohne Ziel-Schätzung (%s)" % dict(k2))
+# kurzer Kampf ohne alles: kein Eintrag; Treffer ohne Kampf (Fallschaden) endet nach 6 s Ruhe
+g12.fire("PLAYER_REGEN_DISABLED"); t12(1); g12.fire("PLAYER_REGEN_ENABLED")
+n_vor = len(kampf12())
+g12.fire("UNIT_COMBAT", "player", "WOUND", "", 30, 1)
+t12(7); g12.ticker()
+check(n_vor == 2 and len(kampf12()) == 3 and kampf12()[-1].inn == "1:30" and kampf12()[-1].casts is None,
+      "4.0: kurzer leerer Kampf fehlt, Treffer ohne Kampf endet von selbst (%s, %s)" % (n_vor, len(kampf12())))
+# Werte im Kampf geheim: erst danach gelesen; unverändert: keine neue Zeile
+wl = lambda: [l for l in log12() if " | WERTE | " in l]
+n_w = len(wl())
+g12.fire("PLAYER_REGEN_DISABLED"); run12("lockdown = true; statPlus = 2"); g12.fire("UNIT_STATS", "player"); t12(3); g12.ticker()
+n_w_kampf = len(wl())
+run12("lockdown = false"); g12.fire("PLAYER_REGEN_ENABLED"); t12(4); g12.ticker()
+g12.fire("UNIT_STATS", "player"); t12(3); g12.ticker()
+g12.fire("UNIT_STATS", "target"); t12(3); g12.ticker()
+check(n_w == 2 and n_w_kampf == 2 and len(wl()) == 3 and "Bärengestalt | Stä 34 (+2), Bew 22 (+2), Aus 31 (+2), Int 29 (+2), Wil 38 (+2)"
+      " | AP 84 | Schaden 20,5-28,4 (2,50 s) | Krit 6,12 %, Zauberkrit 4,50 %, Ausweichen 5,60 % | Rüstung 350 | Leben 400, Mana 500"
+      " | Zaubermacht 10, Heilung 12 | Umrechnung apBew10:20;apBew:44;apStae10:20;apStae:68;auswBew:3.04;kritBew10:1.52;"
+      "kritBew:3.343;lpAus:10;lpWil:0.8;manaWil:1.5;zkritInt10:0.457;zkritInt:1.324 | Werte geändert" in wl()[-1],
+      "4.0: WERTE erst nach dem Kampf, nur bei Änderung, mit Umrechnung (%d, %d, %s)" % (n_w, n_w_kampf, wl()[-1:]))
+check(sorted(c12().werte.keys()) == ["Bärengestalt", "ohne Gestalt"] and len(c12().werteLog) == 3 and c12().klasse == "DRUID",
+      "4.0: Werte pro Gestalt und Verlauf (%s)" % sorted(c12().werte.keys()))
+# Ausrüstung: Übersicht beim Einloggen, danach der Wechsel
+run12('equip[1] = "|cff1eff00|Hitem:6085::::::::12:::::|h[Lederkappe]|h|r"')
+g12.fire("PLAYER_EQUIPMENT_CHANGED", 1, True); t12(3); g12.ticker()
+al = [l for l in log12() if " | AUSRÜSTUNG | " in l]
+check(len(al) == 2 and "beim Einloggen: 2 Teile angelegt" in al[0]
+      and "Kopf: Lederkappe (6085) [Stä 3, Rüstung 55] statt Wolfskopfhelm (6070) | Wechsel" in al[1]
+      and c12().ausruestung[16].s == "ITEM_MOD_DAMAGE_PER_SECOND_SHORT=6.5;ITEM_MOD_STRENGTH_SHORT=1"
+      and g12.KombiTestlogDB.itemWerte["item:6070::::::::12:::::"] == "ITEM_MOD_AGILITY_SHORT=2;ITEM_MOD_STAMINA_SHORT=3;RESISTANCE0_NAME=40",
+      "4.0: AUSRÜSTUNG mit Werten (%s)" % al)
+# Talente: beim Einloggen und bei einer Änderung
+run12("talentRanks[102] = 1"); g12.fire("TRAIT_CONFIG_UPDATED", 77); t12(3); g12.ticker()
+tl = [l for l in log12() if " | TALENTE | " in l]
+check(len(tl) == 2 and "Gleichgewicht 2, Wilder Kampf 1 | Gleichgewicht: Erhabenheit der Natur 2/2 (1240001); Wilder Kampf: Wildheit 1/5 (1240003) | beim Einloggen" in tl[0]
+      and "Gleichgewicht 3, Wilder Kampf 1 | Gleichgewicht: Erhabenheit der Natur 2/2 (1240001); Gleichgewicht: Genesis 1/2 (1240002)" in tl[1],
+      "4.0: TALENTE pro Baum (%s)" % tl)
+# Quest-Belohnungen: gewählt, Fenster zu, nur eine Belohnung
+run12('questChoices = { { id = 6085, name = "Lederkappe" }, { id = 6086, name = "Stoffhut" } }')
+g12.fire("QUEST_COMPLETE"); run12("GetQuestReward(2)"); g12.fire("QUEST_FINISHED")
+g12.fire("QUEST_COMPLETE"); g12.fire("QUEST_FINISHED")
+run12('questChoices = { { id = 6085, name = "Lederkappe" } }')
+g12.fire("QUEST_COMPLETE"); run12("GetQuestReward(1)"); g12.fire("QUEST_FINISHED")
+bl = [l for l in log12() if " | BELOHNUNG | " in l]
+check(len(bl) == 2 and "Quest 744 | gewählt 2 | 1) Lederkappe (6085): Stä 3, Rüstung 55 · 2) Stoffhut (6086): Int 2, Wil 2, "
+      "Anlegen: Erhöht Eure Chance, einen kritischen Treffer zu erzielen, um 1%." in bl[0]
+      and g12.KombiTestlogDB.itemTexte["item:6086::::::::12:::::"] == "Anlegen: Erhöht Eure Chance, einen kritischen Treffer zu erzielen, um 1%."
+      and "| nicht gewählt (Fenster zu) |" in bl[1] and g12.rewardTaken == 1 and c12().belohnungen[1].wahl == 2
+      and c12().belohnungen[1]["items"] == "6085,6086",
+      "4.0: BELOHNUNG mit Werten und Wahl (%s)" % bl)
+# Einschränkungen, Kampflog-Datei, Übersicht
+g12.fire("ADDON_RESTRICTION_STATE_CHANGED", 4, 2)
+s12("geheim"); s12("kampflog an"); on12 = g12.combatLogging; s12("kampflog aus"); s12("kampf"); s12("werte"); s12("status")
+gl = [l for l in log12() if " | GEHEIM | " in l]
+m12 = msg12()
+check(len(gl) == 3 and "Secret-Werte true | Werte geheim false | Kampflog gesperrt true | Einschränkungen keine | Schadensmesser true | "
+      "CVar damageMeterEnabled 1 | Kampflog-Datei false | CombatLogGetCurrentEventInfo nil" in gl[0]
+      and "Einschränkung 4: Zustand 2" in gl[1] and gl[2].endswith(gl[0].split(" | GEHEIM | ")[1]),
+      "4.0: GEHEIM beim Einloggen, bei einer Einschränkung und von Hand (%s)" % gl)
+check(on12 is True and g12.combatLogging is False and g12.KombiTestlogDB.kampflog is None
+      and any("Kampflog-Datei (Logs\\WoWCombatLog*.txt): true" in m for m in m12),
+      "4.0: /tl kampflog an und aus (%s)" % [m for m in m12 if "Kampflog" in m])
+check(any("Kämpfe gespeichert: 4" in m for m in m12) and any("Bärengestalt: 4 Kämpfe" in m and "Schaden pro Sekunde" in m for m in m12)
+      and any("Werte unverändert" in m for m in m12) and any("Kämpfe: 4 · Werte: 2 Gestalten · Ausrüstung: 2 Teile" in m for m in m12),
+      "4.0: /tl kampf, /tl werte, /tl status (%s)" % [m for m in m12 if "Kämpfe" in m or "Werte" in m][-4:])
+# Ausloggen im Kampf: Kampf ohne Schadensmesser gespeichert
+g12.fire("PLAYER_REGEN_DISABLED"); g12.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c9", 6807); t12(5)
+run12("logout = true"); g12.fire("PLAYER_LOGOUT")
+kz = kampf12()[-1]
+check(len(kampf12()) == 5 and kz.ende == "Ausloggen" and kz.dmGrund == "Ausloggen" and kz.dm is None,
+      "4.0: Ausloggen im Kampf (%s)" % dict(kz))
+ue = L12.eval("(function() for _, f in ipairs(frames) do if f.unitEvents.UNIT_COMBAT then return table.concat(f.unitEvents.UNIT_COMBAT, ',') .. '|' .. table.concat(f.unitEvents.UNIT_STATS, ',') end end end)()")
+check(ue == "player,target|player", "4.0: UNIT_COMBAT für Spieler und Ziel, UNIT_STATS nur für den Spieler (%s)" % ue)
+check(not any(" | FEHLER | " in l for l in log12()), "4.0: keine FEHLER (%s)" % [l for l in log12() if " | FEHLER | " in l])
+# geheime Werte: Treffer mit geheimem Betrag zählen nicht, ein geheimer Grundwert fehlt in WERTE
+L13 = runtime(pre=PRE12 + "\nsecretVals = { [77] = true }\nissecretvalue = function(v) return secretVals[v] == true end\nstatBase[2] = 77\n")
+g13 = L13.globals()
+g13.fire("ADDON_LOADED", "KombiTestlog"); g13.fire("PLAYER_ENTERING_WORLD", True, False)
+L13.execute("now_t = now_t + 5"); g13.ticker()
+g13.fire("PLAYER_REGEN_DISABLED"); g13.fire("UNIT_COMBAT", "player", "WOUND", "", 77, 1); g13.fire("UNIT_COMBAT", "player", "WOUND", "", 5, 1)
+L13.execute("now_t = now_t + 3"); g13.fire("PLAYER_REGEN_ENABLED")
+log13 = [g13.KombiTestlogDB.log[i] for i in range(1, len(g13.KombiTestlogDB.log) + 1)]
+k13 = g13.KombiTestlogDB.chars["Testheld-Testrealm"].kampf[1]
+w13 = [l for l in log13 if " | WERTE | " in l]
+check(k13.inn == "1:5" and k13.geheim == "unitcombat:1" and len(w13) == 1 and "Stä 32, Aus 29" in w13[0] and "Bew" not in w13[0].split(" | ")[7]
+      and not any(" | FEHLER | " in l for l in log13),
+      "4.0: geheime Werte übersprungen (%s / %s)" % (dict(k13), w13))
+# tools/kampf_aus_testlog.py liest Kämpfe, Werte, Ausrüstung und Belohnungen aus der Datei (ohne Namen, nicht doppelt)
+import kampf_aus_testlog as ka
+with tempfile.TemporaryDirectory() as tmp:
+    pfad12 = os.path.join(tmp, "KombiTestlog.lua")
+    open(pfad12, "w", encoding="utf-8").write(L12.execute(SERIALIZE)("KombiTestlogDB", g12.KombiTestlogDB))
+    dk = ka.lade([pfad12, pfad12])
+    kz, zz, wz = ka.kampf_zeilen(dk), ka.zauber_zeilen(dk), ka.werte_zeilen(dk)
+    ka_alt = (ka.D, ka.BERICHT)
+    ka.D, ka.BERICHT = tmp, os.path.join(tmp, "kampf.md")
+    try:
+        rk = ka.zusammen("kampf", kz, ["kennung"])
+        rz = ka.zusammen("kampf_zauber", zz, ["kennung", "zauber"])
+        rw = ka.zusammen("werte", wz, ["klasse", "stufe", "gestalt"])
+        ka.bericht(rk, rz, rw, dk)
+        ber = open(ka.BERICHT, encoding="utf-8").read()
+        csv_text = "".join(open(os.path.join(tmp, n + ".csv"), encoding="utf-8").read() for n in ("kampf", "kampf_zauber", "werte"))
+    finally:
+        ka.D, ka.BERICHT = ka_alt
+k_erst = kz[0] if kz else {}
+check(len(kz) == 5 and (k_erst.get("schaden"), k_erst.get("schaden_pro_s"), k_erst.get("erlitten"), k_erst.get("erlitten_treffer"),
+      k_erst.get("am_ziel"), k_erst.get("am_ziel_krit"), k_erst.get("zauber"), k_erst.get("folge"), k_erst.get("gegner"),
+      k_erst.get("quelle_schaden")) == (120, "10.4", "40", "2", "60", 1, 2, "6807@-0.5,99@3.0", "2958:9", "Schadensmesser"),
+      "kampf: Kämpfe aus der Datei, nicht doppelt (%d, %s)" % (len(kz), k_erst))
+z_erst = {r["zauber"]: r for r in zz if r["kennung"] == k_erst.get("kennung")}
+check(z_erst.get(6807, {}).get("anzahl") == 1 and z_erst[6807].get("schaden") == 80 and z_erst[6807].get("name") == "Zermalmen"
+      and z_erst.get(6603, {}).get("schaden") == 40 and z_erst.get(99, {}).get("anzahl") == 1,
+      "kampf: Zauber pro Kampf mit Schaden aus dem Schadensmesser (%s)" % z_erst)
+w_baer = next((r for r in wz if r["gestalt"] == "Bärengestalt"), {})
+d_l, spiel_l, bew_l = ka.lager(dk["werte"][("DRUID", 12, "Bärengestalt")],
+                               {s: ka.profil(ka.gewichte(), "DRUID", 12, s) for s in ka.specs(ka.gewichte(), "DRUID")})
+check(w_baer.get("str") == 34 and w_baer.get("ap") == 84 and abs(spiel_l["AP"] - 8.96) < 0.01 and abs(spiel_l["Krit %"] - 0.2675) < 0.001
+      and abs(bew_l["Feral Combat"][0] - 14.81) < 0.01 and abs(bew_l["Feral Combat"][1] - 6.18) < 0.001 and bew_l["Balance"][1] == 4.64,
+      "kampf: Fischglas gegen Lagerstuhl mit Umrechnung und RXP-Gewichten (%s / %s / %s)" % (w_baer.get("str"), spiel_l, bew_l))
+check("RXP «Druid Speedrun 10-19 - Feral Combat»: Fischglas 14.8, Lagerstuhl 6.2 Punkte (Glas 2.4-mal so viel)" in ber
+      and "| Kopf | Lederkappe (6085) | Stä 3, Rüstung 55 |" in ber and "— gewählt 2" in ber
+      and "Krit % 1 (aus dem Tooltip)" in ber and "Gleichgewicht 3, Wilder Kampf 1" in ber
+      and "| Druide | 12 | Bärengestalt | 5 |" in ber and "Testheld" not in ber + csv_text and "Testrealm" not in ber + csv_text,
+      "kampf: Bericht mit Lagerbuffs, Ausrüstung, Belohnungen, Talenten, ohne Namen (%s)" %
+      [l for l in ber.splitlines() if "Feral Combat»" in l or "| Kopf |" in l or "gewählt" in l][:4])
 print("=== Prüfungen: %s ===" % ("alle bestanden" if not fails else "FEHLGESCHLAGEN: " + "; ".join(fails)))
 sys.exit(1 if fails else 0)

@@ -1,4 +1,4 @@
--- Kombi-Guide 0.6.4 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 1.0 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).
 -- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
