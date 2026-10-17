@@ -1,4 +1,4 @@
--- Kombi-Guide 0.6.1 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.6.2 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).
 -- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
@@ -1366,7 +1366,7 @@ step
 step
     #label Kombi6
     .goto 1456/1,95.10,-1210.23,15
-    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (einmal gemessen: 1s für 1 Groben Faden; ob er mit der Menge steigt, ist ungeprüft). Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: in den eigenen Scans vom 15. und 17.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises, abgegangen sind am 17.10. in 1,4 Stunden aber keine (Schätzung aus zwei Scan-Paaren, aktuell: /tl tipp). Was der Händler gleich gut bezahlt (17.10.: Silberblatt 10c im AH und beim Händler), bringt im AH nach 5 % Gebühr weniger. Pfand je Angebot für 24 Stunden: 60 % des Händlerpreises mal Menge, mindestens 1s, zurück beim Verkauf, sonst weg (18 Angebote gemessen). Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
 step
     #label Kombi7
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
@@ -1377,7 +1377,7 @@ step
 step
     #label Kombi8
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie. Verlangt der Lehrer eine höhere Stufe (ungeprüft, Widerspruch 6), Häkchen setzen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei (gemessen 17.10.: ab Kürschnerei 50, ohne Stufe, 5s). Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Der Schritt hakt sich nach dem Lernen selbst ab (gemessen 17.10.).
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
     .istrained 8617
     .skill skinning,<50,1
@@ -2125,7 +2125,7 @@ step
 step
     #label Kombi11
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Verlangt der Lehrer eine höhere Stufe (ungeprüft), Häkchen setzen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen (gemessen 17.10.: ab Kürschnerei 50, ohne Stufe, 5s). Ohne Gesellen bleibt Kürschnerei bei 75 stehen.
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
     .istrained 8617
     .skill skinning,<50,1
@@ -11331,7 +11331,7 @@ step
 step
     #label Kombi6
     .goto 1456/1,95.10,-1210.23,15
-    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: im eigenen Scan vom 15.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises (ob sie sich verkaufen, ist ungeprüft; aktuell: /tl tipp). Pro Angebot kostet das AH Pfand (einmal gemessen: 1s für 1 Groben Faden; ob er mit der Menge steigt, ist ungeprüft). Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
+    >>Kombiguide: Auktionshaus: Kräuter anbieten (je 1 Friedensblume und 1 Silberblatt für die Incense Candle behalten) und, falls du schon angelst, Rohe glänzende Kleinfische bis auf einen. Fleisch und Eier eher ins AH als zum Händler: in den eigenen Scans vom 15. und 17.10. lagen Sehniges Wolfsfleisch und Kleine Eier beim Vielfachen des Händlerpreises, abgegangen sind am 17.10. in 1,4 Stunden aber keine (Schätzung aus zwei Scan-Paaren, aktuell: /tl tipp). Was der Händler gleich gut bezahlt (17.10.: Silberblatt 10c im AH und beim Händler), bringt im AH nach 5 % Gebühr weniger. Pfand je Angebot für 24 Stunden: 60 % des Händlerpreises mal Menge, mindestens 1s, zurück beim Verkauf, sonst weg (18 Angebote gemessen). Leder behalten. Optional: Simple Wood bei Kuruk oder Nata Dawnstrider (35 bis 38c laut AHledger), 1 pro Lagerfeuer und 2 für den Camp Chair. Die meisten gekochten Speisen geben laut Icy Veins 5 % mehr XP aus Kills für 15 Minuten (ob alle, ist ungeprüft).
 step
     #label Kombi7
     .goto 1456/1,-3.12,-1126.94--c:Thunder Bluff,49.8,39.8 (Spielkoordinaten)
@@ -11342,7 +11342,7 @@ step
 step
     #label Kombi8
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Kosten noch unbekannt, das Testlog misst sie. Verlangt der Lehrer eine höhere Stufe (ungeprüft, Widerspruch 6), Häkchen setzen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei (gemessen 17.10.: ab Kürschnerei 50, ohne Stufe, 5s). Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Der Schritt hakt sich nach dem Lernen selbst ab (gemessen 17.10.).
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
     .istrained 8617
     .skill skinning,<50,1
@@ -12090,7 +12090,7 @@ step
 step
     #label Kombi11
     .goto 1456/1,52.93,-1150.53
-    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen. Ohne Gesellen bleibt Kürschnerei bei 75 stehen. Verlangt der Lehrer eine höhere Stufe (ungeprüft), Häkchen setzen.
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Mooranta|r Geselle Kürschnerei, falls noch nicht geschehen (gemessen 17.10.: ab Kürschnerei 50, ohne Stufe, 5s). Ohne Gesellen bleibt Kürschnerei bei 75 stehen.
     .maxskill skinning,150 >>Geselle Kürschnerei (Maximum 150)
     .istrained 8617
     .skill skinning,<50,1

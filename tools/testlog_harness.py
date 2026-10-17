@@ -1594,7 +1594,22 @@ db_s = {"log": [
 ms = mk.Markt(db_s, scan_e, {})
 zs = mk.lage(ms).get("Druide-Testrealm", [])
 check(len(zs) == 3 and zs[0].startswith("Sammler (Kürschnerei 25): bis Orgrimmar Leder behalten") and "zuletzt gesehen: 35c" in zs[1]
-      and "Sehniges Wolfsfleisch 1s 42c nach Gebühr (Händler 4c)" in zs[2], "markt: nächster Schritt für Sammler (%s)" % zs)
+      and "Sehniges Wolfsfleisch 1s 42c nach Gebühr (Händler 4c;" in zs[2] and "Pfand je Angebot (24 Stunden)" in zs[2],
+      "markt: nächster Schritt für Sammler (%s)" % zs)
+# Seit 17.10.: Pfand (60 % des Händlerpreises mal Menge, mindestens 1s) und Material beim Lager-Charakter (Bankchar)
+check(mk.pfand(ms, 2672, 4) == 100 and mk.pfand(ms, 2672, 500) == 1200, "markt: Pfand (%s, %s)" % (mk.pfand(ms, 2672, 4), mk.pfand(ms, 2672, 500)))
+db_l = dict(db_s)
+db_l["chars"] = {
+    "Druide-Testrealm": {"berufe": {"Kürschnerei": "25/75"}, "taschen": {"zeit": 1792240000, "liste": "2318:6;2934:5"}},
+    "Lager-Testrealm": {"berufe": {"Schneiderei": "20/75"}, "taschen": {"zeit": 1792242920, "liste": "2318:27;2934:36"}},
+    "Kraeuter-Testrealm": {"berufe": {"Kräuterkunde": "17/75"}, "taschen": {"zeit": 1792240000, "liste": "2318:3"}}}
+ml = mk.Markt(db_l, scan_e, {})
+lg = mk.lage(ml)
+zl = (lg.get("Druide-Testrealm") or [""])[0]
+zk = (lg.get("Kraeuter-Testrealm") or [""])[0]
+check("Leichtes Leder 33/62 (davon 27 woanders)" in zl and "Woanders: Lager 36 " in zl and "Kraeuter" not in zl
+      and "Leichtes Leder 30/62 (davon 27 woanders)" in zk and "Druide" not in zk,
+      "markt: Stufe A zählt den Lager-Charakter mit, andere Sammler nicht (%s / %s)" % (zl, zk))
 warn_s, beob_s = mk.testlog_listen(ms, mk.sammler_zustand(ms))
 check(2318 in warn_s and "Berufe-Plan" in warn_s[2318] and "AH etwa 1s 42c" in warn_s.get(2672, "") and 2672 in beob_s and 10938 in beob_s,
       "markt: Listen für das Testlog (%s / %s)" % ({k: v for k, v in warn_s.items() if k in (2318, 2672)}, beob_s[:8]))
