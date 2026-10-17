@@ -1,4 +1,4 @@
--- Kombi-Guide 0.6.2 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
+-- Kombi-Guide 0.6.3 (WoW Forever, Horde): RXP-Route 1-22 mit Berufsschritten aus data/kombi/plan.csv
 -- Gruppe «Kombiguide (H)»: RXP-Speedrun-Route, dazu Dungeon-Vorquests als Zusatzschritte (data/kombi/vorquests.csv).
 -- Gruppe «Kombiguide Dungeon (H)»: RXP-Dungeon-Route (WIP), Mulgore aus der
 -- Speedrun-Route; Dungeons fest eingebaut (data/kombi/dungeons.csv): an BFD, RFC, WC, aus DM
@@ -697,6 +697,20 @@ step
     .accept 743 >>Accept Dangers of the Windfury
     .target Ruul Eagletalon
 step
+    #label Kombi92
+    .goto 1412/1,-320.98,-2264.32--c:Mulgore,45.5,61.7 (Spielkoordinaten)
+    >>Kombiguide: Für «Grundlagen des Zeltens: Angeln» bei Kaga Wildhoof (Ziel: Angeln 20): Kaufe bei |cRXP_FRIENDLY_Harn Longcast|r eine Angel (23c, gemessen 13.10.).
+    .collect 6256,1 >>Angel
+    #maxlevel 11
+    .target Harn Longcast
+step
+    #label Kombi93
+    .goto 1412/1,-240.97,-2350.46--c:Mulgore,44.2,63.8 (Spielkoordinaten)
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Uthan Stillwater|r Angeln (1s, gemessen 13.10.). Danach bei Kaga Wildhoof «Grundlagen des Zeltens: Angeln» annehmen.
+    .train 7620 >>Lerne |T136245:0|t[Angeln]
+    #maxlevel 11
+    .target Uthan Stillwater
+step
     #softcore
     .goto 1412/1,-363.000,-2490.700
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Kaga Wildhoof|r
@@ -718,6 +732,29 @@ step
     .turnin 96605 >>Turn in The Great Outdoors
     .accept 96661 >>Accept Camping 101: Cooking
     .target Kaga Wildhoof
+step
+    #label Kombi94
+    .goto 1412/1,-363.00,-2490.70
+    >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Angeln» an (Ziel: Angeln 20, Stufe 6, ab Stufe 4). Belohnung: 270 XP und das Rezept Fischglas.
+    .accept 97932
+    .skill fishing,<1,1
+    #maxlevel 11
+    .target Kaga Wildhoof
+step
+    #label Kombi95
+    .goto 1412/1,-314.82,-2407.89--c:Mulgore,45.4,65.2 (Spielkoordinaten)
+    >>Kombiguide: Lege die Angel an und angle am Stonebull Lake bis Angeln 20: etwa 9 Minuten (gemessen 13.10. hier: etwa 27 Sekunden und 1 Punkt pro Fang). Einen Rohen glänzenden Kleinfisch für die Quest in Thunder Bluff aufheben.
+    .skill fishing,20 >>Angeln 20
+    .skill fishing,<1,1
+    #maxlevel 11
+step
+    #label Kombi96
+    .goto 1412/1,-240.97,-2350.46--c:Mulgore,44.2,63.8 (Spielkoordinaten)
+    >>Kombiguide: Gib bei |cRXP_FRIENDLY_Uthan Stillwater|r «Grundlagen des Zeltens: Angeln» ab: 270 XP und das Rezept Fischglas (1 Roher glänzender Kleinfisch und 1 Leere Phiole, Phiolen 4c bei 45.5, 61.8 im Dorf der Bluthufe, gemessen 17.10.). Am Lagerfeuer gibt das Fischglas +8 % auf alle Werte und stapelt nicht mit Segen der Könige (wow-professions, Camping Guide).
+    .turnin 97932
+    .isQuestComplete 97932
+    #maxlevel 11
+    .target Uthan Stillwater
 step
     #sticky
     #completewith Well
@@ -825,7 +862,7 @@ step << Tauren
 step
     #label Kombi4
     #completewith TBHome
-    >>Kombiguide: Bis Thunder Bluff jedes Tier kürschnern und Kräuter am Weg sammeln. Leder behalten, es ist Material für Lederverarbeitung. Angelst du schon: einen Rohen glänzenden Kleinfisch für die Quest in Thunder Bluff aufheben (RXP lehrt Angeln erst dort).
+    >>Kombiguide: Bis Thunder Bluff jedes Tier kürschnern und Kräuter am Weg sammeln. Leder behalten, es ist Material für Lederverarbeitung. Einen Rohen glänzenden Kleinfisch vom Angeln am Stonebull Lake für die Quest in Thunder Bluff aufheben (ohne ihn kauft RXP dort einen im Auktionshaus).
     .collect 2318,19,0,1,24 >>Leder-Ziel bis Thunder Bluff (Modell A)
     .skill skinning,<1,1
     .skill herbalism,20 >>Kräuterkunde 20 für «Grundlagen des Zeltens: Kräuterkunde»
@@ -10662,6 +10699,20 @@ step
     .accept 743 >>Accept Dangers of the Windfury
     .target Ruul Eagletalon
 step
+    #label Kombi92
+    .goto 1412/1,-320.98,-2264.32--c:Mulgore,45.5,61.7 (Spielkoordinaten)
+    >>Kombiguide: Für «Grundlagen des Zeltens: Angeln» bei Kaga Wildhoof (Ziel: Angeln 20): Kaufe bei |cRXP_FRIENDLY_Harn Longcast|r eine Angel (23c, gemessen 13.10.).
+    .collect 6256,1 >>Angel
+    #maxlevel 11
+    .target Harn Longcast
+step
+    #label Kombi93
+    .goto 1412/1,-240.97,-2350.46--c:Mulgore,44.2,63.8 (Spielkoordinaten)
+    >>Kombiguide: Lerne bei |cRXP_FRIENDLY_Uthan Stillwater|r Angeln (1s, gemessen 13.10.). Danach bei Kaga Wildhoof «Grundlagen des Zeltens: Angeln» annehmen.
+    .train 7620 >>Lerne |T136245:0|t[Angeln]
+    #maxlevel 11
+    .target Uthan Stillwater
+step
     #softcore
     .goto 1412/1,-363.000,-2490.700
     >>|Tinterface/worldmap/chatbubble_64grey.blp:20|tTalk to |cRXP_FRIENDLY_Kaga Wildhoof|r
@@ -10683,6 +10734,29 @@ step
     .turnin 96605 >>Turn in The Great Outdoors
     .accept 96661 >>Accept Camping 101: Cooking
     .target Kaga Wildhoof
+step
+    #label Kombi94
+    .goto 1412/1,-363.00,-2490.70
+    >>Kombiguide: Nimm bei |cRXP_FRIENDLY_Kaga Wildhoof|r «Grundlagen des Zeltens: Angeln» an (Ziel: Angeln 20, Stufe 6, ab Stufe 4). Belohnung: 270 XP und das Rezept Fischglas.
+    .accept 97932
+    .skill fishing,<1,1
+    #maxlevel 11
+    .target Kaga Wildhoof
+step
+    #label Kombi95
+    .goto 1412/1,-314.82,-2407.89--c:Mulgore,45.4,65.2 (Spielkoordinaten)
+    >>Kombiguide: Lege die Angel an und angle am Stonebull Lake bis Angeln 20: etwa 9 Minuten (gemessen 13.10. hier: etwa 27 Sekunden und 1 Punkt pro Fang). Einen Rohen glänzenden Kleinfisch für die Quest in Thunder Bluff aufheben.
+    .skill fishing,20 >>Angeln 20
+    .skill fishing,<1,1
+    #maxlevel 11
+step
+    #label Kombi96
+    .goto 1412/1,-240.97,-2350.46--c:Mulgore,44.2,63.8 (Spielkoordinaten)
+    >>Kombiguide: Gib bei |cRXP_FRIENDLY_Uthan Stillwater|r «Grundlagen des Zeltens: Angeln» ab: 270 XP und das Rezept Fischglas (1 Roher glänzender Kleinfisch und 1 Leere Phiole, Phiolen 4c bei 45.5, 61.8 im Dorf der Bluthufe, gemessen 17.10.). Am Lagerfeuer gibt das Fischglas +8 % auf alle Werte und stapelt nicht mit Segen der Könige (wow-professions, Camping Guide).
+    .turnin 97932
+    .isQuestComplete 97932
+    #maxlevel 11
+    .target Uthan Stillwater
 step
     #sticky
     #completewith Well
@@ -10790,7 +10864,7 @@ step << Tauren
 step
     #label Kombi4
     #completewith TBHome
-    >>Kombiguide: Bis Thunder Bluff jedes Tier kürschnern und Kräuter am Weg sammeln. Leder behalten, es ist Material für Lederverarbeitung. Angelst du schon: einen Rohen glänzenden Kleinfisch für die Quest in Thunder Bluff aufheben (RXP lehrt Angeln erst dort).
+    >>Kombiguide: Bis Thunder Bluff jedes Tier kürschnern und Kräuter am Weg sammeln. Leder behalten, es ist Material für Lederverarbeitung. Einen Rohen glänzenden Kleinfisch vom Angeln am Stonebull Lake für die Quest in Thunder Bluff aufheben (ohne ihn kauft RXP dort einen im Auktionshaus).
     .collect 2318,19,0,1,24 >>Leder-Ziel bis Thunder Bluff (Modell A)
     .skill skinning,<1,1
     .skill herbalism,20 >>Kräuterkunde 20 für «Grundlagen des Zeltens: Kräuterkunde»

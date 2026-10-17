@@ -50,7 +50,11 @@
 #                  Seit 17.10.: Material bei Lager-Charakteren des Kontos (ohne Kürschnerei, Kräuterkunde,
 #                  Lederverarbeitung, Verzauberkunst, z. B. der Bankchar) zählt für Stufe A mit, Stand ihres letzten
 #                  Ausloggens; Post im Briefkasten nicht. Pfand je Angebot: 60 % des Händlerpreises mal Menge, mindestens
-#                  1s (gemessen an 18 Angeboten, 24 Stunden).
+#                  1s (gemessen an 24 Angeboten, 24 Stunden).
+#   Klassenzauber (seit 17.10.)
+#                  Gold für die noch offenen Klassenzauber bis zur nächsten Zielstufe (16 Orgrimmar, 20, 22) aus der letzten
+#                  Lehrerliste vom Typ «Klasse», die der Charakter geöffnet hat (LEHRER, Testlog 3.4), ohne die danach
+#                  gelernten (GELERNT); beim Sammler zusammen mit dem Gold für Stufe A.
 #   Für das Testlog (seit 16.10.)
 #                  KombiDaten.nichtVerkaufen (Warnung beim Händler, Testlog 3.7.1) und KombiDaten.beobachten (zusätzliche
 #                  Gegenstände mit Preisstufen und Abnahme im AH-Scan).
@@ -98,7 +102,7 @@ VIELFACH = 3        # Beute mit AH-Wert (nach Gebühr) mindestens so viel mal ü
                     # von Claude, ohne Absatz-Beleg; Vorschlag der Markt-Analyse vom 16.10.)
 MIN_ANGEBOT = 20    # … und mindestens so viele Stück im Angebot (sonst ist der Preis Zufall)
 PFAND_ANTEIL = 0.6  # Pfand eines Angebots (24 Stunden) = 60 % des Händlerpreises mal Menge, mindestens PFAND_MIN Kupfer:
-PFAND_MIN = 100     # gemessen an 18 Angeboten 15.–17.10. (docs/tests/messdaten-2026-10-17.md), andere Dauern ungeprüft
+PFAND_MIN = 100     # gemessen an 24 Angeboten 15.–17.10. (docs/tests/messdaten-2026-10-17.md), andere Dauern ungeprüft
 WARN_MAX = 300      # Einträge in KombiDaten.nichtVerkaufen höchstens
 ANKAUF_CSV = os.path.join(at.D, "preise", "haendler_ankauf.csv")
 LEHRER_CSV = os.path.join(at.D, "kombi", "lehrer.csv")
@@ -1085,6 +1089,8 @@ def lage(m):
     # und Verzauberkunst, z. B. der Bankchar), Stand ihres letzten Ausloggens; was andere Sammler tragen, bleibt deren
     LAGER_OHNE = {"Kürschnerei", "Kräuterkunde", "Lederverarbeitung", "Verzauberkunst"}
     lager = {k.split("-")[0] for k, z in zustand.items() if not (set(z["berufe"]) & LAGER_OHNE)}
+    kzs = klassenzauber(m)
+    mit_kz = set()
     for key, z in zustand.items():
         char = key.split("-")[0]
         mein = defaultdict(int, inv.get(char, {})) if char in inv else None
@@ -1092,10 +1098,20 @@ def lage(m):
             for i, n in konto.items():
                 mein[i] += n
         andere = {c: (b, zeit.get(c)) for c, b in inv.items() if c != char and c in lager}
-        zs = sammler(m, key, z, mein, stand, andere)
+        zs = sammler(m, key, z, mein, stand, andere, kzs.get(key))
         if zs:
             out.setdefault(key, [])
             out[key] = zs + out[key]
+            if any("Klassenzauber bis Stufe" in x for x in zs):
+                mit_kz.add(key)
+    # Seit 17.10.: Gold für die Klassenzauber bis zur nächsten Zielstufe für alle anderen Charaktere mit Lehrerliste
+    for key, k in kzs.items():
+        if key in mit_kz:
+            continue
+        ziel = kz_ziel(k["stufe"])
+        s, wo = kz_text(k, ziel)
+        if s:
+            out.setdefault(key, []).append(f"Klassenzauber bis Stufe {ziel}: etwa {geld(s)} ({wo}). Gold dafür aufheben.")
     return out
 
 
@@ -1215,13 +1231,86 @@ def bestand_zeit(m):
 
 def pfand(m, i, n=1):
     """Geschätzter Pfand in Kupfer für ein Angebot von n Stück (24 Stunden): 60 % des Händlerpreises mal Menge,
-    mindestens 1s. Gemessen: 14 Angebote am 17.10. (Testlog 3.7, Pfand aus dem Geldabzug) und 4 frühere passen dazu
+    mindestens 1s. Gemessen: 20 Angebote am 17.10. (Testlog 3.7, Pfand aus dem Geldabzug) und 4 frühere passen dazu
     (docs/tests/messdaten-2026-10-17.md); andere Dauern ungeprüft."""
     h = m.ankauf.get(i) or (m.info.get(i) or {}).get("s") or 0
     return max(PFAND_MIN, round(PFAND_ANTEIL * h * n))
 
 
-def sammler(m, key, z, mein, stand, andere=None):
+# Klassenzauber (seit 17.10.; Notiz des Nutzers 17.10. 15:23: «zuwenig gold für die klassenspells … dies muss in der
+# scharfen version einbezogen werden»): Kosten der noch offenen Klassenzauber aus der letzten Lehrerliste vom Typ «Klasse»,
+# die der Charakter geöffnet hat (Testlog 3.4, LEHRER; nur Zeilen mit «gesperrt» im Filter, sonst fehlen die Zauber der
+# späteren Stufen), ohne die danach gelernten (GELERNT nennt den Namen ohne Rang: der offene Eintrag dieses Namens mit der
+# kleinsten Lernstufe zählt als gelernt). «gesperrt» heisst: Stufe noch nicht erreicht oder Voraussetzung fehlt (z. B.
+# Bärengestalt); gezählt werden alle Zauber bis zur Zielstufe, auch die, die man vielleicht auslässt (Wahl von Claude).
+def kz_ziel(stufe):
+    """Zielstufe für das Gold der Klassenzauber: 16 (Wechsel in Orgrimmar), danach 20 (Thunder Bluff), dann 22 (Ende der
+    Gratis-Route)."""
+    return 16 if stufe < 16 else 20 if stufe < 20 else 22
+
+
+def klassenzauber(m):
+    """Charakter («Name-Realm» wie im Testlog) -> {stufe, lehrer, zeit, offen: [(Eintrag, ab Stufe, Kosten in Kupfer)]}.
+    Waffenmeister führt das Testlog auch als «Klasse» (17.10.: Ansekhwa, 1 Eintrag ohne Stufe); es zählt die Liste mit den
+    meisten Einträgen mit Lernstufe."""
+    import lehrer_aus_testlog as lt
+    listen, stufe, wer = defaultdict(dict), {}, None
+    for zeile in m.db.get("log") or []:
+        teile = str(zeile).split(" | ")
+        if len(teile) < 3:
+            continue
+        art = teile[1]
+        if art == "SITZUNG" and len(teile) >= 7:
+            wer = teile[6].strip()
+        if not wer:
+            continue
+        s = re.match(r"^L(\d+)\b", teile[2].strip())
+        if s:
+            stufe[wer] = int(s.group(1))
+        if art == "LEHRER" and len(teile) >= 7:
+            h = lt.HEAD.search(" | ".join(teile[6:]))
+            if h and h.group("art").strip() == "Klasse" and "gesperrt" in h.group("filter"):
+                offen = []
+                for e in h.group("eintraege").split("; "):
+                    em = lt.ENTRY.match(e.strip())
+                    if not em or em.group("status") == "gelernt":
+                        continue
+                    st = lt.requirement(em.group("req"))[0]
+                    if st:
+                        offen.append((em.group("name").strip(), int(st), int(lt.money(em.group("kosten")) or 0)))
+                if offen:
+                    listen[wer][h.group("name").strip()] = {"zeit": teile[0].strip()[:12], "offen": offen}
+        elif art == "GELERNT" and len(teile) >= 7:
+            name = re.sub(r" \(\d+\)$", "", teile[6].strip())
+            for li in listen.get(wer, {}).values():
+                treffer = [o for o in li["offen"] if re.sub(r" \[Rang \d+\]$", "", o[0]) == name]
+                if treffer:
+                    li["offen"].remove(min(treffer, key=lambda o: o[1]))
+        if art == "ENDE":
+            wer = None
+    out = {}
+    for w, ls in listen.items():
+        if not ls:
+            continue
+        lehrer, li = max(ls.items(), key=lambda x: len(x[1]["offen"]))
+        out[w] = {"stufe": stufe.get(w, 0), "lehrer": lehrer, "zeit": li["zeit"], "offen": li["offen"]}
+    return out
+
+
+def kz_text(k, ziel):
+    """(Summe in Kupfer, Text «Stufe 10: 3s, 12: 24s …; 11 Zauber laut <Lehrer>, Liste vom …») bis zur Stufe «ziel»."""
+    pro, n = defaultdict(int), 0
+    for _, st, kosten in k["offen"]:
+        if st <= ziel:
+            pro[st] += kosten
+            n += 1
+    if not pro:
+        return 0, ""
+    stufen = ", ".join(f"{st}: {geld(v)}" for st, v in sorted(pro.items()))
+    return sum(pro.values()), f"Stufe {stufen}; {n} Zauber laut {k['lehrer']}, Liste vom {k['zeit']}"
+
+
+def sammler(m, key, z, mein, stand, andere=None, kz=None):
     """Zeilen für /tl tipp für Sammler: Charakter mit Kürschnerei oder Kräuterkunde, ohne Lederverarbeitung und
     Verzauberkunst (Plan: Wechsel in Orgrimmar, Stufe A). «andere» = {Charakter: ({Item-ID: Stück}, Stand)}: Material
     der anderen Charaktere des Kontos zählt mit (seit 17.10.), muss aber vor Orgrimmar in die Taschen."""
@@ -1259,9 +1348,17 @@ def sammler(m, key, z, mein, stand, andere=None):
     try:
         pb = _route()
         a = pb.stufen_netto(pb.R["vz"], pb.R["lehrer"], pb.P_SCAN or pb.P)[0]
-        gold = f"Gold für den Wechsel in Orgrimmar (Stufe A: Material und Lehrer): etwa {geld(round(a[4] * 100))}"
+        bedarf = round(a[4] * 100)
+        gold = f"Gold für den Wechsel in Orgrimmar (Stufe A: Material und Lehrer): etwa {geld(bedarf)}"
+        if kz and kz["stufe"] < 16:
+            s, wo = kz_text(kz, 16)
+            if s:
+                gold += f"; dazu Klassenzauber bis Stufe 16 etwa {geld(s)} ({wo}); zusammen etwa {geld(bedarf + s)}"
+                bedarf += s
         if z.get("geld") is not None:
             gold += f"; zuletzt gesehen: {geld(z['geld'])}" + (f" ({z['datum']})" if z.get("datum") else "")
+            if z["geld"] < bedarf:
+                gold += f", es fehlen etwa {geld(bedarf - z['geld'])}"
         zeilen.append(gold + ". Reicht es nicht: Beute im AH verkaufen (nächste Zeile) oder Gold schicken lassen.")
     except Exception:
         pass
@@ -1277,7 +1374,7 @@ def sammler(m, key, z, mein, stand, andere=None):
             teile.append(f"{m.name(i)} {geld(round(n))} nach Gebühr (Händler {geld(h)}; {beleg}{dabei})")
         zeilen.append("AH statt Händler (Scan " + stand + "): " + "; ".join(teile)
                       + ". Pfand je Angebot (24 Stunden): 60 % des Händlerpreises mal Menge, mindestens 1s; zurück beim "
-                        "Verkauf, sonst weg (18 Angebote gemessen, 15.–17.10.).")
+                        "Verkauf, sonst weg (24 Angebote gemessen, 15.–17.10.).")
     return zeilen
 
 

@@ -1610,6 +1610,21 @@ zk = (lg.get("Kraeuter-Testrealm") or [""])[0]
 check("Leichtes Leder 33/62 (davon 27 woanders)" in zl and "Woanders: Lager 36 " in zl and "Kraeuter" not in zl
       and "Leichtes Leder 30/62 (davon 27 woanders)" in zk and "Druide" not in zk,
       "markt: Stufe A zählt den Lager-Charakter mit, andere Sammler nicht (%s / %s)" % (zl, zk))
+# Seit 17.10.: Gold für die Klassenzauber aus der Lehrerliste des Charakters (nur mit «gesperrt» im Filter), ohne die danach
+# gelernten; ein Waffenmeister (auch «Klasse», ohne Lernstufen) verdrängt die Liste nicht
+db_k = dict(db_s)
+db_k["log"] = db_s["log"][:1] + [
+    "14.10. 20:01:30 | LEHRER | L10 50% | Mulgore > Ort | 1412 47.4,62.9 | RXP 6-12 Mulgore #116 | Gennia Runetotem (Kreatur 3064) | Klasse | Filter lernbar+gesperrt | 5 Einträge | Griff der Natur [Rang 1] lernbar, ab Stufe 10, 3s; Nachwachsen [Rang 1] gesperrt, ab Stufe 12, 8s; Dornen [Rang 2] gesperrt, ab Stufe 14, 9s; Mondfeuer [Rang 3] gesperrt, ab Stufe 16, 14s; Feenfeuer [Rang 1] gesperrt, ab Stufe 18, 15s",
+    "14.10. 20:01:40 | GELERNT | L10 50% | Mulgore > Ort | 1412 47.4,62.9 | RXP 6-12 Mulgore #116 | Griff der Natur (16689)",
+    "14.10. 20:05:00 | LEHRER | L12 10% | Thunder Bluff | 1456 40.8,62.3 | RXP 6-12 Mulgore #141 | Ansekhwa (Kreatur 11869) | Klasse | Filter lernbar+gesperrt | 1 Eintrag | Zweihandstreitkolben lernbar, 10s"] + db_s["log"][1:]
+mk_k = mk.Markt(db_k, scan_e, {})
+kz_k = mk.klassenzauber(mk_k).get("Druide-Testrealm") or {}
+zk2 = mk.lage(mk_k).get("Druide-Testrealm", [])
+check(kz_k.get("lehrer") == "Gennia Runetotem" and kz_k.get("stufe") == 8 and mk.kz_text(kz_k, 16)[0] == 3100
+      and any("dazu Klassenzauber bis Stufe 16 etwa 31s (Stufe 12: 8s, 14: 9s, 16: 14s; 3 Zauber laut Gennia Runetotem" in z
+              and "es fehlen etwa" in z for z in zk2)
+      and mk.kz_ziel(15) == 16 and mk.kz_ziel(16) == 20 and mk.kz_ziel(21) == 22,
+      "markt: Gold für die Klassenzauber (%s / %s)" % (kz_k, zk2))
 warn_s, beob_s = mk.testlog_listen(ms, mk.sammler_zustand(ms))
 check(2318 in warn_s and "Berufe-Plan" in warn_s[2318] and "AH etwa 1s 42c" in warn_s.get(2672, "") and 2672 in beob_s and 10938 in beob_s,
       "markt: Listen für das Testlog (%s / %s)" % ({k: v for k, v in warn_s.items() if k in (2318, 2672)}, beob_s[:8]))

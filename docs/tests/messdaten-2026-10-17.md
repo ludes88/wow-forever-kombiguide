@@ -176,3 +176,84 @@ Angebote des Druiden in Thunder Bluff, alle 24 Stunden (AH-ANGEBOT):
 
 - `tools/markt.py`: Für Stufe A zählt Material bei Lager-Charakteren des Kontos mit (ohne Kürschnerei, Kräuterkunde, Lederverarbeitung und Verzauberkunst, also der Bankchar), mit dem Stand ihres letzten Ausloggens; Post im Briefkasten nicht. «AH statt Händler» nennt die gemessene Abnahme und den Pfand nach der Regel oben. `tools/testlog_harness.py` prüft beides.
 - Kombiguide 0.6.2: nur Texte (gleiche Zeilenzahl): Pfand-Regel und Abnahme beim Auktionshaus in Thunder Bluff, Geselle Kürschnerei mit den gemessenen Werten. Stellen #116 (Druide) und #152 (Stufe 18) geprüft.
+
+---
+
+# Abend 17.10. (15:22–17:08)
+
+Quelle: die Testlog-Datei, Stand 17.10. 17:08 (Testlog 3.7.1, Kombiguide 0.6.1), über die Verbindung zum PC gelesen; dazu `BagBrother.lua` (SavedVariables von Bagnon) und die Schrittliste des Kombi-Guides (`tools/rxp_schritte.py liste … "6-12 Mulgore" --klasse druid`). Ohne Charakter-, Konto- und Realmnamen. Ausgewertet mit den Werkzeugen auf dem Branch `daten/2026-10-17-abend`.
+
+## Sitzungen
+
+| Zeit | Charakter | Guide und Stelle | Was |
+|---|---|---|---|
+| 15:22–15:37 | Tauren-Druide, Stufe 10 (75 %) → 10 (87 %) | «6-12 Mulgore» #116 → #123 | 1g vom Bankchar, Klassenzauber der Stufe 10, Angel-Quest bei Kaga Wildhoof, Fischgläser und Lagerstühle, Abgabe der Karawane |
+| 15:37 | Bankchar, Stufe 1 | «6-12 Mulgore» #2 | 12 Sekunden, nur ein- und ausgeloggt |
+| 15:37–17:08 | Tauren-Druide, Stufe 10 (87 %) → 12 (16 %) | «6-12 Mulgore» #123 → #153 | Mine der Venture Co. (3 Tode), Bloodhoof, Thunder Bluff (Waffenmeister, Auktionshaus, Post), Moonglade (Bärengeist), Kochen am eigenen Lagerfeuer |
+
+Alle Sitzungen melden Client 70450, Kombiguide 0.6.1-v4.11.23, Testlog 3.7.1 und KombiDaten «17.10. 13:36, 6 Tipps». Der Stand vom Nachmittag (Kombiguide 0.6.2 und die KombiDaten aus dem Testlog von 15:15) kam erst nach dem Einloggen um 15:37 auf den PC und lädt beim nächsten Einloggen. Keine Zeile FEHLER.
+
+## Stellen
+
+- Druide: #116 → #153 (`.turnin 5930` «Great Bear Spirit», Moonglade), Stufe 12 (16 %). Neue Kombi-Schritte in «6-12 Mulgore» vor #153 nur mit `#maxlevel 11` (seit 0.6.3; geprüft mit `tools/rxp_schritte.py vergleich … --stelle 153 --stufe 12`).
+- Stufe 18: weiter #152.
+
+## Notizen im Spiel und was dahinter steht
+
+1. 15:23:57 «ich musste mir 1 fg vom bankchar schicken da ich ansonsten zuwenig gold für die klassenspells habe. dies muss in der scharfen verison einbezogen werden»: Vor dem Lehrer hatte der Druide 4s 63c. Die vier Zauber der Stufe 10 kosteten 12s (Lehrer −9s und −3s, 15:24:11 und 15:24:15); der Bankchar hatte um 15:15 1g geschickt (POST 15:23:03, +1g). Kosten aller Klassenzauber: Tabelle unten.
+2. 15:26:28 bei Kaga Wildhoof «die angelquest ist ein muss sie gibt sdk beim lagerffeueur»: 97932 «Grundlagen des Zeltens: Angeln», angenommen 15:25:47 bei Kaga Wildhoof (Mulgore 46.2, 67.2), abgegeben 15:26:41 bei 44.2, 63.8 (dort lernte der Druide am 13.10. Angeln; die Abgabe ist laut warcraft.wiki.gg bei Uthan Stillwater): 270 XP und das Rezept Fischglas (1229745: 1 Roher glänzender Kleinfisch und 1 Leere Phiole). Ziel der Quest ist Angeln 20 (warcraft.wiki.gg, Stand 11.10.2026); der Druide hatte 25. RXP führt die Quest für die Horde nicht (v4.11.23; Hauptzweig 17.10. nur «Camping 101: Fishing» 97967 im Skyborne-Guide). «sdk»: Lesart von Claude «Segen der Könige» (das Fischglas gibt am Lagerfeuer +8 % auf alle Werte und stapelt nicht mit Segen der Könige, wow-professions Camping Guide); Rückfrage offen.
+3. 16:12:50 «in TB zwingend auch zweihandwaffe für 2 hand streitkolben lehren bei genügend Gold», zurückgenommen um 16:50:44 («ignoriere den letzten post wegen dem 2 hand ich war zu vorschnell»). Dazu steht im Testlog nur: Der Druide lernte Zweihandstreitkolben um 16:50:29 bei Ansekhwa (Thunder Bluff 40.8, 62.3) für 10s; RXP führt den Schritt selbst («6-12 Mulgore» #141 «Train Two-Handed Maces», `<< Shaman/Druid`). Eine Zeile GELERNT gab es dabei nicht.
+
+## Klassenzauber des Druiden
+
+Lehrerliste von Gennia Runetotem (Bloodhoof 47.4, 62.9), 17.10. 15:24, mit allen drei Filtern (182 Einträge bis Stufe 60; `data/kombi/lehrer.csv`):
+
+| Stufe | Zauber | Kosten |
+|---|---|---|
+| vor 10 | Dornen 1, Heilende Berührung 2, Mal der Wildnis 1, Mondfeuer 1, Verjüngung 1, Wucherwurzeln 1, Zorn 2 (alle gelernt; die Lernstufe nennt die Liste bei gelernten nicht) | 8s 10c |
+| 10 | Griff der Natur 1, Mal der Wildnis 2, Mondfeuer 2, Verjüngung 2 (um 15:24 gelernt); Demoralisierendes Gebrüll 1 (gesperrt, kommt mit der Bärengestalt) | 15s (je 3s) |
+| 12 | Nachwachsen 1, Wiederbelebung 1, Wutanfall | 24s (je 8s) |
+| 14 | Dornen 2, Heilende Berührung 3, Hieb 1, Zorn 3 | 36s (je 9s) |
+| 16 | Mondfeuer 3, Prankenhieb 1, Verjüngung 3 | 42s (je 14s) |
+| 18 | Feenfeuer 1, Griff der Natur 2, Nachwachsen 2, Winterschlaf 1, Wucherwurzeln 2, Zermalmen 2 | 90s (je 15s) |
+| 20 | Demoralisierendes Gebrüll 2, Heilende Berührung 4, Mal der Wildnis 3, Omen der Klarsicht, Schreddern 1, Sternenfeuer 1, Wiedergeburt 1 | 1g 68s (je 24s) |
+| 22 | Mondfeuer 4, Tier besänftigen 1, Verjüngung 4, Zorn 4 | 1g 32s (je 33s) |
+
+- Zahlen nach dem Zauber = Rang. Von Stufe 10 bis 22 zusammen 5g 7s, bis zum Wechsel in Orgrimmar (Stufe 16) 1g 17s. Nach dem Lernen um 15:24 noch offen bis Stufe 16: 1g 5s (11 Zauber). Die Katzengestalt (RXP v4.11.23: bei Loganaar in Moonglade ab Stufe 20, `.train 768`) steht nicht auf der Liste; ihr Preis ist ungeprüft.
+- Waffenmeister Ansekhwa (Kreatur 11869): Zweihandstreitkolben 10s (Liste mit Filter lernbar und gesperrt, 1 Eintrag).
+
+## Gold des Druiden
+
+- 15:22 4s 63c; nach dem Gold vom Bankchar und den Zaubern 92s 63c; 17:08 1g 19s 59c.
+- 15:22–17:08 (die Summe geht auf den Kupfer genau auf): Einnahmen Briefe 1g 34s 63c (1g vom Bankchar, 34s 63c aus sechs AH-Verkäufen mit dem Pfand zurück), Händler 14s 73c, Quests 4s 50c, Geld aus Beute 5s 22c. Ausgaben Lehrer 22s (Klassenzauber 12s, Zweihandstreitkolben 10s), Händler 14s 17c (20 Eiskalte Milch 5s, 5 Leere Phiolen 20c, 10 Einfaches Holz 3s 80c, Feuerstein und Zunder 1s 35c und 3s 82c um 16:47 in Bloodhoof ohne gekauften Gegenstand, vermutlich Reparatur nach den Toden, ungeprüft), Pfand 7s 5c, Porto 90c. Ohne das Gold vom Bankchar: +14s 96c.
+- Ganzer Tag (12:57–17:08, Stufe 7,74 → 12,16): ohne das Gold vom Bankchar etwa +18s (Quests 15s 75c, Geld aus Beute 9s 94c, Händler 27s 11c, AH-Briefe 36s 58c; Lehrer 31s, Pfand 19s 67c, Händler 17s 1c, Porto 3s 60c).
+
+## Messwerte des Druiden
+
+- Stufe 10,75 → 12,16 (Sitzungen 14 und 90 Minuten, `docs/plan/spiel.md`), 11 Quests abgegeben, darunter 98424 «Fizsprockets Notizen» (850 XP, in RXPs Route). 3 Tode in der Mine der Venture Co. (16:23:40 bei 58.7, 48.4; 16:30:40 bei 59.1, 48.2; 16:45:48 bei 62.7, 45.9); die Ursache steht nicht im Testlog. Stufe 11 in Mulgore: 64 Minuten, 0,97 Stufen pro Stunde.
+- Kürschnerei 61 → 72: 29 Häute in 28 Minuten (15:35–16:04): Prairie Wolf Alpha (2960) 23 (8 Leichtes Leder, 15 Fetzen), Prairie Stalker (2959) 2 (1 und 1), Flatland Cougar (3035) 2 (0 und 2), Prairie Wolf (2958) 1 (1 und 0), Flatland Prowler (3566) 1 (1 und 0); zusammen 11 Leichtes Leder und 18 Fetzen, etwa 24 Leichtes Leder pro Stunde. Namen: AHledger, Seite Mulgore (abgerufen 17.10.). Zweimal stand Beute nach dem Kürschnern in SAMMELN (Sehniges Wolfsfleisch, Hasenpfote), wie am Mittag.
+- Kräuterkunde 24 → 31: 7 Knoten (12 Friedensblume, 5 Erdwurzel), keine Flechte. «Grüner Daumen» dreimal (15:36:14 Friedensblume, 15:51:20 und 16:09:26 Erdwurzel), Abstände 15 und 18 Minuten.
+- Kochkunst 16 → 32: 16 Verkohltes Wolfsfleisch am eigenen Einfachen Lagerfeuer (Moonglade, 16:57–16:59), jedes +1 (orange). Das Lagerfeuer: 1 Einfaches Holz ergibt ein «Einfaches Lagerfeuerset» (279981).
+- Lager: 5 Fischgläser (15:28) und 2 Lagerstühle (15:31, je 3 Leichtes Leder und 2 Einfaches Holz), alle grau, kein Punkt. Beim Ausloggen 11 Leichtes Leder und 23 Fetzen in den Taschen, beim Bankchar 27 und 36.
+- Händler im Dorf der Bluthufe (Ort beim Kauf): 20 Eiskalte Milch für 5s (46.7, 64.5), 5 Leere Phiolen für 20c (45.5, 61.8), 10 Einfaches Holz für 3s 80c (45.3, 61.4). Am 13.10. kaufte der Druide dort die Angel (45.5, 61.7, 23c); laut AHledger (Seite Mulgore) verkauft Harn Longcast im Dorf die Angel. In Thunder Bluff: Feuerstein und Zunder 1s 35c (51.3, 52.4).
+- Karte Moonglade (1450) exakt aus KARTE (16:57): RXPs Kommentare passen genau (9 Punkte, `tools/karte_aus_testlog.py`).
+
+## Post und Auktionshaus
+
+- 16:53 an den Bankchar: 51 Leinenstoff (20, 20 und 11), Porto 90c in einer Buchung, also 30c je angehängtem Stapel.
+- Verkauft (AH-POST 16:47:17 am Briefkasten in Bloodhoof, das Geld um 16:51 in Thunder Bluff abgeholt, +34s 63c mit Pfand): 2 Tigerauge zu 1s 8c, 7 Sehniges Wolfsfleisch zu 1s 9c, 10 Erdwurzel zu 99c, 25 Silberblatt zu 10c, 22 Friedensblume zu 23c, 2 Rauer Stein zu 5c; Gebühr zusammen 1s 34c (5 %). Beim Abholen in Thunder Bluff keine zweite Zeile für dieselben Briefe (T16). Der Händler zahlt dafür 1s, 4c, 20c, 10c, 10c und 2c je Stück.
+- Neue Angebote 16:52 (24 Stunden): 10 Erdwurzel zu 1s 34c (Pfand 1s 20c), 13 Friedensblume zu 25c (1s), Pläne: Runenverzierte Kupferbrustplatte 3s (1s), 2 Kupfererz zu 2s 34c (1s), Schriftrolle: CHAP BALK WELLES 3s (1s), Skalpiertomahawk der Intelligenz 5s (1s 85c, das Spiel meldete 1s 80c). Alle sechs passen zur Pfand-Regel (Händlerpreise 20c, 10c, 1s 50c, 5c, 15c, 3s 9c); damit 24 Angebote.
+- Scan 16:51 in Thunder Bluff: 53 001 Angebote, 2903 Gegenstände, 12 s, 109 Minuten nach dem Scan von 15:02. Geschätzt gekauft: Friedensblume 576, Visionenstaub 514, Erdwurzel 439, Roher Langzahniger Matschschnapper 379, Königsblut 362, Sehniges Wolfsfleisch 206, Silberblatt 154, Roher glänzender Kleinfisch 132, Gekräuselte Flechte 11; Leichtes Leder 0 (207 weniger im Angebot, aber neue billigere dazu; 61 und 25 Minuten vorher 430 und 599, die Schätzung schwankt stark).
+- Tiefstpreise 15:02 → 16:51: Friedensblume 23c → 25c (Angebot 1378 → 411), Erdwurzel 99c → 1s 34c (1532 → 653), Sehniges Wolfsfleisch 1s 9c → 1s 20c (406 → 113), Gekräuselte Flechte 2g 50s → 2g 74s 99c (236 → 200; die drei Flechten des Druiden stehen seit 14:37 zu 2g 75s). Seltsamer Staub 33c, Geringe Magieessenz 77c, Große Magieessenz 99c.
+- Unter dem Händlerpreis um 16:51: 9 Gegenstände, zusammen 4s 46c.
+
+## Bagnon
+
+- `BagBrother.lua` gibt es seit dem Neustart (17:08 gelesen): Taschen, Bank, Briefkasten, Ausrüstung und Geld für den Druiden und den Bankchar. Die 51 Leinenstoff stehen schon im Briefkasten des Bankchars. Der Druide trägt 4 Leinentaschen (je 6 Plätze), seine Bank (48 Plätze) ist leer.
+- Beim Druiden steht dort Stufe 17 statt 12. BagBrother setzt die Stufe beim Einloggen (`UnitLevel`) und bei `PLAYER_LEVEL_UP` (`core/features/caching.lua`); woher die 17 kommt, ist ungeprüft. Für das Zählen der Gegenstände spielt es keine Rolle.
+
+## Was daraus geändert wurde (17.10. abends)
+
+- Kombiguide 0.6.3: «Grundlagen des Zeltens: Angeln» in «6-12 Mulgore» (Wunsch des Nutzers, Notiz 15:26): vor Kaga Wildhoof bei Harn Longcast eine Angel kaufen und bei Uthan Stillwater Angeln lernen, nach «Camping 101: Cooking» die Quest bei Kaga annehmen, am Stonebull Lake bis Angeln 20 angeln (etwa 9 Minuten nach der Rate vom 13.10.), bei Uthan abgeben (Plan-Zeilen 92–96). Alle fünf Schritte mit `#maxlevel 11`: Der Druide (Stufe 12) sieht sie nicht und behält #153; neue Charaktere sehen sie. Zeile 4 sagt jetzt, woher der Kleinfisch für Thunder Bluff kommt. Die Annahmen für Kräuterkunde und Kürschnerei bei Kaga (Zeilen 83 und 84) bleiben aus (offene Entscheidung 11).
+- `tools/markt.py`: Beim Gold für den Wechsel in Orgrimmar zählen die noch offenen Klassenzauber bis Stufe 16 mit, aus der letzten Lehrerliste des Charakters (beim Druiden 1g 5s, zusammen mit Stufe A etwa 1g 65s gegen 1g 19s 59c); für andere Charaktere mit Lehrerliste eine Zeile bis zur nächsten Zielstufe (16, 20, 22). Waffenmeister zählen nicht. `tools/testlog_harness.py` prüft es.
+- Wie der Guide selbst an das Gold für die Klassenzauber erinnern soll, ist offen (offene Entscheidung 41).
