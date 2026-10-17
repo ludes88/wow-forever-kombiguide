@@ -53,12 +53,15 @@
 --   DUNGEON     Betreten einer Instanz und Ende des Laufs: Dauer, XP, Kills, Geld, Beute, Tode (Version 3.7)
 --   Laufweg und XP pro Quelle (Version 3.7) schreiben keine Zeilen, nur Daten: chars[Charakter].weg und .xp
 --
---   Version 4.0 (Kampf; Daten in chars[Charakter].kampf, .werte, .werteLog, .ausruestung, .talente, .belohnungen, .klasse
---   und itemWerte):
+--   Version 4.0 (Kampf; Daten in chars[Charakter].kampf, .werte, .werteLog, .ausruestung, .talente, .belohnungen, .stufen,
+--   .klasse und itemWerte, itemTexte, zauberNamen, dmStand):
 --   KAMPF       pro Kampf (ab 2 s oder mit Treffer, Zauber oder Schlag): Dauer, Gestalt, Gegner (Kreatur-ID, Stufe),
---               Schaden und Heilung aus Blizzards Schadensmesser (nach dem Kampf, mit Zaubern), erlittene Treffer mit
+--               Schaden und Heilung aus Blizzards Schadensmesser (nach dem Kampf, mit Zaubern; die Sitzung, die der
+--               Schadensmesser im Kampf meldet, eine schon gelesene nur mit dem Zuwachs), erlittene Treffer mit
 --               Krits, Ausweichen und Parieren (UNIT_COMBAT), Heilung am Spieler, Zauber in der Reihenfolge mit Zeit,
---               Nahkampfschläge, XP, Tod; allein ohne Schadensmesser die Treffer am Ziel (Schätzung)
+--               Nahkampfschläge, XP, Tod; allein ohne Schadensmesser die Treffer am Ziel (Schätzung); beim Ausloggen
+--               oder Neuladen auch Kämpfe, deren Schadensmesser noch nicht gelesen ist
+--   STUFE       seit 4.0 mit dem Zuwachs laut Client (Leben, Kraft, Grundwerte, Talentpunkte)
 --   WERTE       Werte ausserhalb des Kampfes, pro Gestalt, nur bei Änderung: Grundwerte, AP, Waffenschaden, Tempo, Krit,
 --               Zauberkrit, Ausweichen, Rüstung, Leben, Mana, Zaubermacht, Heilung, Trefferbonus, Regeneration,
 --               Verteidigung und die Umrechnung des Charakterfensters (Krit und AP aus Beweglichkeit usw.)
@@ -2461,11 +2464,15 @@ end
 function K.start()
     if K.fight then return end
     local t = now()
+    -- XP der beendeten Kämpfe, die noch auf den Schadensmesser warten, zählt nur bis hier (Prüfer 17.10., B5)
+    for _, l in ipairs(K.wartend or {}) do
+        if not l.xp then l.xp = W.xpSum - l.xp0 end
+    end
     local form, formID = K.form()
     local f = { t0 = t, tLast = t, e0 = epoch(), lvl = W.val("UnitLevel", "player"), form = form, formID = formID,
                 formen = { form }, casts = {}, folge = {}, swing = 0, inn = { n = 0, sum = 0, f = {} }, schule = {},
                 ausw = {}, heilIn = { n = 0, sum = 0 }, ziel = {}, amZiel = { n = 0, sum = 0, f = {}, a = {} },
-                xp0 = W.xpSum, geheim = {}, einschr = {}, gruppe = W.yes("IsInGroup"), lp0 = K.vorrat() }
+                xp0 = W.xpSum, geheim = {}, einschr = {}, gruppe = K.ja("IsInGroup"), lp0 = K.vorrat() }
     K.fight = f
     -- Zauber kurz vor dem Kampf (der erste Zauber startet ihn meist): mit negativer Zeit
     for _, c in ipairs(K.recent or {}) do
@@ -2505,14 +2512,21 @@ function K.cast(id)
 end
 
 -- PLAYER_SWING (SwingTimerDocumentation.lua): Dauer des Schlags in Sekunden (zeigt das Tempo der Gestalt) und Art
-function K.swing(dauer)
+-- (0 Waffenhand, 1 Schildhand, 2 Distanz); Schläge mit der Schildhand oder auf Distanz zählen getrennt
+function K.swing(dauer, art)
     local f = K.fight
+    local haupt = not (num(art) and art ~= 0)
     if not f then
-        K.swingT = now()
+        if haupt then K.swingT = now() end
         return
     end
-    f.swing, f.tLast = f.swing + 1, now()
-    if num(dauer) then f.swingDauer = K.rund(dauer, 2) end
+    f.tLast = now()
+    if haupt then
+        f.swing = f.swing + 1
+        if num(dauer) then f.swingDauer = K.rund(dauer, 2) end
+    else
+        f.swingAndere = (f.swingAndere or 0) + 1
+    end
 end
 
 function K.seeTarget()
@@ -2581,77 +2595,149 @@ function K.restriktion(typ, state)
     end
 end
 
-function K.stop()
+-- Kampfende: Schadensmesser 1,5 s später lesen (ausserhalb des Kampfes). nachLetztem (K.tick, ohne Kampfende des
+-- Clients): Dauer bis zum letzten Ereignis statt bis zum Ende der Pause von 6 s
+function K.stop(nachLetztem)
     local f = K.fight
     if not f then return end
     K.fight = nil
-    f.d, f.lp1 = now() - f.t0, K.vorrat()
+    local t = now()
+    f.d = (nachLetztem and f.tLast or t) - f.t0
+    f.lp1, f.tStop = K.vorrat(), t
+    K.wartend = K.wartend or {}
+    table.insert(K.wartend, f)
     C_Timer.After(1.5, function()
         local ok, err = pcall(K.finish, f)
-        if not ok then add("FEHLER", "Kampf: " .. tostring(err), false) end
+        if not ok then
+            K.fertig(f)
+            add("FEHLER", "Kampf: " .. tostring(err), false)
+        end
     end)
 end
 
--- beim Ausloggen: ohne Warten und ohne Schadensmesser
+-- Kampf geschrieben oder verworfen: aus der Warteliste nehmen
+function K.fertig(f)
+    f.fertig = true
+    local rest = {}
+    for _, l in ipairs(K.wartend or {}) do
+        if l ~= f then rest[#rest + 1] = l end
+    end
+    K.wartend = rest
+end
+
+-- Ausloggen oder Neuladen (PLAYER_LOGOUT kommt bei beidem): offener Kampf ohne Warten und ohne Schadensmesser,
+-- Ort und Stufe aus dem letzten bekannten Kontext (wie ENDE; Prüfer 17.10., C7)
 function K.abbruch(grund)
     local f = K.fight
     if not f then return end
     K.fight = nil
-    f.d, f.lp1, f.ende = now() - f.t0, K.vorrat(), grund
+    f.d, f.lp1, f.ende, f.ctx = now() - f.t0, K.vorrat(), grund, lastContext
     K.finish(f, true)
 end
 
--- Blizzards Schadensmesser: neueste Sitzung, nur der eigene Charakter (isLocalPlayer), Summe und Zauber
+-- Beendete Kämpfe, deren Schadensmesser noch nicht gelesen ist: beim Ausloggen ohne ihn schreiben, sonst fehlten sie
+-- (der Timer läuft danach nicht mehr; Prüfer 17.10., B6)
+function K.flush(grund)
+    local liste = K.wartend or {}
+    K.wartend = {}
+    for _, f in ipairs(liste) do
+        if not f.fertig then
+            f.dmGrund, f.ctx = grund, lastContext
+            local ok, err = pcall(K.finish, f, true)
+            if not ok then add("FEHLER", "Kampf: " .. tostring(err), false) end
+        end
+    end
+end
+
+-- Sitzungen, die der Schadensmesser im Kampf meldet (DAMAGE_METER_COMBAT_SESSION_UPDATED: Art und Sitzung; laut
+-- DamageMeterSessionWindow.lua kommt je eine Meldung für die Gesamtsitzung mit 0 und eine für die laufende Sitzung).
+-- Kurz nach dem Kampfende gehören Meldungen noch zum beendeten Kampf.
+function K.dmMeldung(typ, id)
+    if isSecret(typ) or isSecret(id) or type(id) ~= "number" or id == 0 then return end
+    local f = K.fight
+    if not f then
+        local l = K.wartend and K.wartend[#K.wartend]
+        if l and l.tStop and now() - l.tStop <= 3 then f = l end
+    end
+    if not f then return end
+    f.dmIDs = f.dmIDs or {}
+    f.dmIDs[id] = true
+end
+
+-- Zauber einer Quelle in der Sitzung: { [Zauber-ID] = Betrag }
 function K.dmZauber(src, id, typ, s, pg)
     if not src then return nil end
     local guid = (type(s.sourceGUID) == "string" and not isSecret(s.sourceGUID)) and s.sourceGUID or pg
     local okP, ps = pcall(src, id, typ, guid, nil)
     if not okP or type(ps) ~= "table" or type(ps.combatSpells) ~= "table" then return nil end
-    local z = {}
+    local z, n = {}, 0
     for _, sp in ipairs(ps.combatSpells) do
         local sid = type(sp) == "table" and num(sp.spellID)
         local amt = type(sp) == "table" and num(sp.totalAmount)
         if sid and amt then
-            z[#z + 1] = string.format("%d:%d", sid, math.floor(amt + 0.5))
+            z[sid], n = (z[sid] or 0) + amt, n + 1
             K.zname(sid)
         end
     end
-    if #z == 0 then return nil end
-    table.sort(z)
-    return table.concat(z, ";")
+    return (n > 0) and z or nil
 end
 
-function K.dm()
+-- Stand der gelesenen Sitzungen (KombiTestlogDB.dmStand, die 10 neuesten): Wird eine Sitzung nochmals gelesen (Blizzard
+-- fasst Kämpfe zusammen, oder nach /reload; ungeprüft), zählt für den Kampf nur der Zuwachs (Prüfer 17.10., B4)
+function K.dmKuerzen()
+    local ids = {}
+    for id in pairs(db.dmStand) do
+        if type(id) == "number" then ids[#ids + 1] = id end
+    end
+    table.sort(ids)
+    for i = 1, #ids - 10 do db.dmStand[ids[i]] = nil end
+end
+
+-- Blizzards Schadensmesser: die im Kampf gemeldete Sitzung (sonst die neueste), nur der eigene Charakter (isLocalPlayer),
+-- Summe und Zauber pro Art
+function K.dm(f)
     local list = K.ns("C_DamageMeter", "GetAvailableCombatSessions")
     local get = K.ns("C_DamageMeter", "GetCombatSessionFromID")
     local src = K.ns("C_DamageMeter", "GetCombatSessionSourceFromID")
     local E = rawget(_G, "Enum")
-    if not (list and get and type(E) == "table" and type(E.DamageMeterType) == "table") then return nil, "kein Schadensmesser" end
+    if not (get and type(E) == "table" and type(E.DamageMeterType) == "table") then return nil, "kein Schadensmesser" end
     if K.ja("InCombatLockdown") then return nil, "wieder im Kampf" end
-    local ok, sessions = pcall(list)
-    if not ok or type(sessions) ~= "table" then return nil, "keine Sitzungen" end
-    local best
-    for _, s in ipairs(sessions) do
-        local id = type(s) == "table" and num(s.sessionID)
-        if id and (not best or id > best) then best = id end
+    local best, dauer
+    for id in pairs(f and f.dmIDs or {}) do
+        if not best or id > best then best = id end
+    end
+    local quelle = best and "gemeldet" or "neueste"
+    if list then
+        local ok, sessions = pcall(list)
+        if ok and type(sessions) == "table" then
+            for _, s in ipairs(sessions) do
+                local id = type(s) == "table" and num(s.sessionID)
+                if id and quelle == "neueste" and (not best or id > best) then
+                    best, dauer = id, num(s.durationSeconds)
+                elseif id and id == best then
+                    dauer = num(s.durationSeconds)
+                end
+            end
+        end
+    elseif not best then
+        return nil, "kein Schadensmesser"
     end
     if not best then return nil, "keine Sitzung" end
-    K.dmSeen = K.dmSeen or {}
-    if K.dmSeen[best] then return nil, "keine neue Sitzung" end
     local okG, pg = callApi("UnitGUID", "player")
     if not okG or type(pg) ~= "string" or isSecret(pg) then pg = nil end
-    local out, fehler = { id = best }, {}
+    local neu, fehler, gelesen = { t = epoch() }, {}, false
     for _, a in ipairs(K.DM_ARTEN) do
         local typ = E.DamageMeterType[a[2]]
         if typ ~= nil then
             local okS, sess = pcall(get, best, typ)
             if okS and type(sess) == "table" and type(sess.combatSources) == "table" then
+                dauer = dauer or num(sess.durationSeconds)
                 for _, s in ipairs(sess.combatSources) do
                     if type(s) == "table" and s.isLocalPlayer == true then
                         local total = num(s.totalAmount)
                         if total and total > 0 then
-                            out[a[1]] = { sum = math.floor(total + 0.5), ps = K.rund(num(s.amountPerSecond), 1),
-                                          z = K.dmZauber(src, best, typ, s, pg) }
+                            neu[a[1]] = { sum = total, ps = num(s.amountPerSecond), z = K.dmZauber(src, best, typ, s, pg) }
+                            gelesen = true
                         end
                     end
                 end
@@ -2660,31 +2746,65 @@ function K.dm()
             end
         end
     end
-    if #fehler > 0 then out.fehler = table.concat(fehler, ",") end
-    if not (out.schaden or out.heilung or out.erlitten or out.absorb or out.unterbr) then
-        return nil, (#fehler > 0) and ("Fehler bei " .. out.fehler) or "ohne Werte"   -- noch geheim oder leer
+    if not gelesen then
+        return nil, (#fehler > 0) and ("Fehler bei " .. table.concat(fehler, ",")) or "ohne Werte"   -- noch geheim oder leer
     end
-    K.dmSeen[best] = true
+    neu.dauer = dauer
+    db.dmStand = db.dmStand or {}
+    local alt = db.dmStand[best]
+    -- kürzer oder weniger als beim letzten Lesen: eine neue Sitzung unter derselben Nummer, kein Zuwachs
+    if alt and dauer and alt.dauer and dauer + 0.5 < alt.dauer then alt = nil end
+    for _, a in ipairs(K.DM_ARTEN) do
+        local o, n = alt and alt[a[1]], neu[a[1]]
+        if o and (not n or n.sum + 0.5 < o.sum) then alt = nil end
+    end
+    db.dmStand[best] = neu
+    K.dmKuerzen()
+    local out = { id = best, quelle = quelle, dauer = K.rund(dauer, 1), teil = alt and 1 or nil }
+    if #fehler > 0 then out.fehler = table.concat(fehler, ",") end
+    local etwas = false
+    for _, a in ipairs(K.DM_ARTEN) do
+        local n, o = neu[a[1]], alt and alt[a[1]]
+        local sum = n and (n.sum - (o and o.sum or 0)) or 0
+        if sum > 0.5 then
+            local z = {}
+            for sid, amt in pairs(n.z or {}) do
+                local d = amt - ((o and type(o.z) == "table" and o.z[sid]) or 0)
+                if d > 0.5 then z[#z + 1] = string.format("%d:%d", sid, math.floor(d + 0.5)) end
+            end
+            table.sort(z)
+            out[a[1]] = { sum = math.floor(sum + 0.5), ps = (not o) and K.rund(n.ps, 1) or nil,
+                          z = (#z > 0) and table.concat(z, ";") or nil }
+            etwas = true
+        end
+    end
+    if not etwas then return nil, "keine neue Sitzung" end   -- schon gelesen, nichts dazugekommen
     return out
 end
 
 function K.finish(f, ohneDm)
-    f.xp = W.xpSum - f.xp0
+    if f.fertig then return end
+    f.xp = f.xp or (W.xpSum - f.xp0)
     local dm, grund
     if ohneDm then
-        grund = f.ende or "ohne Schadensmesser"
+        grund = f.dmGrund or f.ende or "ohne Schadensmesser"
     else
-        dm, grund = K.dm()
+        local okD, a, b = pcall(K.dm, f)
+        if okD then dm, grund = a, b else grund = "Fehler im Schadensmesser: " .. tostring(a) end
         -- Werte noch geheim oder leer (gleich nach dem Kampf): einmal nach 5 s nochmals versuchen
         if not dm and grund == "ohne Werte" and not f.nochmals then
             f.nochmals = true
             C_Timer.After(5, function()
                 local ok, err = pcall(K.finish, f)
-                if not ok then add("FEHLER", "Kampf: " .. tostring(err), false) end
+                if not ok then
+                    K.fertig(f)
+                    add("FEHLER", "Kampf: " .. tostring(err), false)
+                end
             end)
             return
         end
     end
+    K.fertig(f)
     local leer = f.inn.n == 0 and next(f.casts) == nil and f.swing == 0 and f.amZiel.n == 0
                  and not (dm and (dm.schaden or dm.heilung or dm.erlitten))
     if leer and f.d < 2 then return end
@@ -2693,18 +2813,18 @@ function K.finish(f, ohneDm)
     local rec = { t = f.e0, d = K.rund(f.d, 1), lvl = f.lvl, form = f.form, formID = f.formID,
                   formen = table.concat(f.formen, ">"), ziel = K.liste(f.ziel), casts = K.liste(f.casts),
                   folge = (#f.folge > 0) and table.concat(f.folge, ",") or nil, swing = f.swing, swingDauer = f.swingDauer,
-                  inn = f.inn.n .. ":" .. f.inn.sum, innF = K.liste(f.inn.f), schule = K.liste(f.schule),
-                  ausw = K.liste(f.ausw), heilIn = f.heilIn.n .. ":" .. f.heilIn.sum, lp0 = f.lp0, lp1 = f.lp1,
-                  xp = f.xp, tod = f.tod and 1 or nil, gruppe = f.gruppe and 1 or nil, dm = dm,
+                  swingAndere = f.swingAndere, inn = f.inn.n .. ":" .. f.inn.sum, innF = K.liste(f.inn.f),
+                  schule = K.liste(f.schule), ausw = K.liste(f.ausw), heilIn = f.heilIn.n .. ":" .. f.heilIn.sum,
+                  lp0 = f.lp0, lp1 = f.lp1, xp = f.xp, tod = f.tod and 1 or nil, gruppe = f.gruppe and 1 or nil, dm = dm,
                   dmGrund = (not dm) and grund or nil, geheim = K.liste(f.geheim), einschr = K.liste(f.einschr),
-                  ende = f.ende, v = VERSION }
+                  anfang = f.anfang, ende = f.ende, v = VERSION }
     if not f.gruppe then
         rec.amZiel = f.amZiel.n .. ":" .. f.amZiel.sum
         rec.amZielF, rec.amZielA = K.liste(f.amZiel.f), K.liste(f.amZiel.a)
     end
     table.insert(c.kampf, rec)
     while #c.kampf > K.MAX_KAEMPFE do table.remove(c.kampf, 1) end
-    if db.auto then add("KAMPF", K.kampfText(f, rec, dm, grund)) end
+    if db.auto then add("KAMPF", K.kampfText(f, rec, dm, grund), nil, f.ctx) end
 end
 
 function K.kampfText(f, rec, dm, grund)
@@ -2714,7 +2834,8 @@ function K.kampfText(f, rec, dm, grund)
     table.sort(ziele)
     if #ziele > 0 then teile[#teile + 1] = "Gegner " .. table.concat(ziele, ", ") end
     if dm and dm.schaden then
-        teile[#teile + 1] = string.format("Schaden %d (%s/s)", dm.schaden.sum, K.zahl(f.d > 0 and dm.schaden.sum / f.d or 0, 1))
+        teile[#teile + 1] = string.format("Schaden %d (%s/s%s)", dm.schaden.sum, K.zahl(f.d > 0 and dm.schaden.sum / f.d or 0, 1),
+            dm.teil and ", Zuwachs einer schon gelesenen Sitzung" or "")
     elseif not f.gruppe and f.amZiel.n > 0 then
         teile[#teile + 1] = string.format("am Ziel %d in %d Treffern, %d krit (Schadensmesser: %s)", f.amZiel.sum,
             f.amZiel.n, f.amZiel.f.CRITICAL or 0, tostring(grund))
@@ -2736,19 +2857,33 @@ function K.kampfText(f, rec, dm, grund)
     if #zt > 0 then teile[#teile + 1] = "Zauber: " .. table.concat(zt, ", ") end
     if f.swing > 0 then
         teile[#teile + 1] = "Schläge " .. f.swing .. (f.swingDauer and (" (alle " .. K.zahl(f.swingDauer, 2) .. " s)") or "")
+            .. (f.swingAndere and (", " .. f.swingAndere .. " mit Schildhand oder Distanz") or "")
     end
     if f.xp > 0 then teile[#teile + 1] = "XP " .. f.xp end
     if f.tod then teile[#teile + 1] = "Tod" end
+    if f.anfang then teile[#teile + 1] = "Beginn " .. f.anfang end
     if f.ende then teile[#teile + 1] = "Ende " .. f.ende end
     return table.concat(teile, " | ")
 end
 
--- Später lesen (ausserhalb des Kampfes): «was» -> { t, warum }
+-- Später lesen (ausserhalb des Kampfes): «was» -> { t, warum }; der früheste Termin gilt, die Anlässe kommen zusammen
+-- (sonst ginge z. B. «Stufe 13» neben «Werte geändert» verloren; Prüfer 17.10., C9)
 function K.dirty(was, sek, warum)
     K.due = K.due or {}
     local t = now() + (sek or 2)
     local d = K.due[was]
-    if not d or d.t > t then K.due[was] = { t = t, warum = warum } end
+    if not d then
+        K.due[was] = { t = t, warum = warum }
+        return
+    end
+    if t < d.t then d.t = t end
+    if warum and warum ~= "" then
+        if not d.warum or d.warum == "" then
+            d.warum = warum
+        elseif not (", " .. d.warum .. ","):find(", " .. warum .. ",", 1, true) and #d.warum < 120 then
+            d.warum = d.warum .. ", " .. warum
+        end
+    end
 end
 
 -- Werte (nur ausserhalb des Kampfes): «Grundwert:wirksam:plus:minus» für die fünf Grundwerte, dazu die Umrechnung
@@ -2793,7 +2928,7 @@ function K.werte(warum, zeigen)
     w.treffer = K.rund(W.val("GetHitModifier"), 2)
     w.ztreffer = K.rund(W.val("GetSpellHitModifier"), 2)
     local mr = K.multi("GetManaRegen")
-    if mr and type(mr[1]) == "number" then w.regen = string.format("%s:%s", K.rund(mr[1], 2), K.rund(mr[2], 2)) end
+    if mr and type(mr[1]) == "number" then w.regen = tostring(K.rund(mr[1], 2)) .. ":" .. tostring(K.rund(mr[2], 2)) end
     local vs = K.multi("UnitDefenseSkill", "player")
     if vs and type(vs[1]) == "number" then w.vert = string.format("%d:%d", vs[1], vs[2] or 0) end
     -- Umrechnung: Wert beim jetzigen Stand und was 10 Punkte mehr bringen («…10»; für Buffs wie das Fischglas)
@@ -2822,10 +2957,11 @@ function K.werte(warum, zeigen)
     local sig = table.concat(teile, "|")
     local c = charDB()
     c.werte = c.werte or {}
-    local alt = c.werte[w.form]
+    c.werteSig = c.werteSig or {}   -- Kennung pro Gestalt getrennt, damit sie nicht in jedem Eintrag von werteLog steht
     if zeigen then say(K.werteText(w)) end
-    if alt and alt.sig == sig then return "unverändert" end
-    w.sig, w.t, w.warum = sig, epoch(), warum
+    if c.werteSig[w.form] == sig then return "unverändert" end
+    c.werteSig[w.form] = sig
+    w.t, w.warum = epoch(), warum
     c.werte[w.form] = w
     c.werteLog = c.werteLog or {}
     table.insert(c.werteLog, w)
@@ -2858,22 +2994,45 @@ function K.werteText(w)
     return table.concat(t, " | ")
 end
 
--- Gegenstände: Werte laut Client (C_Item.GetItemStats) als «ITEM_MOD_…=Zahl;…», gemerkt in itemWerte
+-- Schlüssel eines Gegenstands: der «item:…»-Teil des Links ohne Feld 9 und 10 (linkLevel = Stufe des Charakters,
+-- specializationID; Format laut Blizzard_PTRFeedback/Blizzard_Reports.lua). Sonst sähe nach jedem Stufenaufstieg jedes Teil
+-- wie ein neues aus (Prüfer 17.10., B2). Leere Felder am Ende fallen weg: «item:6070» oder «item:6070:15» (mit Verzauberung).
+function K.itemKey(link)
+    local s = type(link) == "string" and not isSecret(link) and link:match("item:[%-%d:]+")
+    if not s then return nil end
+    local f = {}
+    for teil in (s .. ":"):gmatch("([^:]*):") do f[#f + 1] = teil end
+    if f[10] then f[10] = "" end
+    if f[11] then f[11] = "" end
+    while #f > 2 and f[#f] == "" do f[#f] = nil end
+    return table.concat(f, ":")
+end
+
+-- Gegenstände: Werte laut Client (C_Item.GetItemStats) als «ITEM_MOD_…=Zahl;…», gemerkt in itemWerte. Nur, wenn der
+-- Client die Daten schon hat (C_Item.IsItemDataCachedByID); ein leerer Stand wird später ersetzt (Prüfer 17.10., B3)
 function K.stats(link)
     local f = K.ns("C_Item", "GetItemStats") or rawget(_G, "GetItemStats")
     if type(link) ~= "string" or isSecret(link) or not f then return "" end
     local ok, t = pcall(f, link)
-    if not ok or type(t) ~= "table" then return "" end
     local out = {}
-    for k, v in pairs(t) do
+    for k, v in pairs((ok and type(t) == "table") and t or {}) do
         if type(k) == "string" and type(v) == "number" and not isSecret(v) then out[#out + 1] = k .. "=" .. K.rund(v, 1) end
     end
     table.sort(out)
     local s = table.concat(out, ";")
-    local key = link:match("item:[%-%d:]+")
-    if key then
+    local key = K.itemKey(link)
+    local id = tonumber(link:match("item:(%d+)"))
+    local geladen = true
+    local cached = K.ns("C_Item", "IsItemDataCachedByID")
+    if cached and id then
+        local okC, v = pcall(cached, id)
+        if okC and v == false then geladen = false end
+    end
+    if key and geladen then
         db.itemWerte = db.itemWerte or {}
-        if db.itemWerte[key] == nil then
+        db.itemTexte = db.itemTexte or {}
+        local alt = db.itemWerte[key]
+        if alt == nil then
             if not K.itemN then
                 K.itemN = 0
                 for _ in pairs(db.itemWerte) do K.itemN = K.itemN + 1 end
@@ -2881,12 +3040,16 @@ function K.stats(link)
             if K.itemN < K.MAX_ITEMS then
                 db.itemWerte[key] = s
                 K.itemN = K.itemN + 1
-                db.itemTexte = db.itemTexte or {}
                 db.itemTexte[key] = K.anlegen(link)
             end
+        elseif alt == "" and (s ~= "" or db.itemTexte[key] == nil) then
+            db.itemWerte[key] = s
+            db.itemTexte[key] = K.anlegen(link)
         end
     end
-    return s, key and db.itemTexte and db.itemTexte[key] or nil
+    local a = key and db.itemTexte and db.itemTexte[key] or nil
+    if not geladen then a = K.anlegen(link) end
+    return s, a
 end
 
 -- Effekte, die GetItemStats nicht liefert (z. B. «Anlegen: Erhöht Eure Chance … um 1%»): Zeilen des Tooltips
@@ -2929,7 +3092,7 @@ function K.ausruestung(warum)
     for slot = 1, #K.SLOTS do
         local ok, link = pcall(f, "player", slot)
         if not ok or isSecret(link) or type(link) ~= "string" then link = nil end
-        local key = link and link:match("item:[%-%d:]+") or nil
+        local key = link and K.itemKey(link) or nil
         local alt = c.ausruestung[slot]
         if key then n = n + 1 end
         if (alt and alt.k) ~= key then
@@ -2952,13 +3115,36 @@ function K.ausruestung(warum)
     end
 end
 
--- Talente (C_ClassTalents, C_Traits; Baum-Namen aus den Gruppen wie im Talentfenster)
-function K.talente(warum)
+-- Talent-Konfiguration: die aktive, sonst wie das Forever-Talentfenster die der aktiven Talentgruppe
+-- (Camelot/ClassTalents/Blizzard_ClassTalentsFrame.lua, GetFallbackConfigID; Prüfer 17.10., B1)
+function K.talentConfig()
     local active = K.ns("C_ClassTalents", "GetActiveConfigID")
+    if active then
+        local ok, cfg = pcall(active)
+        if ok and type(cfg) == "number" and not isSecret(cfg) then return cfg end
+    end
+    local grp = K.ns("C_SpecializationInfo", "GetActiveSpecGroup")
+    local comb = K.ns("C_SpecializationInfo", "GetCombatConfigIDForSpecGroup")
+    if not (grp and comb) then return nil end
+    local okG, g = pcall(grp)
+    if not okG or type(g) ~= "number" or isSecret(g) then return nil end
+    local okC, cfg = pcall(comb, g)
+    if okC and type(cfg) == "number" and not isSecret(cfg) then return cfg, "Talentgruppe " .. g end
+    return nil
+end
+
+-- Talente (C_Traits; Baum-Namen aus den Gruppen wie im Talentfenster)
+function K.talente(warum)
     local T = rawget(_G, "C_Traits")
-    if not active or type(T) ~= "table" then return end
-    local okC, cfg = pcall(active)
-    if not okC or type(cfg) ~= "number" or isSecret(cfg) then return end
+    if type(T) ~= "table" then return end
+    local cfg = K.talentConfig()
+    if not cfg then
+        if not K.talenteFehlen and db.auto then
+            K.talenteFehlen = true
+            add("TALENTE", "nicht lesbar: keine Talent-Konfiguration" .. (warum and (" | " .. warum) or ""), false)
+        end
+        return
+    end
     local okI, ci = pcall(T.GetConfigInfo, cfg)
     if not okI or type(ci) ~= "table" or type(ci.treeIDs) ~= "table" then return end
     local gruppen, punkte, liste = {}, {}, {}
@@ -2980,8 +3166,15 @@ function K.talente(warum)
                 local sid = okF and type(di) == "table" and num(di.spellID) or nil
                 local name = (okF and type(di) == "table" and type(di.overrideName) == "string" and di.overrideName ~= ""
                               and di.overrideName) or (sid and spellName(sid)) or ("Knoten " .. node)
-                local gid = type(ni.groupIDs) == "table" and ni.groupIDs[1] or nil
-                local g = gid and (gruppen[gid] or ("Gruppe " .. gid)) or "?"
+                -- wie GetTraitTreeName im Forever-Talentfenster: die erste Gruppe des Knotens mit einem Namen (Prüfer 17.10., C5)
+                local g
+                for _, gid in ipairs(type(ni.groupIDs) == "table" and ni.groupIDs or {}) do
+                    if gruppen[gid] then g = gruppen[gid] break end
+                end
+                if not g then
+                    local gid = type(ni.groupIDs) == "table" and ni.groupIDs[1] or nil
+                    g = gid and ("Gruppe " .. tostring(gid)) or "?"
+                end
                 punkte[g] = (punkte[g] or 0) + r
                 liste[#liste + 1] = string.format("%s: %s %d/%d%s", g, name, r, num(ni.maxRanks) or 0,
                     sid and (" (" .. sid .. ")") or "")
@@ -3050,8 +3243,10 @@ function K.belohnungZeile(w, wahl)
         wahl and ("gewählt " .. wahl) or "nicht gewählt (Fenster zu)", table.concat(teile, " · ")))
 end
 
--- Was der Client Addons erlaubt (beim Einloggen, wenn sich etwas ändert, und mit /tl geheim). Den Zustand der
--- Kampflog-Datei fragt nur /tl geheim ab (LoggingCombat; ob Forever den Aufruf für Addons sperrt, ist ungeprüft)
+-- Was der Client Addons erlaubt (beim Einloggen, wenn sich etwas ändert, und mit /tl geheim). Kampflog-Datei: Zustand aus
+-- C_ChatInfo.IsLoggingCombat (ChatInfoDocumentation.lua: an, erweitert); fehlt die Funktion, fragt nur /tl geheim über
+-- LoggingCombat (ob Forever den Aufruf für Addons sperrt, ist ungeprüft). Zweiter Wert: der Text ohne die Kampflog-Datei,
+-- zum Vergleich beim nächsten Einloggen (sonst gäbe es nach /tl geheim jedes Mal eine Zeile mehr; Prüfer 17.10., C1)
 function K.geheim(vonHand)
     local function wert(fn, ...)
         if not fn then return "-" end
@@ -3080,10 +3275,20 @@ function K.geheim(vonHand)
     teile[#teile + 1] = "Schadensmesser " .. wert(K.ns("C_DamageMeter", "IsDamageMeterAvailable"))
     local cv = K.multi("GetCVar", "damageMeterEnabled")
     teile[#teile + 1] = "CVar damageMeterEnabled " .. ((cv and cv[1] ~= nil) and tostring(cv[1]) or "?")
-    local lc = rawget(_G, "LoggingCombat")
-    teile[#teile + 1] = "Kampflog-Datei " .. (vonHand and wert(lc) or ((type(lc) == "function") and "vorhanden" or "-"))
     teile[#teile + 1] = "CombatLogGetCurrentEventInfo " .. type(rawget(_G, "CombatLogGetCurrentEventInfo"))
-    return table.concat(teile, " | ")
+    local vergleich = table.concat(teile, " | ")
+    local ilc = K.ns("C_ChatInfo", "IsLoggingCombat")
+    local lc = rawget(_G, "LoggingCombat")
+    local datei
+    if ilc then
+        local r = K.multi(ilc)
+        datei = r and ((r[1] == true and "an" or "aus") .. ((r[2] == true) and " (erweitert)" or "")) or "Fehler/geheim"
+    elseif vonHand then
+        datei = wert(lc)
+    else
+        datei = (type(lc) == "function") and "vorhanden" or "-"
+    end
+    return vergleich .. " | Kampflog-Datei " .. datei, vergleich
 end
 
 -- /tl kampflog an|aus: Kampflog-Datei des Spiels (Logs\WoWCombatLog*.txt; wie /combatlog, SlashCommands.lua)
@@ -3104,22 +3309,57 @@ end
 function K.login()
     local okC, _, cls = callApi("UnitClass", "player")
     if okC and type(cls) == "string" and not isSecret(cls) then charDB().klasse = cls end
+    -- nach dem Neustart des Spiels oder einem anderen Charakter beginnen die Sitzungen des Schadensmessers neu (Nummern
+    -- vermutlich auch); nach /reload (isReloadingUi) bleibt der Stand
+    if K.ersterLogin then db.dmStand = nil end
     if db.kampflog and type(rawget(_G, "LoggingCombat")) == "function" then pcall(rawget(_G, "LoggingCombat"), true) end
-    local g = K.geheim()
-    if g ~= db.geheimLast then
+    local g, v = K.geheim()
+    if v ~= db.geheimLast then
         add("GEHEIM", g, false)
-        db.geheimLast = g
+        db.geheimLast = v
+    end
+    -- /reload im Kampf: PLAYER_REGEN_DISABLED kommt nicht nochmals, der Kampf läuft aber weiter (Prüfer 17.10., B6)
+    if K.ja("InCombatLockdown") and not K.fight then
+        W.inCombat = true
+        K.start()
+        if K.fight then K.fight.anfang = "nach dem Laden (im Kampf)" end
     end
     K.dirty("ausruestung", 2, "beim Einloggen")
     K.dirty("werte", 3, "beim Einloggen")
     K.dirty("talente", 4, "beim Einloggen")
 end
 
+-- Zuwachs beim Stufenaufstieg laut Client (PLAYER_LEVEL_UP: Leben, Kraft der Klasse, Talentpunkte, PvP-Plätze, dann
+-- Stärke bis Willenskraft; UnitDocumentation.lua; Prüfer 17.10., C10). In chars[…].stufen, höchstens 60
+K.STUFE_FELDER = { { "lp", "Leben" }, { "kraft", "Kraft" }, { "talente", "Talentpunkte" }, { "pvp" }, { "str", "Stä" },
+                   { "agi", "Bew" }, { "sta", "Aus" }, { "int", "Int" }, { "spi", "Wil" } }
+function K.stufe(level, ...)
+    local werte = K.pack(...)
+    local e, teile, n = { lvl = num(level), t = epoch() }, {}, 0
+    for i, feld in ipairs(K.STUFE_FELDER) do
+        local v = num(werte[i])
+        if v then
+            e[feld[1]], n = v, n + 1
+            if feld[2] and v ~= 0 then teile[#teile + 1] = string.format("%s %+d", feld[2], v) end
+        end
+    end
+    if n == 0 then return nil end
+    local c = charDB()
+    c.stufen = c.stufen or {}
+    table.insert(c.stufen, e)
+    while #c.stufen > 60 do table.remove(c.stufen, 1) end
+    return (#teile > 0) and ("Zuwachs " .. table.concat(teile, ", ")) or nil
+end
+
 function K.tick()
     local t = now()
     local f = K.fight
     -- ohne PLAYER_REGEN_ENABLED (Kampf nur aus UNIT_COMBAT, z. B. Fallschaden) oder länger als 30 Minuten
-    if f and ((not W.inCombat and t - f.tLast > 6) or t - f.t0 > 1800) then K.stop() end
+    if f and not W.inCombat and t - f.tLast > 6 then
+        K.stop(true)
+    elseif f and t - f.t0 > 1800 then
+        K.stop()
+    end
     if not K.due or K.fight then return end
     local faellig = {}
     for was, d in pairs(K.due) do
@@ -3159,8 +3399,9 @@ function K.zeigen()
     local ws = {}
     for form in pairs(c.werte or {}) do ws[#ws + 1] = form end
     table.sort(ws)
-    say("Werte gespeichert für: " .. ((#ws > 0) and table.concat(ws, ", ") or "noch keine") .. " · Talente: "
-        .. ((c.talente and c.talente.punkte ~= "") and c.talente.punkte or "noch nicht gelesen"))
+    local tal = "noch nicht gelesen"
+    if c.talente then tal = (c.talente.punkte and c.talente.punkte ~= "") and c.talente.punkte or "keine Punkte verteilt" end
+    say("Werte gespeichert für: " .. ((#ws > 0) and table.concat(ws, ", ") or "noch keine") .. " · Talente: " .. tal)
 end
 
 -- Version 3.6: Empfehlungen anzeigen (KombiDaten: stand, zeit, markt, tipps, hinweise)
@@ -3398,10 +3639,10 @@ SlashCmdList["KOMBITESTLOG"] = function(msg)
         K.ausruestung("von Hand")
         K.talente("von Hand")
     elseif lower == "geheim" then
-        local g = K.geheim(true)
+        local g, v = K.geheim(true)
         say(g)
         add("GEHEIM", g, false)
-        db.geheimLast = g
+        db.geheimLast = v
     elseif lower == "kampflog" then
         local r = string.lower(rest)
         if r == "an" or r == "aus" then
@@ -3508,13 +3749,14 @@ local function waitForZone(tries)
     beginLogging()
 end
 
-function handlers.PLAYER_ENTERING_WORLD()
+function handlers.PLAYER_ENTERING_WORLD(isInitialLogin)
     if started then
         -- Ladebildschirm (Ruhestein, Instanz): kein Fenster bleibt offen
         finishSession("Ladebildschirm", true)
         return
     end
     started = true
+    K.ersterLogin = not isSecret(isInitialLogin) and isInitialLogin == true   -- Version 4.0: nicht nach /reload
     C_Timer.After(2, function() waitForZone(10) end)
 end
 
@@ -3526,12 +3768,14 @@ function handlers.PLAYER_LOGOUT()
     finishSession("Ausloggen")
     if ready then inventoryBags("beim Ausloggen", lastContext) end   -- Version 3.6: letzter bekannter Taschenbestand
     if W.run then W.runEnd("Ausloggen", lastContext) end              -- Version 3.7
-    pcall(K.abbruch, "Ausloggen")                                     -- Version 4.0: offener Kampf
+    pcall(K.flush, "vor dem Ausloggen/Neuladen nicht gelesen")         -- Version 4.0: beendete Kämpfe, die noch warten
+    pcall(K.abbruch, "Ausloggen/Neuladen")                            -- Version 4.0: offener Kampf
     add("ENDE", nil, true, lastContext)
 end
 
-function handlers.PLAYER_LEVEL_UP(level)
-    if db.auto then add("STUFE", "Stufe " .. tostring(level)) end
+function handlers.PLAYER_LEVEL_UP(level, ...)
+    local ok, zuwachs = pcall(K.stufe, level, ...)   -- Version 4.0: Zuwachs der Werte laut Client
+    if db.auto then add("STUFE", "Stufe " .. tostring(level) .. ((ok and zuwachs) and (" | " .. zuwachs) or "")) end
     K.dirty("werte", 3, "Stufe " .. tostring(level))   -- Version 4.0
     K.dirty("talente", 3, "Stufe " .. tostring(level))
 end
@@ -3591,7 +3835,9 @@ end
 
 -- Version 4.0: Kampf, Werte, Ausrüstung, Talente, Einschränkungen
 function handlers.UNIT_COMBAT(...) if ready then K.combat(...) end end
-function handlers.PLAYER_SWING(dauer) if ready then K.swing(dauer) end end
+function handlers.PLAYER_SWING(dauer, art) if ready then K.swing(dauer, art) end end
+function handlers.DAMAGE_METER_COMBAT_SESSION_UPDATED(typ, id) if ready then K.dmMeldung(typ, id) end end
+function handlers.DAMAGE_METER_RESET() db.dmStand = nil end   -- Zurücksetzen: Nummern beginnen vielleicht neu
 function handlers.UPDATE_SHAPESHIFT_FORM() if ready then K.formWechsel() end end
 function handlers.UNIT_STATS(unit)
     if ready and not isSecret(unit) and unit == "player" then K.dirty("werte", 2, "Werte geändert") end
@@ -3778,6 +4024,13 @@ function handlers.TAXIMAP_CLOSED() closeWindow("taxi") end
 function handlers.QUEST_COMPLETE()
     windows.quest = true
     local ok, err = pcall(K.belohnung)   -- Version 4.0: Belohnungen zur Wahl
+    if not ok then add("FEHLER", "Belohnung: " .. tostring(err), false) end
+end
+-- Version 4.0: Belohnungen, deren Daten erst jetzt geladen sind (das Forever-UI baut sie bei QUEST_ITEM_UPDATE neu auf,
+-- Mainline/QuestFrame.lua; Prüfer 17.10., B3)
+function handlers.QUEST_ITEM_UPDATE()
+    if not K.wahl then return end
+    local ok, err = pcall(K.belohnung)
     if not ok then add("FEHLER", "Belohnung: " .. tostring(err), false) end
 end
 function handlers.QUEST_FINISHED()

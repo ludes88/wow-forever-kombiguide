@@ -4,7 +4,8 @@ Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charaktern
 
 ## Quellen
 
-- Testlog 4.0 (Forever-UI 1.60.1, Build 70450, https://github.com/Gethe/wow-ui-source/tree/forever): Schaden, Heilung und erlittener Schaden pro Zauber aus Blizzards Schadensmesser `C_DamageMeter` (nach dem Kampf gelesen, im Kampf «secret»); Treffer, Krits und Ausweichen am Spieler aus `UNIT_COMBAT`; Zauber mit Zeit aus `UNIT_SPELLCAST_SUCCEEDED`; Nahkampfschläge aus `PLAYER_SWING`; Werte aus `UnitStat` und Co. mit der Umrechnung des Charakterfensters (`GetCritChanceFromStat`, `GetAttackPowerForStat`, `Camelot/PaperDollFrameStats.lua`); Ausrüstung aus `GetInventoryItemLink` und `C_Item.GetItemStats`; Talente aus `C_Traits`.
+- Testlog 4.0 (Forever-UI 1.60.1, Build 70450, https://github.com/Gethe/wow-ui-source/tree/forever): Schaden, Heilung und erlittener Schaden pro Zauber aus Blizzards Schadensmesser `C_DamageMeter` (nach dem Kampf gelesen, im Kampf «secret»); Treffer, Krits und Ausweichen am Spieler aus `UNIT_COMBAT`; Zauber mit Zeit aus `UNIT_SPELLCAST_SUCCEEDED`; Nahkampfschläge aus `PLAYER_SWING`; Werte aus `UnitStat` und Co. mit der Umrechnung des Charakterfensters (`GetCritChanceFromStat`, `GetAttackPowerForStat`, `Camelot/PaperDollFrameStats.lua`); Ausrüstung aus `GetInventoryItemLink` und `C_Item.GetItemStats`; Talente aus `C_Traits`; Zuwachs beim Stufenaufstieg aus `PLAYER_LEVEL_UP` (`UnitDocumentation.lua`).
+- Zuordnung zum Schadensmesser: die Sitzung, die er im Kampf meldet (`DAMAGE_METER_COMBAT_SESSION_UPDATED`), sonst die neueste (Spalte `messer_sitzung`); wurde eine Sitzung schon gelesen, zählt nur der Zuwachs (`messer_zuwachs`). Ob Blizzard kurze Kämpfe zu einer Sitzung zusammenfasst, ist ungeprüft.
 - Gewichte für Gegenstände und Lagerbuffs: RestedXP v4.11.23 DB/forever/StatWeights.lua (CC BY-NC-SA 4.0, https://github.com/RestedXP/RXPGuides); RXPs Zahlen fürs Leveln (Speedrun), kein Messwert.
 - Fischglas «8% increased stats», Lagerstuhl «2% increased critical strike chance with all spells and attacks» (Tooltips, https://metaforge.app/wow-forever/database/consumables/fish-bowl und …/camp-chair, abgerufen 17.10.2026). Gerechnet wird mit den fünf Grundwerten (Lesart; der Tooltip nennt sie nicht einzeln).
 - Mana aus Intellekt: 15 je Punkt laut Warcraft Tavern (Forever, https://www.warcrafttavern.com/forever/guides/stats/).
@@ -39,6 +40,14 @@ Die ersten drei Zauber jedes Kampfes (negative Zeit: vor dem Kampfbeginn) und de
 | Klasse | Stufe | Gestalt | Stä | Bew | Aus | Int | Wil | AP | Krit | Zauberkrit | Ausweichen | Rüstung | Leben | Mana | Umrechnung |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | – | | | | | | | | | | | | | | | |
+
+## Stufenaufstiege: Zuwachs laut Client
+
+Was der Client beim Stufenaufstieg meldet (`PLAYER_LEVEL_UP`); «Kraft» ist die Kraft der Klasse (`powerDelta`; beim Druiden vermutlich Mana, ungeprüft). Gleiche Werte stehen einmal, mit der Anzahl.
+
+| Klasse | Stufe | Leben | Kraft | Stä | Bew | Aus | Int | Wil | Talentpunkte | gesehen |
+|---|---|---|---|---|---|---|---|---|---|---|
+| – | | | | | | | | | | |
 
 ## Fischglas (+8 % Grundwerte) gegen Lagerstuhl (+2 % Krit)
 

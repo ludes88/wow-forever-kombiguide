@@ -6,11 +6,12 @@
 #                                             (ohne Pfad: vendor/rxpguides/DB/forever/StatWeights.lua, tools/fetch_rxp.sh)
 #
 # Liest aus der SavedVariables-Datei (Testlog 4.0): chars[Charakter].kampf (pro Kampf), .werte (letzter Stand pro Gestalt),
-# .werteLog, .ausruestung, .talente, .belohnungen, .klasse, dazu itemWerte, itemTexte, info und zauberNamen.
+# .werteLog, .ausruestung, .talente, .belohnungen, .stufen, .klasse, dazu itemWerte, itemTexte, info und zauberNamen.
 # Schreibt ins Repo nur Zahlen ohne Charakter- und Realmnamen und ohne Uhrzeiten (nur das Datum):
 #   data/spiel/kampf.csv          eine Zeile pro Kampf; Kennung = Prüfwert (SHA-256, 8 Zeichen) aus Charakter und Startzeit
 #   data/spiel/kampf_zauber.csv   pro Kampf und Zauber: Anzahl Zauber, Schaden, Heilung, erlittener Schaden (Schadensmesser)
 #   data/spiel/werte.csv          pro Klasse, Stufe und Gestalt der neueste Stand der Werte mit der Umrechnung des Clients
+#   data/spiel/stufen.csv         pro Stufenaufstieg der Zuwachs laut Client (PLAYER_LEVEL_UP: Leben, Kraft, Grundwerte)
 #   docs/plan/kampf.md            Bericht
 # Neue Zeilen kommen dazu, gleiche Schlüssel werden ersetzt; so wächst der Verlauf über mehrere Testlogs.
 # Gewichte: data/kampf/gewichte_rxp.csv aus RestedXP v4.11.23, DB/forever/StatWeights.lua (CC BY-NC-SA 4.0,
@@ -62,13 +63,17 @@ F = {
     "kampf": ["kennung", "datum", "klasse", "stufe", "gestalt", "gestalten", "dauer_s", "gegner", "gruppe", "schaden",
               "schaden_pro_s", "heilung", "erlitten_messer", "erlitten", "erlitten_treffer", "erlitten_krit",
               "erlitten_schmetternd", "vermieden", "geheilt", "am_ziel", "am_ziel_treffer", "am_ziel_krit",
-              "am_ziel_vermieden", "zauber", "folge", "schlaege", "schlag_s", "xp", "tod", "leben_start", "leben_ende", "mana_start",
-              "mana_ende", "quelle_schaden", "geheim", "testlog"],
+              "am_ziel_vermieden", "zauber", "folge", "schlaege", "schlag_s", "schlaege_andere", "xp", "tod", "leben_start",
+              "leben_ende", "mana_start", "mana_ende", "quelle_schaden", "messer_sitzung", "messer_dauer_s", "messer_zuwachs",
+              "anfang", "ende", "geheim", "testlog"],
     "kampf_zauber": ["kennung", "zauber", "name", "anzahl", "schaden", "heilung", "erlitten"],
     "werte": ["klasse", "stufe", "gestalt", "datum", "str", "agi", "sta", "int", "spi", "ap", "waffe", "tempo", "krit",
               "zauberkrit", "ausweichen", "parieren", "ruestung", "leben", "mana", "zaubermacht", "heilung", "treffer",
               "regen", "verteidigung", "umrechnung", "anlass", "testlog"],
+    "stufen": ["kennung", "datum", "klasse", "stufe", "leben", "kraft", "talentpunkte", "str", "agi", "sta", "int", "spi"],
 }
+STUFE_DE = [("leben", "lp", "Leben"), ("kraft", "kraft", "Kraft"), ("str", "str", "Stä"), ("agi", "agi", "Bew"),
+            ("sta", "sta", "Aus"), ("int", "int", "Int"), ("spi", "spi", "Wil"), ("talentpunkte", "talente", "Talentpunkte")]
 
 
 def kennung(text):
@@ -151,7 +156,7 @@ def punkte(stats, w):
 
 # --- Lesen -------------------------------------------------------------------------------------------------------------------
 def lade(pfade):
-    daten = {"kampf": {}, "werte": {}, "chars": {}, "itemWerte": {}, "itemTexte": {}, "info": {}, "zauber": {}}
+    daten = {"kampf": {}, "werte": {}, "chars": {}, "itemWerte": {}, "itemTexte": {}, "info": {}, "zauber": {}, "stufen": {}}
     for p in pfade:
         db = at._py(at._lua_tabelle(open(p, encoding="utf-8", errors="replace").read()))
         for k, v in (db.get("itemWerte") or {}).items():
@@ -173,6 +178,9 @@ def lade(pfade):
             for r in (c.get("kampf") or []):
                 if isinstance(r, dict) and r.get("t") is not None:
                     daten["kampf"][kennung(f"{key}|{r.get('t')}")] = (klasse, r)
+            for s in (c.get("stufen") or []):
+                if isinstance(s, dict) and s.get("t") is not None:
+                    daten["stufen"][kennung(f"{key}|{s.get('t')}|{s.get('lvl')}")] = (klasse, s)
             for w in (c.get("werteLog") or []):
                 if isinstance(w, dict) and w.get("t") is not None:
                     alt = daten["werte"].get((klasse, zahl(w.get("lvl")), w.get("form")))
@@ -245,6 +253,7 @@ def kampf_zeilen(daten):
         lp0 = (str(r.get("lp0") or "").split(":") + [""] * 6)[:6]
         lp1 = (str(r.get("lp1") or "").split(":") + [""] * 6)[:6]
         casts = kv(r.get("casts"))
+        dm = r.get("dm") if isinstance(r.get("dm"), dict) else {}
         out.append({
             "kennung": k, "datum": datetime.fromtimestamp(int(float(r.get("t") or 0))).strftime("%Y-%m-%d"),
             "klasse": klasse, "stufe": zahl(r.get("lvl")), "gestalt": r.get("form"), "gestalten": r.get("formen"),
@@ -257,11 +266,25 @@ def kampf_zeilen(daten):
             "am_ziel_krit": zf.get("CRITICAL", "") if r.get("amZiel") else "",
             "am_ziel_vermieden": sum(v for v in za.values() if isinstance(v, int)) if r.get("amZiel") else "",
             "zauber": sum(v for v in casts.values() if isinstance(v, int)), "folge": str(r.get("folge") or "").replace(";", " "),
-            "schlaege": zahl(r.get("swing")) or 0, "schlag_s": r.get("swingDauer") or "", "xp": zahl(r.get("xp")) or 0,
-            "tod": r.get("tod") or "",
+            "schlaege": zahl(r.get("swing")) or 0, "schlag_s": r.get("swingDauer") or "",
+            "schlaege_andere": zahl(r.get("swingAndere")) or "", "xp": zahl(r.get("xp")) or 0, "tod": r.get("tod") or "",
             "leben_start": lp0[0], "leben_ende": lp1[0], "mana_start": lp0[4], "mana_ende": lp1[4],
             "quelle_schaden": "Schadensmesser" if sch else (r.get("dmGrund") or ""),
+            # gemeldet = Sitzung, die der Schadensmesser im Kampf meldete; neueste = ohne Meldung die neueste Sitzung
+            "messer_sitzung": dm.get("quelle") or "", "messer_dauer_s": dm.get("dauer") or "",
+            "messer_zuwachs": 1 if dm.get("teil") else "", "anfang": r.get("anfang") or "", "ende": r.get("ende") or "",
             "geheim": leer(" ".join(x for x in (r.get("geheim"), r.get("einschr")) if x)), "testlog": r.get("v")})
+    return out
+
+
+def stufen_zeilen(daten):
+    out = []
+    for k, (klasse, s) in sorted(daten["stufen"].items(), key=lambda kv_: (kv_[1][0], zahl(kv_[1][1].get("lvl")) or 0)):
+        e = {"kennung": k, "datum": datetime.fromtimestamp(int(float(s.get("t") or 0))).strftime("%Y-%m-%d"),
+             "klasse": klasse, "stufe": zahl(s.get("lvl"))}
+        for spalte, feld, _ in STUFE_DE:
+            e[spalte] = zahl(s.get(feld)) if s.get(feld) is not None else ""
+        out.append(e)
     return out
 
 
@@ -352,7 +375,7 @@ def _f(v, n=1):
     return "–" if z is None or z == "" else f"{z:.{n}f}"
 
 
-def bericht(kampf, zauber, werte, daten):
+def bericht(kampf, zauber, werte, daten, stufen=()):
     gew = gewichte()
     L = ["# Kampfdaten: Schaden, Zauber, Werte, Ausrüstung (erzeugt von `tools/kampf_aus_testlog.py`)", "",
          "Nicht von Hand ändern: neues Testlog einlesen und neu erzeugen. Ohne Charakternamen und Uhrzeiten.", "",
@@ -362,7 +385,11 @@ def bericht(kampf, zauber, werte, daten):
          "«secret»); Treffer, Krits und Ausweichen am Spieler aus `UNIT_COMBAT`; Zauber mit Zeit aus `UNIT_SPELLCAST_SUCCEEDED`; "
          "Nahkampfschläge aus `PLAYER_SWING`; Werte aus `UnitStat` und Co. mit der Umrechnung des Charakterfensters "
          "(`GetCritChanceFromStat`, `GetAttackPowerForStat`, `Camelot/PaperDollFrameStats.lua`); Ausrüstung aus "
-         "`GetInventoryItemLink` und `C_Item.GetItemStats`; Talente aus `C_Traits`.",
+         "`GetInventoryItemLink` und `C_Item.GetItemStats`; Talente aus `C_Traits`; Zuwachs beim Stufenaufstieg aus "
+         "`PLAYER_LEVEL_UP` (`UnitDocumentation.lua`).",
+         "- Zuordnung zum Schadensmesser: die Sitzung, die er im Kampf meldet (`DAMAGE_METER_COMBAT_SESSION_UPDATED`), sonst "
+         "die neueste (Spalte `messer_sitzung`); wurde eine Sitzung schon gelesen, zählt nur der Zuwachs (`messer_zuwachs`). "
+         "Ob Blizzard kurze Kämpfe zu einer Sitzung zusammenfasst, ist ungeprüft.",
          f"- Gewichte für Gegenstände und Lagerbuffs: {QUELLE_RXP}; RXPs Zahlen fürs Leveln (Speedrun), kein Messwert.",
          "- Fischglas «8% increased stats», Lagerstuhl «2% increased critical strike chance with all spells and attacks» "
          "(Tooltips, https://metaforge.app/wow-forever/database/consumables/fish-bowl und …/camp-chair, abgerufen 17.10.2026). "
@@ -477,6 +504,20 @@ def bericht(kampf, zauber, werte, daten):
                  f"{w['ruestung']} | {w['leben']} | {w['mana']} | {w['umrechnung']} |")
     if not werte:
         L.append("| – | | | | | | | | | | | | | | | |")
+    # Stufenaufstiege
+    L += ["", "## Stufenaufstiege: Zuwachs laut Client", "",
+          "Was der Client beim Stufenaufstieg meldet (`PLAYER_LEVEL_UP`); «Kraft» ist die Kraft der Klasse (`powerDelta`; beim Druiden vermutlich Mana, ungeprüft). "
+          "Gleiche Werte stehen einmal, mit der Anzahl.", "",
+          "| Klasse | Stufe | " + " | ".join(t for _, _, t in STUFE_DE) + " | gesehen |",
+          "|---|---|" + "---|" * len(STUFE_DE) + "---|"]
+    gesehen = Counter()
+    for s in stufen:
+        gesehen[(s["klasse"], zahl(s["stufe"]) or 0) + tuple(str(s.get(sp, "")) for sp, _, _ in STUFE_DE)] += 1
+    for key, n in sorted(gesehen.items()):
+        L.append(f"| {KLASSE_DE.get(key[0], key[0])} | {key[1]} | " + " | ".join(v if v != "" else "–" for v in key[2:])
+                 + f" | {n}× |")
+    if not gesehen:
+        L.append("| – |" + " |" * (len(STUFE_DE) + 2))
     # Fischglas gegen Lagerstuhl
     L += ["", "## Fischglas (+8 % Grundwerte) gegen Lagerstuhl (+2 % Krit)", "",
           "Mit dem neuesten Stand der Werte. «Spielwerte»: was die 8 % laut Umrechnung des Clients bringen. «RXP»: beide Buffs "
@@ -579,9 +620,10 @@ def main():
     k = zusammen("kampf", kampf_zeilen(daten), ["kennung"])
     z = zusammen("kampf_zauber", zauber_zeilen(daten), ["kennung", "zauber"])
     w = zusammen("werte", werte_zeilen(daten), ["klasse", "stufe", "gestalt"])
-    bericht(k, z, w, daten)
-    print(f"{len(daten['kampf'])} Kämpfe, {len(daten['werte'])} Werte-Stände, {len(daten['chars'])} Charaktere; "
-          f"Bericht: {os.path.relpath(BERICHT, ROOT)}")
+    s = zusammen("stufen", stufen_zeilen(daten), ["kennung"])
+    bericht(k, z, w, daten, s)
+    print(f"{len(daten['kampf'])} Kämpfe, {len(daten['werte'])} Werte-Stände, {len(daten['stufen'])} Stufenaufstiege, "
+          f"{len(daten['chars'])} Charaktere; Bericht: {os.path.relpath(BERICHT, ROOT)}")
 
 
 if __name__ == "__main__":
